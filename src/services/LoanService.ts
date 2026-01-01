@@ -304,4 +304,126 @@ export class LoanService {
     const diffTime = today.getTime() - paymentDate.getTime();
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
+
+  /**
+   * Get pending loans for an organisation
+   */
+  static async getPendingLoans(organisationId: string): Promise<Loans[]> {
+    try {
+      const { items } = await BaseCrudService.getAll<Loans>(CollectionIds.LOANS);
+      return items?.filter(l => l.organisationId === organisationId && l.loanStatus === 'PENDING') || [];
+    } catch (error) {
+      console.error('Error fetching pending loans:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get approved loans for an organisation
+   */
+  static async getApprovedLoans(organisationId: string): Promise<Loans[]> {
+    try {
+      const { items } = await BaseCrudService.getAll<Loans>(CollectionIds.LOANS);
+      return items?.filter(l => l.organisationId === organisationId && l.loanStatus === 'APPROVED') || [];
+    } catch (error) {
+      console.error('Error fetching approved loans:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get active loans for an organisation
+   */
+  static async getActiveLoansByOrganisation(organisationId: string): Promise<Loans[]> {
+    try {
+      const { items } = await BaseCrudService.getAll<Loans>(CollectionIds.LOANS);
+      return items?.filter(l => l.organisationId === organisationId && l.loanStatus === 'ACTIVE') || [];
+    } catch (error) {
+      console.error('Error fetching active loans:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Update loan disbursement
+   */
+  static async updateLoanDisbursement(
+    loanId: string,
+    disbursementDate: Date,
+    disbursementReference: string
+  ): Promise<void> {
+    try {
+      await this.updateLoan(loanId, {
+        loanStatus: 'ACTIVE',
+        disbursementDate,
+        outstandingBalance: (await this.getLoan(loanId))?.principalAmount || 0,
+      });
+      
+      // Log disbursement reference in audit trail
+      await AuditService.logAction({
+        actionType: 'UPDATE',
+        actionDetails: `Loan disbursed with reference: ${disbursementReference}`,
+        resourceAffected: 'LOAN',
+        resourceId: loanId,
+        performedBy: 'SYSTEM',
+      });
+    } catch (error) {
+      console.error('Error updating loan disbursement:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate payment schedule
+   */
+  static async generatePaymentSchedule(
+    loanId: string,
+    principalAmount: number,
+    annualInterestRate: number,
+    loanTermMonths: number,
+    startDate: Date
+  ): Promise<void> {
+    try {
+      const monthlyPayment = this.calculateMonthlyPayment(principalAmount, annualInterestRate, loanTermMonths);
+      
+      // Calculate next payment date (1 month from start)
+      const nextPaymentDate = new Date(startDate);
+      nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1);
+      
+      await this.updateLoan(loanId, {
+        nextPaymentDate,
+      });
+    } catch (error) {
+      console.error('Error generating payment schedule:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create repayment
+   */
+  static async createRepayment(data: Omit<Repayments, '_id' | '_createdDate' | '_updatedDate'>): Promise<Repayments> {
+    return this.recordRepayment(data);
+  }
+
+  /**
+   * Update loan repayment
+   */
+  static async updateLoanRepayment(
+    loanId: string,
+    newBalance: number,
+    nextPaymentDate: Date | undefined,
+    status: string
+  ): Promise<void> {
+    try {
+      await this.updateLoan(loanId, {
+        outstandingBalance: newBalance,
+        nextPaymentDate,
+        loanStatus: status,
+      });
+    } catch (error) {
+      console.error('Error updating loan repayment:', error);
+      throw error;
+    }
+  }
 }

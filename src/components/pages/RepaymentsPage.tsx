@@ -1,331 +1,536 @@
-import { useState, useEffect } from 'react';
-import { BaseCrudService } from '@/integrations';
-import { Repayments, Loans } from '@/entities';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+/**
+ * Repayments Page
+ * Loan repayment recording and tracking
+ */
+
+import { useEffect, useState } from 'react';
+import { useMember } from '@/integrations';
+import { useOrganisationStore } from '@/store/organisationStore';
+import { LoanService, CustomerService, AuthorizationService, Permissions, AuditService } from '@/services';
+import { Loans, CustomerProfiles, Repayments } from '@/entities';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Search, DollarSign } from 'lucide-react';
-import { format } from 'date-fns';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { Badge } from '@/components/ui/badge';
+import { AlertCircle, CheckCircle2, DollarSign, Calendar, TrendingUp } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useForm } from 'react-hook-form';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+
+interface PaymentFormData {
+  paymentAmount: number;
+  paymentDate: string;
+  paymentMethod: string;
+  referenceNumber: string;
+}
+
+interface LoanWithDetails extends Loans {
+  customer?: CustomerProfiles;
+  monthlyPayment?: number;
+  daysOverdue?: number;
+  repaymentHistory?: Repayments[];
+}
 
 export default function RepaymentsPage() {
-  const [repayments, setRepayments] = useState<Repayments[]>([]);
-  const [loans, setLoans] = useState<Loans[]>([]);
-  const [filteredRepayments, setFilteredRepayments] = useState<Repayments[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { member } = useMember();
+  const { currentOrganisation, currentStaff } = useOrganisationStore();
+  const [loans, setLoans] = useState<LoanWithDetails[]>([]);
+  const [selectedLoan, setSelectedLoan] = useState<LoanWithDetails | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [canRecordPayment, setCanRecordPayment] = useState(false);
 
-  const [formData, setFormData] = useState({
-    transactionReference: '',
-    loanId: '',
-    repaymentDate: new Date().toISOString().split('T')[0],
-    totalAmountPaid: 0,
-    principalAmount: 0,
-    interestAmount: 0,
-    paymentMethod: 'Bank Transfer'
+  const form = useForm<PaymentFormData>({
+    defaultValues: {
+      paymentDate: new Date().toISOString().split('T')[0],
+      paymentMethod: 'BANK_TRANSFER',
+    },
   });
 
   useEffect(() => {
-    loadData();
-  }, []);
+    const checkPermissions = async () => {
+      if (!currentStaff?._id || !currentOrganisation?._id) return;
+
+      const hasPermission = await AuthorizationService.hasPermission(
+        currentStaff._id,
+        currentOrganisation._id,
+        Permissions.RECORD_REPAYMENT
+      );
+
+      setCanRecordPayment(hasPermission);
+    };
+
+    checkPermissions();
+  }, [currentStaff, currentOrganisation]);
 
   useEffect(() => {
-    const filtered = repayments.filter(repayment =>
-      repayment.transactionReference?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      repayment.loanId?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredRepayments(filtered);
-  }, [searchTerm, repayments]);
+    const loadLoans = async () => {
+      if (!currentOrganisation?._id) return;
 
-  const loadData = async () => {
+      try {
+        setIsLoading(true);
+
+        // Get active loans
+        const activeLoans = await LoanService.getActiveLoansByOrganisation(currentOrganisation._id);
+
+        // Enrich with customer data and repayment history
+        const enrichedLoans = await Promise.all(
+          activeLoans.map(async (loan) => {
+            const customer = loan.customerId ? await CustomerService.getCustomer(loan.customerId) : undefined;
+            const monthlyPayment = LoanService.calculateMonthlyPayment(
+              loan.principalAmount || 0,
+              loan.interestRate || 0,
+              loan.loanTermMonths || 0
+            );
+            const daysOverdue = LoanService.calculateDaysOverdue(loan.nextPaymentDate);
+            const repaymentHistory = await LoanService.getLoanRepayments(loan._id || '');
+
+            return {
+              ...loan,
+              customer,
+              monthlyPayment,
+              daysOverdue,
+              repaymentHistory,
+            };
+          })
+        );
+
+        setLoans(enrichedLoans);
+      } catch (error) {
+        console.error('Error loading loans:', error);
+        setErrorMessage('Failed to load active loans');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadLoans();
+  }, [currentOrganisation]);
+
+  const handleRecordPayment = async (data: PaymentFormData) => {
+    if (!selectedLoan || !currentOrganisation?._id) return;
+
     try {
-      const [repaymentsData, loansData] = await Promise.all([
-        BaseCrudService.getAll<Repayments>('repayments'),
-        BaseCrudService.getAll<Loans>('loans')
-      ]);
-      setRepayments(repaymentsData.items);
-      setLoans(loansData.items);
-      setFilteredRepayments(repaymentsData.items);
-    } catch (error) {
-      console.error('Error loading data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      setIsSubmitting(true);
+      setErrorMessage('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await BaseCrudService.create('repayments', {
-        _id: crypto.randomUUID(),
-        ...formData
-      });
-
-      const loan = loans.find(l => l._id === formData.loanId);
-      if (loan) {
-        const newBalance = (loan.outstandingBalance || 0) - formData.principalAmount;
-        await BaseCrudService.update<Loans>('loans', {
-          _id: loan._id,
-          outstandingBalance: Math.max(0, newBalance),
-          loanStatus: newBalance <= 0 ? 'Closed' : loan.loanStatus
-        });
+      // Validate payment amount
+      if (data.paymentAmount <= 0 || data.paymentAmount > (selectedLoan.outstandingBalance || 0)) {
+        setErrorMessage('Invalid payment amount');
+        return;
       }
 
-      await loadData();
-      setIsDialogOpen(false);
-      resetForm();
+      // Calculate interest and principal
+      const interestAmount = LoanService.calculateInterestAmount(
+        selectedLoan.outstandingBalance || 0,
+        selectedLoan.interestRate || 0
+      );
+
+      const principalAmount = Math.min(
+        data.paymentAmount - interestAmount,
+        selectedLoan.outstandingBalance || 0
+      );
+
+      // Create repayment record
+      const repayment: Omit<Repayments, '_id' | '_createdDate' | '_updatedDate'> = {
+        loanId: selectedLoan._id,
+        organisationId: currentOrganisation._id,
+        transactionReference: data.referenceNumber || `PAY-${Date.now()}`,
+        repaymentDate: new Date(data.paymentDate),
+        totalAmountPaid: data.paymentAmount,
+        principalAmount,
+        interestAmount,
+        paymentMethod: data.paymentMethod,
+      };
+
+      // Save repayment
+      const savedRepayment = await LoanService.createRepayment(repayment);
+
+      // Update loan outstanding balance
+      const newBalance = Math.max((selectedLoan.outstandingBalance || 0) - principalAmount, 0);
+      
+      // Calculate next payment date
+      let nextPaymentDate = selectedLoan.nextPaymentDate;
+      if (newBalance > 0) {
+        const currentDate = new Date(data.paymentDate);
+        nextPaymentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, currentDate.getDate());
+      }
+
+      // Update loan
+      await LoanService.updateLoanRepayment(
+        selectedLoan._id || '',
+        newBalance,
+        nextPaymentDate ? new Date(nextPaymentDate) : undefined,
+        newBalance === 0 ? 'CLOSED' : 'ACTIVE'
+      );
+
+      // Log repayment
+      await AuditService.logRepayment(
+        selectedLoan._id || '',
+        member?.loginEmail || 'ADMIN',
+        {
+          amount: data.paymentAmount,
+          principal: principalAmount,
+          interest: interestAmount,
+          method: data.paymentMethod,
+          reference: savedRepayment._id,
+        }
+      );
+
+      setSuccessMessage(`Payment of ZMW ${data.paymentAmount.toFixed(2)} recorded successfully!`);
+      setPaymentDialogOpen(false);
+      form.reset();
+
+      // Reload loans
+      const activeLoans = await LoanService.getActiveLoansByOrganisation(currentOrganisation._id);
+      const updatedLoans = await Promise.all(
+        activeLoans.map(async (loan) => {
+          const customer = loan.customerId ? await CustomerService.getCustomer(loan.customerId) : undefined;
+          const monthlyPayment = LoanService.calculateMonthlyPayment(
+            loan.principalAmount || 0,
+            loan.interestRate || 0,
+            loan.loanTermMonths || 0
+          );
+          const daysOverdue = LoanService.calculateDaysOverdue(loan.nextPaymentDate);
+          const repaymentHistory = await LoanService.getLoanRepayments(loan._id || '');
+
+          return {
+            ...loan,
+            customer,
+            monthlyPayment,
+            daysOverdue,
+            repaymentHistory,
+          };
+        })
+      );
+
+      setLoans(updatedLoans);
+      setSelectedLoan(null);
     } catch (error) {
-      console.error('Error saving repayment:', error);
+      console.error('Error recording payment:', error);
+      setErrorMessage('Failed to record payment');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      transactionReference: '',
-      loanId: '',
-      repaymentDate: new Date().toISOString().split('T')[0],
-      totalAmountPaid: 0,
-      principalAmount: 0,
-      interestAmount: 0,
-      paymentMethod: 'Bank Transfer'
-    });
-  };
-
-  const handleLoanChange = (loanId: string) => {
-    setFormData({ ...formData, loanId });
-    const loan = loans.find(l => l._id === loanId);
-    if (loan && loan.interestRate) {
-      const monthlyInterest = (loan.outstandingBalance || 0) * (loan.interestRate / 100 / 12);
-      setFormData(prev => ({
-        ...prev,
-        loanId,
-        interestAmount: parseFloat(monthlyInterest.toFixed(2))
-      }));
-    }
-  };
-
-  useEffect(() => {
-    const total = formData.principalAmount + formData.interestAmount;
-    setFormData(prev => ({ ...prev, totalAmountPaid: parseFloat(total.toFixed(2)) }));
-  }, [formData.principalAmount, formData.interestAmount]);
-
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-primary flex flex-col">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-16 h-16 border-4 border-secondary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="font-paragraph text-primary-foreground/70">Loading repayments...</p>
-          </div>
-        </main>
-        <Footer />
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-primary flex flex-col">
-      <Header />
-      
-      <main className="flex-1 w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-12">
-        <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="font-heading text-4xl font-bold text-secondary mb-2">
-              Repayment Processing
-            </h1>
-            <p className="font-paragraph text-base text-primary-foreground/70">
-              Record and manage loan repayments with automatic balance updates
-            </p>
-          </div>
-          <Dialog open={isDialogOpen} onOpenChange={(open) => {
-            setIsDialogOpen(open);
-            if (!open) resetForm();
-          }}>
-            <DialogTrigger asChild>
-              <Button className="bg-buttonbackground text-secondary-foreground hover:bg-buttonbackground/90">
-                <Plus className="w-4 h-4 mr-2" />
-                Record Repayment
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="bg-primary border-primary-foreground/20 max-w-2xl">
-              <DialogHeader>
-                <DialogTitle className="font-heading text-2xl text-secondary">
-                  Record New Repayment
-                </DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="transactionReference" className="text-primary-foreground">Transaction Reference</Label>
-                  <Input
-                    id="transactionReference"
-                    value={formData.transactionReference}
-                    onChange={(e) => setFormData({ ...formData, transactionReference: e.target.value })}
-                    className="bg-primary border-primary-foreground/20 text-primary-foreground"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="loanId" className="text-primary-foreground">Loan</Label>
-                  <select
-                    id="loanId"
-                    value={formData.loanId}
-                    onChange={(e) => handleLoanChange(e.target.value)}
-                    className="w-full h-10 px-3 rounded-md bg-primary border border-primary-foreground/20 text-primary-foreground"
-                    required
-                  >
-                    <option value="">Select Loan</option>
-                    {loans.filter(l => l.loanStatus === 'Active').map(loan => (
-                      <option key={loan._id} value={loan._id}>
-                        {loan.loanNumber} - Outstanding: ZMW {loan.outstandingBalance?.toLocaleString()}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="repaymentDate" className="text-primary-foreground">Repayment Date</Label>
-                    <Input
-                      id="repaymentDate"
-                      type="date"
-                      value={formData.repaymentDate}
-                      onChange={(e) => setFormData({ ...formData, repaymentDate: e.target.value })}
-                      className="bg-primary border-primary-foreground/20 text-primary-foreground"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="paymentMethod" className="text-primary-foreground">Payment Method</Label>
-                    <select
-                      id="paymentMethod"
-                      value={formData.paymentMethod}
-                      onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
-                      className="w-full h-10 px-3 rounded-md bg-primary border border-primary-foreground/20 text-primary-foreground"
-                    >
-                      <option value="Bank Transfer">Bank Transfer</option>
-                      <option value="Cash">Cash</option>
-                      <option value="Mobile Money">Mobile Money</option>
-                      <option value="Cheque">Cheque</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="principalAmount" className="text-primary-foreground">Principal Amount (ZMW)</Label>
-                    <Input
-                      id="principalAmount"
-                      type="number"
-                      step="0.01"
-                      value={formData.principalAmount}
-                      onChange={(e) => setFormData({ ...formData, principalAmount: parseFloat(e.target.value) || 0 })}
-                      className="bg-primary border-primary-foreground/20 text-primary-foreground"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="interestAmount" className="text-primary-foreground">Interest Amount (ZMW)</Label>
-                    <Input
-                      id="interestAmount"
-                      type="number"
-                      step="0.01"
-                      value={formData.interestAmount}
-                      onChange={(e) => setFormData({ ...formData, interestAmount: parseFloat(e.target.value) || 0 })}
-                      className="bg-primary border-primary-foreground/20 text-primary-foreground"
-                      required
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="totalAmountPaid" className="text-primary-foreground">Total Amount Paid (ZMW)</Label>
-                  <Input
-                    id="totalAmountPaid"
-                    type="number"
-                    step="0.01"
-                    value={formData.totalAmountPaid}
-                    readOnly
-                    className="bg-primary-foreground/5 border-primary-foreground/20 text-primary-foreground"
-                  />
-                </div>
-                <div className="flex gap-3 pt-4">
-                  <Button type="submit" className="flex-1 bg-buttonbackground text-secondary-foreground hover:bg-buttonbackground/90">
-                    Record Repayment
-                  </Button>
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="flex-1">
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h1 className="text-4xl font-heading font-bold text-primary-foreground mb-2">
+            Loan Repayments
+          </h1>
+          <p className="text-primary-foreground/70">
+            Record and track loan repayments
+          </p>
+        </motion.div>
 
-        <Card className="bg-primary border-primary-foreground/10 mb-6">
-          <CardContent className="p-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary-foreground/40" />
-              <Input
-                placeholder="Search by transaction reference or loan ID..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-primary border-primary-foreground/20 text-primary-foreground"
-              />
+        {/* Success Message */}
+        {successMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 rounded-lg bg-green-500/10 border border-green-500/20 flex items-start gap-3"
+          >
+            <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+            <p className="text-green-600">{successMessage}</p>
+          </motion.div>
+        )}
+
+        {/* Error Message */}
+        {errorMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/20 flex items-start gap-3"
+          >
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <p className="text-red-600">{errorMessage}</p>
+          </motion.div>
+        )}
+
+        {/* Summary Stats */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ staggerChildren: 0.1 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+        >
+          {[
+            { label: 'Active Loans', value: loans.length, icon: TrendingUp, color: 'bg-blue-500/10 text-blue-600' },
+            { label: 'Total Outstanding', value: `ZMW ${loans.reduce((sum, l) => sum + (l.outstandingBalance || 0), 0).toLocaleString()}`, icon: DollarSign, color: 'bg-red-500/10 text-red-600' },
+            { label: 'Overdue Payments', value: loans.filter(l => (l.daysOverdue || 0) > 0).length, icon: AlertCircle, color: 'bg-yellow-500/10 text-yellow-600' },
+          ].map((stat, idx) => {
+            const Icon = stat.icon;
+            return (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+              >
+                <Card className="bg-primary-foreground/5 border-primary-foreground/10">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm font-medium text-primary-foreground/70">
+                        {stat.label}
+                      </CardTitle>
+                      <div className={`p-2 rounded-lg ${stat.color}`}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-primary-foreground">{stat.value}</div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          })}
+        </motion.div>
+
+        {/* Active Loans List */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          {loans.length > 0 ? (
+            <div className="space-y-4">
+              {loans.map((loan, idx) => (
+                <motion.div
+                  key={loan._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                >
+                  <Card className="bg-primary-foreground/5 border-primary-foreground/10 hover:border-secondary/50 transition-all">
+                    <CardContent className="p-6">
+                      <div className="grid grid-cols-1 md:grid-cols-6 gap-6 items-center">
+                        {/* Loan & Customer Info */}
+                        <div>
+                          <p className="text-sm text-primary-foreground/70 mb-1">Loan Number</p>
+                          <p className="font-semibold text-primary-foreground">{loan.loanNumber}</p>
+                          <p className="text-xs text-primary-foreground/50 mt-2">
+                            {loan.customer?.firstName} {loan.customer?.lastName}
+                          </p>
+                        </div>
+
+                        {/* Outstanding Balance */}
+                        <div>
+                          <p className="text-sm text-primary-foreground/70 mb-1">Outstanding Balance</p>
+                          <p className="font-semibold text-secondary">
+                            ZMW {(loan.outstandingBalance || 0).toLocaleString()}
+                          </p>
+                          <p className="text-xs text-primary-foreground/50 mt-2">
+                            {loan.loanTermMonths} months
+                          </p>
+                        </div>
+
+                        {/* Monthly Payment */}
+                        <div>
+                          <p className="text-sm text-primary-foreground/70 mb-1">Monthly Payment</p>
+                          <p className="font-semibold text-primary-foreground">
+                            ZMW {(loan.monthlyPayment || 0).toFixed(2)}
+                          </p>
+                          <p className="text-xs text-primary-foreground/50 mt-2">
+                            {loan.interestRate}% interest
+                          </p>
+                        </div>
+
+                        {/* Next Payment */}
+                        <div>
+                          <p className="text-sm text-primary-foreground/70 mb-1">Next Payment Due</p>
+                          <p className="font-semibold text-primary-foreground">
+                            {loan.nextPaymentDate ? new Date(loan.nextPaymentDate).toLocaleDateString() : 'N/A'}
+                          </p>
+                          {loan.daysOverdue && loan.daysOverdue > 0 ? (
+                            <p className="text-xs text-red-400 mt-2 flex items-center gap-1">
+                              <AlertCircle className="w-3 h-3" />
+                              {loan.daysOverdue} days overdue
+                            </p>
+                          ) : (
+                            <p className="text-xs text-green-400 mt-2">On track</p>
+                          )}
+                        </div>
+
+                        {/* Payments Made */}
+                        <div>
+                          <p className="text-sm text-primary-foreground/70 mb-1">Payments Made</p>
+                          <p className="font-semibold text-primary-foreground">
+                            {loan.repaymentHistory?.length || 0}
+                          </p>
+                          <p className="text-xs text-primary-foreground/50 mt-2">
+                            Total: ZMW {(loan.repaymentHistory?.reduce((sum, r) => sum + (r.totalAmountPaid || 0), 0) || 0).toLocaleString()}
+                          </p>
+                        </div>
+
+                        {/* Action */}
+                        <div className="flex justify-end">
+                          {canRecordPayment && (
+                            <Button
+                              onClick={() => {
+                                setSelectedLoan(loan);
+                                setPaymentDialogOpen(true);
+                              }}
+                              className="bg-secondary text-primary hover:bg-secondary/90"
+                            >
+                              Record Payment
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
             </div>
-          </CardContent>
-        </Card>
+          ) : (
+            <Card className="bg-primary-foreground/5 border-primary-foreground/10">
+              <CardContent className="p-12 text-center">
+                <TrendingUp className="w-12 h-12 text-primary-foreground/30 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-primary-foreground mb-2">No Active Loans</h3>
+                <p className="text-primary-foreground/70">
+                  No active loans available for repayment recording.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </motion.div>
 
-        <Card className="bg-primary border-primary-foreground/10">
-          <CardHeader>
-            <CardTitle className="font-heading text-2xl text-secondary">
-              All Repayments ({filteredRepayments.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {filteredRepayments.length === 0 ? (
-              <div className="text-center py-12">
-                <DollarSign className="w-12 h-12 text-primary-foreground/30 mx-auto mb-4" />
-                <p className="font-paragraph text-primary-foreground/60">No repayments found</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-primary-foreground/10">
-                      <th className="text-left py-3 px-4 font-paragraph text-sm text-primary-foreground/70">Transaction Ref</th>
-                      <th className="text-left py-3 px-4 font-paragraph text-sm text-primary-foreground/70">Loan ID</th>
-                      <th className="text-left py-3 px-4 font-paragraph text-sm text-primary-foreground/70">Date</th>
-                      <th className="text-left py-3 px-4 font-paragraph text-sm text-primary-foreground/70">Principal</th>
-                      <th className="text-left py-3 px-4 font-paragraph text-sm text-primary-foreground/70">Interest</th>
-                      <th className="text-left py-3 px-4 font-paragraph text-sm text-primary-foreground/70">Total Paid</th>
-                      <th className="text-left py-3 px-4 font-paragraph text-sm text-primary-foreground/70">Method</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredRepayments.map((repayment) => (
-                      <tr key={repayment._id} className="border-b border-primary-foreground/5 hover:bg-primary-foreground/5">
-                        <td className="py-3 px-4 font-paragraph text-sm text-primary-foreground">{repayment.transactionReference}</td>
-                        <td className="py-3 px-4 font-paragraph text-sm text-primary-foreground">{repayment.loanId}</td>
-                        <td className="py-3 px-4 font-paragraph text-sm text-primary-foreground">
-                          {repayment.repaymentDate ? format(new Date(repayment.repaymentDate), 'MMM d, yyyy') : '-'}
-                        </td>
-                        <td className="py-3 px-4 font-paragraph text-sm text-primary-foreground">ZMW {repayment.principalAmount?.toLocaleString()}</td>
-                        <td className="py-3 px-4 font-paragraph text-sm text-primary-foreground">ZMW {repayment.interestAmount?.toLocaleString()}</td>
-                        <td className="py-3 px-4 font-paragraph text-sm text-secondary font-semibold">ZMW {repayment.totalAmountPaid?.toLocaleString()}</td>
-                        <td className="py-3 px-4 font-paragraph text-sm text-primary-foreground">{repayment.paymentMethod}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </main>
+        {/* Payment Dialog */}
+        <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
+          <DialogContent className="bg-primary-foreground/95 border-primary-foreground/20 max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-primary">Record Payment</DialogTitle>
+              <DialogDescription className="text-primary/70">
+                {selectedLoan?.loanNumber} - {selectedLoan?.customer?.firstName} {selectedLoan?.customer?.lastName}
+              </DialogDescription>
+            </DialogHeader>
 
-      <Footer />
+            <form onSubmit={form.handleSubmit((data) => handleRecordPayment(data))} className="space-y-6">
+              {/* Loan Summary */}
+              <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-primary/70">Outstanding Balance</p>
+                    <p className="font-semibold text-primary text-lg">
+                      ZMW {(selectedLoan?.outstandingBalance || 0).toLocaleString()}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-primary/70">Monthly Payment</p>
+                    <p className="font-semibold text-primary text-lg">
+                      ZMW {(selectedLoan?.monthlyPayment || 0).toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Details */}
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-primary mb-2 block">Payment Amount (ZMW) *</Label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-3 w-5 h-5 text-primary/50" />
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="Enter payment amount"
+                      className="pl-10 bg-primary/5 border-primary/20 text-primary placeholder:text-primary/50"
+                      {...form.register('paymentAmount', {
+                        required: 'Payment amount is required',
+                        min: { value: 0.01, message: 'Amount must be greater than 0' },
+                        max: { value: selectedLoan?.outstandingBalance || 0, message: 'Amount exceeds outstanding balance' },
+                      })}
+                    />
+                  </div>
+                  {form.formState.errors.paymentAmount && (
+                    <p className="text-red-500 text-sm mt-1">{form.formState.errors.paymentAmount.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label className="text-primary mb-2 block">Payment Date *</Label>
+                  <Input
+                    type="date"
+                    className="bg-primary/5 border-primary/20 text-primary"
+                    {...form.register('paymentDate', { required: 'Payment date is required' })}
+                  />
+                  {form.formState.errors.paymentDate && (
+                    <p className="text-red-500 text-sm mt-1">{form.formState.errors.paymentDate.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label className="text-primary mb-2 block">Payment Method *</Label>
+                  <Select {...form.register('paymentMethod', { required: 'Payment method is required' })}>
+                    <SelectTrigger className="bg-primary/5 border-primary/20 text-primary">
+                      <SelectValue placeholder="Select payment method" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="BANK_TRANSFER">Bank Transfer</SelectItem>
+                      <SelectItem value="CASH">Cash</SelectItem>
+                      <SelectItem value="CHEQUE">Cheque</SelectItem>
+                      <SelectItem value="MOBILE_MONEY">Mobile Money</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {form.formState.errors.paymentMethod && (
+                    <p className="text-red-500 text-sm mt-1">{form.formState.errors.paymentMethod.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label className="text-primary mb-2 block">Reference Number</Label>
+                  <Input
+                    placeholder="Enter transaction reference (optional)"
+                    className="bg-primary/5 border-primary/20 text-primary placeholder:text-primary/50"
+                    {...form.register('referenceNumber')}
+                  />
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-3 justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setPaymentDialogOpen(false)}
+                  className="border-primary/20 text-primary hover:bg-primary/5"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-secondary text-primary hover:bg-secondary/90 disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Recording...' : 'Record Payment'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   );
 }

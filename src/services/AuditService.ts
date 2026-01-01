@@ -153,10 +153,10 @@ export class AuditService {
   /**
    * Log loan approval
    */
-  static async logLoanApproval(loanId: string, performedBy: string, staffMemberId?: string): Promise<void> {
+  static async logLoanApproval(loanId: string, performedBy: string, notes?: string, staffMemberId?: string): Promise<void> {
     await this.logAction({
       actionType: 'APPROVE',
-      actionDetails: 'Loan application approved',
+      actionDetails: notes ? `Loan application approved: ${notes}` : 'Loan application approved',
       resourceAffected: 'LOAN',
       resourceId: loanId,
       performedBy,
@@ -167,7 +167,7 @@ export class AuditService {
   /**
    * Log loan rejection
    */
-  static async logLoanRejection(loanId: string, reason: string, performedBy: string, staffMemberId?: string): Promise<void> {
+  static async logLoanRejection(loanId: string, performedBy: string, reason: string, staffMemberId?: string): Promise<void> {
     await this.logAction({
       actionType: 'REJECT',
       actionDetails: `Loan application rejected: ${reason}`,
@@ -181,10 +181,10 @@ export class AuditService {
   /**
    * Log loan disbursement
    */
-  static async logLoanDisbursement(loanId: string, amount: number, performedBy: string, staffMemberId?: string): Promise<void> {
+  static async logLoanDisbursement(loanId: string, performedBy: string, details: any, staffMemberId?: string): Promise<void> {
     await this.logAction({
       actionType: 'DISBURSE',
-      actionDetails: `Loan disbursed: ${amount}`,
+      actionDetails: `Loan disbursed: ${JSON.stringify(details)}`,
       resourceAffected: 'LOAN',
       resourceId: loanId,
       performedBy,
@@ -195,10 +195,10 @@ export class AuditService {
   /**
    * Log repayment
    */
-  static async logRepayment(loanId: string, amount: number, performedBy: string, staffMemberId?: string): Promise<void> {
+  static async logRepayment(loanId: string, performedBy: string, details: any, staffMemberId?: string): Promise<void> {
     await this.logAction({
       actionType: 'REPAYMENT',
-      actionDetails: `Repayment recorded: ${amount}`,
+      actionDetails: `Repayment recorded: ${JSON.stringify(details)}`,
       resourceAffected: 'LOAN',
       resourceId: loanId,
       performedBy,

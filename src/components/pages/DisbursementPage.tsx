@@ -1,235 +1,454 @@
-import { useState, useEffect } from 'react';
-import { BaseCrudService } from '@/integrations';
-import { Loans, CustomerProfiles, LoanProducts } from '@/entities';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { AlertCircle, CheckCircle, DollarSign } from 'lucide-react';
+/**
+ * Disbursement Page
+ * Loan disbursement processing for finance officers
+ */
 
-interface LoanWithDetails extends Loans {
+import { useEffect, useState } from 'react';
+import { useMember } from '@/integrations';
+import { useOrganisationStore } from '@/store/organisationStore';
+import { LoanService, CustomerService, AuthorizationService, Permissions, AuditService } from '@/services';
+import { Loans, CustomerProfiles } from '@/entities';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { Badge } from '@/components/ui/badge';
+import { AlertCircle, CheckCircle2, Clock, DollarSign, Building2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useForm } from 'react-hook-form';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+
+interface DisbursementFormData {
+  bankName: string;
+  accountNumber: string;
+  accountHolderName: string;
+  disbursementDate: string;
+}
+
+interface LoanWithCustomer extends Loans {
   customer?: CustomerProfiles;
-  product?: LoanProducts;
+  monthlyPayment?: number;
 }
 
 export default function DisbursementPage() {
-  const [loans, setLoans] = useState<LoanWithDetails[]>([]);
-  const [selectedLoan, setSelectedLoan] = useState<LoanWithDetails | null>(null);
+  const { member } = useMember();
+  const { currentOrganisation, currentStaff } = useOrganisationStore();
+  const [loans, setLoans] = useState<LoanWithCustomer[]>([]);
+  const [selectedLoan, setSelectedLoan] = useState<LoanWithCustomer | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [disbursementDate, setDisbursementDate] = useState(new Date().toISOString().split('T')[0]);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [disbursementDialogOpen, setDisbursementDialogOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [canDisburse, setCanDisburse] = useState(false);
+
+  const form = useForm<DisbursementFormData>({
+    defaultValues: {
+      disbursementDate: new Date().toISOString().split('T')[0],
+    },
+  });
 
   useEffect(() => {
+    const checkPermissions = async () => {
+      if (!currentStaff?._id || !currentOrganisation?._id) return;
+
+      const hasPermission = await AuthorizationService.hasPermission(
+        currentStaff._id,
+        currentOrganisation._id,
+        Permissions.DISBURSE_LOAN
+      );
+
+      setCanDisburse(hasPermission);
+    };
+
+    checkPermissions();
+  }, [currentStaff, currentOrganisation]);
+
+  useEffect(() => {
+    const loadLoans = async () => {
+      if (!currentOrganisation?._id) return;
+
+      try {
+        setIsLoading(true);
+
+        // Get approved loans
+        const approvedLoans = await LoanService.getApprovedLoans(currentOrganisation._id);
+
+        // Enrich with customer data
+        const enrichedLoans = await Promise.all(
+          approvedLoans.map(async (loan) => {
+            const customer = loan.customerId ? await CustomerService.getCustomer(loan.customerId) : undefined;
+            const monthlyPayment = LoanService.calculateMonthlyPayment(
+              loan.principalAmount || 0,
+              loan.interestRate || 0,
+              loan.loanTermMonths || 0
+            );
+
+            return {
+              ...loan,
+              customer,
+              monthlyPayment,
+            };
+          })
+        );
+
+        setLoans(enrichedLoans);
+      } catch (error) {
+        console.error('Error loading loans:', error);
+        setErrorMessage('Failed to load approved loans');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     loadLoans();
-  }, []);
+  }, [currentOrganisation]);
 
-  const loadLoans = async () => {
+  const handleDisburse = async (data: DisbursementFormData) => {
+    if (!selectedLoan || !currentOrganisation?._id) return;
+
     try {
-      const { items } = await BaseCrudService.getAll<Loans>('loans', ['customerId', 'loanProductId']);
-      const approvedLoans = items.filter(l => l.loanStatus === 'approved') as LoanWithDetails[];
-      setLoans(approvedLoans);
-    } catch (error) {
-      console.error('Failed to load loans:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      setIsSubmitting(true);
+      setErrorMessage('');
 
-  const handleDisburse = async () => {
-    if (!selectedLoan) return;
+      // Generate disbursement reference
+      const disbursementRef = `DISB-${Date.now()}`;
 
-    setIsProcessing(true);
-    try {
-      await BaseCrudService.update('loans', {
-        _id: selectedLoan._id,
-        loanStatus: 'disbursed',
-        disbursementDate: new Date(disbursementDate),
-      });
+      // Update loan status and disbursement date
+      await LoanService.updateLoanDisbursement(
+        selectedLoan._id || '',
+        new Date(data.disbursementDate),
+        disbursementRef
+      );
 
-      setLoans(loans.map(l =>
-        l._id === selectedLoan._id ? { ...l, loanStatus: 'disbursed', disbursementDate: new Date(disbursementDate) } : l
-      ));
+      // Generate payment schedule
+      await LoanService.generatePaymentSchedule(
+        selectedLoan._id || '',
+        selectedLoan.principalAmount || 0,
+        selectedLoan.interestRate || 0,
+        selectedLoan.loanTermMonths || 0,
+        new Date(data.disbursementDate)
+      );
+
+      // Log disbursement
+      await AuditService.logLoanDisbursement(
+        selectedLoan._id || '',
+        member?.loginEmail || 'ADMIN',
+        {
+          bankName: data.bankName,
+          accountNumber: data.accountNumber,
+          accountHolderName: data.accountHolderName,
+          disbursementDate: data.disbursementDate,
+          disbursementReference: disbursementRef,
+        }
+      );
+
+      setSuccessMessage(`Loan ${selectedLoan.loanNumber} disbursed successfully! Reference: ${disbursementRef}`);
+      setDisbursementDialogOpen(false);
+      form.reset();
+
+      // Reload loans
+      const approvedLoans = await LoanService.getApprovedLoans(currentOrganisation._id);
+      const enrichedLoans = await Promise.all(
+        approvedLoans.map(async (loan) => {
+          const customer = loan.customerId ? await CustomerService.getCustomer(loan.customerId) : undefined;
+          const monthlyPayment = LoanService.calculateMonthlyPayment(
+            loan.principalAmount || 0,
+            loan.interestRate || 0,
+            loan.loanTermMonths || 0
+          );
+
+          return {
+            ...loan,
+            customer,
+            monthlyPayment,
+          };
+        })
+      );
+
+      setLoans(enrichedLoans);
       setSelectedLoan(null);
     } catch (error) {
-      console.error('Failed to disburse loan:', error);
-      alert('Failed to disburse loan');
+      console.error('Error disbursing loan:', error);
+      setErrorMessage('Failed to disburse loan');
     } finally {
-      setIsProcessing(false);
+      setIsSubmitting(false);
     }
   };
 
-  const calculateNextPaymentDate = (disbursementDate: Date | string, termMonths: number) => {
-    const date = new Date(disbursementDate);
-    date.setMonth(date.getMonth() + 1);
-    return date.toLocaleDateString();
-  };
-
-  return (
-    <div className="max-w-6xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Loan Disbursement</h1>
-        <p className="text-gray-600 mt-2">Process approved loans for disbursement</p>
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner />
       </div>
+    );
+  }
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Approved Loans List */}
-        <div className="lg:col-span-1">
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold mb-4">
-              Ready for Disbursement ({loans.length})
-            </h2>
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {isLoading ? (
-                <p className="text-gray-600 text-sm">Loading...</p>
-              ) : loans.length === 0 ? (
-                <p className="text-gray-600 text-sm">No approved loans pending disbursement</p>
-              ) : (
-                loans.map(loan => (
-                  <button
-                    key={loan._id}
-                    onClick={() => setSelectedLoan(loan)}
-                    className={`w-full text-left p-3 rounded-lg border-2 transition ${
-                      selectedLoan?._id === loan._id
-                        ? 'border-primary bg-primary/5'
-                        : 'border-gray-200 hover:border-primary/50'
-                    }`}
-                  >
-                    <p className="font-medium text-gray-900">{loan.loanNumber}</p>
-                    <p className="text-sm text-gray-600">${loan.principalAmount?.toLocaleString()}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {loan.customer?.firstName} {loan.customer?.lastName}
-                    </p>
-                  </button>
-                ))
-              )}
-            </div>
+  if (!canDisburse) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 p-6">
+        <div className="max-w-2xl mx-auto">
+          <Card className="bg-red-500/10 border-red-500/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-red-600">
+                <AlertCircle className="w-5 h-5" />
+                Access Denied
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-primary-foreground/70">
+                You do not have permission to disburse loans. Please contact your administrator.
+              </p>
+            </CardContent>
           </Card>
         </div>
+      </div>
+    );
+  }
 
-        {/* Disbursement Form */}
-        <div className="lg:col-span-2">
-          {selectedLoan ? (
-            <Card className="p-6">
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-2xl font-semibold text-gray-900">{selectedLoan.loanNumber}</h2>
-                  <Badge className="bg-green-100 text-green-800">
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Approved
-                  </Badge>
-                </div>
-              </div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h1 className="text-4xl font-heading font-bold text-primary-foreground mb-2">
+            Loan Disbursement
+          </h1>
+          <p className="text-primary-foreground/70">
+            Process disbursement for approved loans
+          </p>
+        </motion.div>
 
-              {/* Customer Information */}
-              <div className="mb-6 pb-6 border-b border-gray-200">
-                <h3 className="font-semibold text-gray-900 mb-3">Customer Information</h3>
+        {/* Success Message */}
+        {successMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 rounded-lg bg-green-500/10 border border-green-500/20 flex items-start gap-3"
+          >
+            <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+            <p className="text-green-600">{successMessage}</p>
+          </motion.div>
+        )}
+
+        {/* Error Message */}
+        {errorMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/20 flex items-start gap-3"
+          >
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <p className="text-red-600">{errorMessage}</p>
+          </motion.div>
+        )}
+
+        {/* Approved Loans List */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          {loans.length > 0 ? (
+            <div className="space-y-4">
+              {loans.map((loan, idx) => (
+                <motion.div
+                  key={loan._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                >
+                  <Card className="bg-primary-foreground/5 border-primary-foreground/10 hover:border-secondary/50 transition-all">
+                    <CardContent className="p-6">
+                      <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-center">
+                        {/* Loan & Customer Info */}
+                        <div>
+                          <p className="text-sm text-primary-foreground/70 mb-1">Loan Number</p>
+                          <p className="font-semibold text-primary-foreground">{loan.loanNumber}</p>
+                          <p className="text-xs text-primary-foreground/50 mt-2">
+                            {loan.customer?.firstName} {loan.customer?.lastName}
+                          </p>
+                        </div>
+
+                        {/* Amount Info */}
+                        <div>
+                          <p className="text-sm text-primary-foreground/70 mb-1">Principal Amount</p>
+                          <p className="font-semibold text-primary-foreground">
+                            ZMW {(loan.principalAmount || 0).toLocaleString()}
+                          </p>
+                          <p className="text-xs text-primary-foreground/50 mt-2">
+                            {loan.loanTermMonths} months
+                          </p>
+                        </div>
+
+                        {/* Monthly Payment */}
+                        <div>
+                          <p className="text-sm text-primary-foreground/70 mb-1">Monthly Payment</p>
+                          <p className="font-semibold text-secondary">
+                            ZMW {(loan.monthlyPayment || 0).toFixed(2)}
+                          </p>
+                          <p className="text-xs text-primary-foreground/50 mt-2">
+                            {loan.interestRate}% interest
+                          </p>
+                        </div>
+
+                        {/* Status */}
+                        <div>
+                          <p className="text-sm text-primary-foreground/70 mb-1">Status</p>
+                          <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20 border">
+                            APPROVED
+                          </Badge>
+                        </div>
+
+                        {/* Action */}
+                        <div className="flex justify-end">
+                          <Button
+                            onClick={() => {
+                              setSelectedLoan(loan);
+                              setDisbursementDialogOpen(true);
+                            }}
+                            className="bg-secondary text-primary hover:bg-secondary/90"
+                          >
+                            Disburse
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <Card className="bg-primary-foreground/5 border-primary-foreground/10">
+              <CardContent className="p-12 text-center">
+                <Clock className="w-12 h-12 text-primary-foreground/30 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-primary-foreground mb-2">No Approved Loans</h3>
+                <p className="text-primary-foreground/70">
+                  No approved loans are ready for disbursement. Check back later.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </motion.div>
+
+        {/* Disbursement Dialog */}
+        <Dialog open={disbursementDialogOpen} onOpenChange={setDisbursementDialogOpen}>
+          <DialogContent className="bg-primary-foreground/95 border-primary-foreground/20 max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-primary">Disburse Loan</DialogTitle>
+              <DialogDescription className="text-primary/70">
+                {selectedLoan?.loanNumber} - {selectedLoan?.customer?.firstName} {selectedLoan?.customer?.lastName}
+              </DialogDescription>
+            </DialogHeader>
+
+            <form onSubmit={form.handleSubmit((data) => handleDisburse(data))} className="space-y-6">
+              {/* Loan Summary */}
+              <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-gray-600">Name</p>
-                    <p className="font-medium text-gray-900">
-                      {selectedLoan.customer?.firstName} {selectedLoan.customer?.lastName}
+                    <p className="text-sm text-primary/70">Principal Amount</p>
+                    <p className="font-semibold text-primary text-lg">
+                      ZMW {(selectedLoan?.principalAmount || 0).toLocaleString()}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">National ID</p>
-                    <p className="font-medium text-gray-900">{selectedLoan.customer?.nationalIdNumber}</p>
+                    <p className="text-sm text-primary/70">Monthly Payment</p>
+                    <p className="font-semibold text-primary text-lg">
+                      ZMW {(selectedLoan?.monthlyPayment || 0).toFixed(2)}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Email</p>
-                    <p className="font-medium text-gray-900">{selectedLoan.customer?.emailAddress}</p>
+                    <p className="text-sm text-primary/70">Loan Term</p>
+                    <p className="font-semibold text-primary">{selectedLoan?.loanTermMonths} months</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Phone</p>
-                    <p className="font-medium text-gray-900">{selectedLoan.customer?.phoneNumber}</p>
+                    <p className="text-sm text-primary/70">Interest Rate</p>
+                    <p className="font-semibold text-primary">{selectedLoan?.interestRate}%</p>
                   </div>
                 </div>
               </div>
 
-              {/* Loan Details */}
-              <div className="mb-6 pb-6 border-b border-gray-200">
-                <h3 className="font-semibold text-gray-900 mb-3">Loan Details</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-600">Product</p>
-                    <p className="font-medium text-gray-900">{selectedLoan.product?.productName}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Principal Amount</p>
-                    <p className="font-medium text-lg text-primary">${selectedLoan.principalAmount?.toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Interest Rate</p>
-                    <p className="font-medium text-gray-900">{selectedLoan.interestRate}%</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Loan Term</p>
-                    <p className="font-medium text-gray-900">{selectedLoan.loanTermMonths} months</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Disbursement Form */}
+              {/* Bank Details */}
               <div className="space-y-4">
+                <h3 className="font-semibold text-primary flex items-center gap-2">
+                  <Building2 className="w-4 h-4" />
+                  Bank Account Details
+                </h3>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Disbursement Date
-                  </label>
+                  <Label className="text-primary mb-2 block">Bank Name *</Label>
+                  <Input
+                    placeholder="Enter bank name"
+                    className="bg-primary/5 border-primary/20 text-primary placeholder:text-primary/50"
+                    {...form.register('bankName', { required: 'Bank name is required' })}
+                  />
+                  {form.formState.errors.bankName && (
+                    <p className="text-red-500 text-sm mt-1">{form.formState.errors.bankName.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label className="text-primary mb-2 block">Account Number *</Label>
+                  <Input
+                    placeholder="Enter account number"
+                    className="bg-primary/5 border-primary/20 text-primary placeholder:text-primary/50"
+                    {...form.register('accountNumber', { required: 'Account number is required' })}
+                  />
+                  {form.formState.errors.accountNumber && (
+                    <p className="text-red-500 text-sm mt-1">{form.formState.errors.accountNumber.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label className="text-primary mb-2 block">Account Holder Name *</Label>
+                  <Input
+                    placeholder="Enter account holder name"
+                    className="bg-primary/5 border-primary/20 text-primary placeholder:text-primary/50"
+                    {...form.register('accountHolderName', { required: 'Account holder name is required' })}
+                  />
+                  {form.formState.errors.accountHolderName && (
+                    <p className="text-red-500 text-sm mt-1">{form.formState.errors.accountHolderName.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label className="text-primary mb-2 block">Disbursement Date *</Label>
                   <Input
                     type="date"
-                    value={disbursementDate}
-                    onChange={(e) => setDisbursementDate(e.target.value)}
+                    className="bg-primary/5 border-primary/20 text-primary"
+                    {...form.register('disbursementDate', { required: 'Disbursement date is required' })}
                   />
+                  {form.formState.errors.disbursementDate && (
+                    <p className="text-red-500 text-sm mt-1">{form.formState.errors.disbursementDate.message}</p>
+                  )}
                 </div>
+              </div>
 
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h4 className="font-semibold text-gray-900 mb-3">Disbursement Summary</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Principal Amount</span>
-                      <span className="font-medium">${selectedLoan.principalAmount?.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Processing Fee</span>
-                      <span className="font-medium">
-                        ${((selectedLoan.principalAmount || 0) * (selectedLoan.product?.processingFee || 0) / 100).toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="border-t border-blue-200 pt-2 mt-2 flex justify-between">
-                      <span className="font-semibold text-gray-900">Net Disbursement</span>
-                      <span className="font-semibold text-primary">
-                        ${(
-                          (selectedLoan.principalAmount || 0) -
-                          ((selectedLoan.principalAmount || 0) * (selectedLoan.product?.processingFee || 0) / 100)
-                        ).toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                  <p className="text-sm text-amber-900">
-                    <strong>Note:</strong> First payment is due on{' '}
-                    {calculateNextPaymentDate(disbursementDate, selectedLoan.loanTermMonths || 12)}
-                  </p>
-                </div>
-
+              {/* Buttons */}
+              <div className="flex gap-3 justify-end">
                 <Button
-                  onClick={handleDisburse}
-                  disabled={isProcessing}
-                  className="w-full bg-primary hover:bg-primary/90 text-white"
+                  type="button"
+                  variant="outline"
+                  onClick={() => setDisbursementDialogOpen(false)}
+                  className="border-primary/20 text-primary hover:bg-primary/5"
                 >
-                  <DollarSign className="w-4 h-4 mr-2" />
-                  {isProcessing ? 'Processing...' : 'Disburse Loan'}
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-secondary text-primary hover:bg-secondary/90 disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Processing...' : 'Confirm Disbursement'}
                 </Button>
               </div>
-            </Card>
-          ) : (
-            <Card className="p-6 text-center">
-              <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Select an approved loan to process disbursement</p>
-            </Card>
-          )}
-        </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

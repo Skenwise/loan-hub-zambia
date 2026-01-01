@@ -1,271 +1,526 @@
-import { useState, useEffect } from 'react';
-import { BaseCrudService } from '@/integrations';
-import { Loans, CustomerProfiles, LoanProducts } from '@/entities';
+/**
+ * Loan Approval Page
+ * Comprehensive loan approval workflow for credit managers
+ */
+
+import { useEffect, useState } from 'react';
+import { useMember } from '@/integrations';
+import { useOrganisationStore } from '@/store/organisationStore';
+import { LoanService, CustomerService, AuthorizationService, Permissions, AuditService } from '@/services';
+import { Loans, CustomerProfiles } from '@/entities';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Clock, DollarSign, User, FileText } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useForm } from 'react-hook-form';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-type ApprovalStatus = 'pending-approval' | 'approved' | 'rejected' | 'disbursed';
+interface ApprovalFormData {
+  approvalNotes: string;
+}
 
-interface LoanWithDetails extends Loans {
+interface RejectionFormData {
+  rejectionReason: string;
+}
+
+interface LoanWithCustomer extends Loans {
   customer?: CustomerProfiles;
-  product?: LoanProducts;
+  monthlyPayment?: number;
 }
 
 export default function LoanApprovalPage() {
-  const [loans, setLoans] = useState<LoanWithDetails[]>([]);
-  const [selectedLoan, setSelectedLoan] = useState<LoanWithDetails | null>(null);
+  const { member } = useMember();
+  const { currentOrganisation, currentStaff } = useOrganisationStore();
+  const [loans, setLoans] = useState<LoanWithCustomer[]>([]);
+  const [selectedLoan, setSelectedLoan] = useState<LoanWithCustomer | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [approvalNotes, setApprovalNotes] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
+  const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [canApprove, setCanApprove] = useState(false);
+
+  const approvalForm = useForm<ApprovalFormData>();
+  const rejectionForm = useForm<RejectionFormData>();
 
   useEffect(() => {
+    const checkPermissions = async () => {
+      if (!currentStaff?._id || !currentOrganisation?._id) return;
+
+      const hasPermission = await AuthorizationService.hasPermission(
+        currentStaff._id,
+        currentOrganisation._id,
+        Permissions.APPROVE_LOAN
+      );
+
+      setCanApprove(hasPermission);
+    };
+
+    checkPermissions();
+  }, [currentStaff, currentOrganisation]);
+
+  useEffect(() => {
+    const loadLoans = async () => {
+      if (!currentOrganisation?._id) return;
+
+      try {
+        setIsLoading(true);
+
+        // Get pending loans
+        const pendingLoans = await LoanService.getPendingLoans(currentOrganisation._id);
+
+        // Enrich with customer data
+        const enrichedLoans = await Promise.all(
+          pendingLoans.map(async (loan) => {
+            const customer = loan.customerId ? await CustomerService.getCustomer(loan.customerId) : undefined;
+            const monthlyPayment = LoanService.calculateMonthlyPayment(
+              loan.principalAmount || 0,
+              loan.interestRate || 0,
+              loan.loanTermMonths || 0
+            );
+
+            return {
+              ...loan,
+              customer,
+              monthlyPayment,
+            };
+          })
+        );
+
+        setLoans(enrichedLoans);
+      } catch (error) {
+        console.error('Error loading loans:', error);
+        setErrorMessage('Failed to load pending loans');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     loadLoans();
-  }, []);
+  }, [currentOrganisation]);
 
-  const loadLoans = async () => {
+  const handleApprove = async (data: ApprovalFormData) => {
+    if (!selectedLoan || !currentOrganisation?._id) return;
+
     try {
-      const { items } = await BaseCrudService.getAll<Loans>('loans', ['customerId', 'loanProductId']);
-      setLoans(items as LoanWithDetails[]);
-    } catch (error) {
-      console.error('Failed to load loans:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      setIsSubmitting(true);
+      setErrorMessage('');
 
-  const handleApprove = async () => {
-    if (!selectedLoan) return;
+      // Update loan status
+      await LoanService.updateLoanStatus(
+        selectedLoan._id || '',
+        'APPROVED',
+        member?.loginEmail || 'ADMIN',
+        currentStaff?._id
+      );
 
-    setIsProcessing(true);
-    try {
-      await BaseCrudService.update('loans', {
-        _id: selectedLoan._id,
-        loanStatus: 'approved',
-      });
+      // Log approval
+      await AuditService.logLoanApproval(
+        selectedLoan._id || '',
+        member?.loginEmail || 'ADMIN',
+        data.approvalNotes
+      );
 
-      setLoans(loans.map(l =>
-        l._id === selectedLoan._id ? { ...l, loanStatus: 'approved' } : l
-      ));
+      setSuccessMessage(`Loan ${selectedLoan.loanNumber} approved successfully!`);
+      setApprovalDialogOpen(false);
+      approvalForm.reset();
+
+      // Reload loans
+      const pendingLoans = await LoanService.getPendingLoans(currentOrganisation._id);
+      const enrichedLoans = await Promise.all(
+        pendingLoans.map(async (loan) => {
+          const customer = loan.customerId ? await CustomerService.getCustomer(loan.customerId) : undefined;
+          const monthlyPayment = LoanService.calculateMonthlyPayment(
+            loan.principalAmount || 0,
+            loan.interestRate || 0,
+            loan.loanTermMonths || 0
+          );
+
+          return {
+            ...loan,
+            customer,
+            monthlyPayment,
+          };
+        })
+      );
+
+      setLoans(enrichedLoans);
       setSelectedLoan(null);
-      setApprovalNotes('');
     } catch (error) {
-      console.error('Failed to approve loan:', error);
-      alert('Failed to approve loan');
+      console.error('Error approving loan:', error);
+      setErrorMessage('Failed to approve loan');
     } finally {
-      setIsProcessing(false);
+      setIsSubmitting(false);
     }
   };
 
-  const handleReject = async () => {
-    if (!selectedLoan || !approvalNotes) {
-      alert('Please provide rejection reason');
-      return;
-    }
+  const handleReject = async (data: RejectionFormData) => {
+    if (!selectedLoan || !currentOrganisation?._id) return;
 
-    setIsProcessing(true);
     try {
-      await BaseCrudService.update('loans', {
-        _id: selectedLoan._id,
-        loanStatus: 'rejected',
-      });
+      setIsSubmitting(true);
+      setErrorMessage('');
 
-      setLoans(loans.map(l =>
-        l._id === selectedLoan._id ? { ...l, loanStatus: 'rejected' } : l
-      ));
+      // Update loan status
+      await LoanService.updateLoanStatus(
+        selectedLoan._id || '',
+        'REJECTED',
+        member?.loginEmail || 'ADMIN',
+        currentStaff?._id
+      );
+
+      // Log rejection
+      await AuditService.logLoanRejection(
+        selectedLoan._id || '',
+        member?.loginEmail || 'ADMIN',
+        data.rejectionReason
+      );
+
+      setSuccessMessage(`Loan ${selectedLoan.loanNumber} rejected successfully!`);
+      setRejectionDialogOpen(false);
+      rejectionForm.reset();
+
+      // Reload loans
+      const pendingLoans = await LoanService.getPendingLoans(currentOrganisation._id);
+      const enrichedLoans = await Promise.all(
+        pendingLoans.map(async (loan) => {
+          const customer = loan.customerId ? await CustomerService.getCustomer(loan.customerId) : undefined;
+          const monthlyPayment = LoanService.calculateMonthlyPayment(
+            loan.principalAmount || 0,
+            loan.interestRate || 0,
+            loan.loanTermMonths || 0
+          );
+
+          return {
+            ...loan,
+            customer,
+            monthlyPayment,
+          };
+        })
+      );
+
+      setLoans(enrichedLoans);
       setSelectedLoan(null);
-      setApprovalNotes('');
     } catch (error) {
-      console.error('Failed to reject loan:', error);
-      alert('Failed to reject loan');
+      console.error('Error rejecting loan:', error);
+      setErrorMessage('Failed to reject loan');
     } finally {
-      setIsProcessing(false);
+      setIsSubmitting(false);
     }
   };
 
-  const getStatusColor = (status: ApprovalStatus) => {
-    switch (status) {
-      case 'pending-approval':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'approved':
-        return 'bg-green-100 text-green-800';
-      case 'rejected':
-        return 'bg-red-100 text-red-800';
-      case 'disbursed':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusIcon = (status: ApprovalStatus) => {
-    switch (status) {
-      case 'pending-approval':
-        return <Clock className="w-4 h-4" />;
-      case 'approved':
-        return <CheckCircle className="w-4 h-4" />;
-      case 'rejected':
-        return <AlertCircle className="w-4 h-4" />;
-      default:
-        return null;
-    }
-  };
-
-  const pendingLoans = loans.filter(l => l.loanStatus === 'pending-approval');
-
-  return (
-    <div className="max-w-6xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Loan Approval Workflow</h1>
-        <p className="text-gray-600 mt-2">Review and approve pending loan applications</p>
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner />
       </div>
+    );
+  }
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Pending Loans List */}
-        <div className="lg:col-span-1">
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold mb-4">
-              Pending Applications ({pendingLoans.length})
-            </h2>
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {isLoading ? (
-                <p className="text-gray-600 text-sm">Loading...</p>
-              ) : pendingLoans.length === 0 ? (
-                <p className="text-gray-600 text-sm">No pending applications</p>
-              ) : (
-                pendingLoans.map(loan => (
-                  <button
-                    key={loan._id}
-                    onClick={() => setSelectedLoan(loan)}
-                    className={`w-full text-left p-3 rounded-lg border-2 transition ${
-                      selectedLoan?._id === loan._id
-                        ? 'border-primary bg-primary/5'
-                        : 'border-gray-200 hover:border-primary/50'
-                    }`}
-                  >
-                    <p className="font-medium text-gray-900">{loan.loanNumber}</p>
-                    <p className="text-sm text-gray-600">${loan.principalAmount?.toLocaleString()}</p>
-                  </button>
-                ))
-              )}
-            </div>
+  if (!canApprove) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 p-6">
+        <div className="max-w-2xl mx-auto">
+          <Card className="bg-red-500/10 border-red-500/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-red-600">
+                <AlertCircle className="w-5 h-5" />
+                Access Denied
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-primary-foreground/70">
+                You do not have permission to approve loans. Please contact your administrator.
+              </p>
+            </CardContent>
           </Card>
         </div>
+      </div>
+    );
+  }
 
-        {/* Loan Details & Approval Form */}
-        <div className="lg:col-span-2">
-          {selectedLoan ? (
-            <Card className="p-6">
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-2xl font-semibold text-gray-900">{selectedLoan.loanNumber}</h2>
-                  <Badge className={getStatusColor(selectedLoan.loanStatus as ApprovalStatus)}>
-                    {getStatusIcon(selectedLoan.loanStatus as ApprovalStatus)}
-                    <span className="ml-2 capitalize">{selectedLoan.loanStatus?.replace('-', ' ')}</span>
-                  </Badge>
-                </div>
-              </div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h1 className="text-4xl font-heading font-bold text-primary-foreground mb-2">
+            Loan Approval
+          </h1>
+          <p className="text-primary-foreground/70">
+            Review and approve pending loan applications
+          </p>
+        </motion.div>
 
-              {/* Customer Information */}
-              <div className="mb-6 pb-6 border-b border-gray-200">
-                <h3 className="font-semibold text-gray-900 mb-3">Customer Information</h3>
+        {/* Success Message */}
+        {successMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 rounded-lg bg-green-500/10 border border-green-500/20 flex items-start gap-3"
+          >
+            <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+            <p className="text-green-600">{successMessage}</p>
+          </motion.div>
+        )}
+
+        {/* Error Message */}
+        {errorMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/20 flex items-start gap-3"
+          >
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <p className="text-red-600">{errorMessage}</p>
+          </motion.div>
+        )}
+
+        {/* Pending Loans List */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          {loans.length > 0 ? (
+            <div className="space-y-4">
+              {loans.map((loan, idx) => (
+                <motion.div
+                  key={loan._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                >
+                  <Card className="bg-primary-foreground/5 border-primary-foreground/10 hover:border-secondary/50 transition-all cursor-pointer">
+                    <CardContent className="p-6">
+                      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+                        {/* Loan & Customer Info */}
+                        <div>
+                          <p className="text-sm text-primary-foreground/70 mb-1">Loan Number</p>
+                          <p className="font-semibold text-primary-foreground">{loan.loanNumber}</p>
+                          <p className="text-xs text-primary-foreground/50 mt-2 flex items-center gap-1">
+                            <User className="w-3 h-3" />
+                            {loan.customer?.firstName} {loan.customer?.lastName}
+                          </p>
+                        </div>
+
+                        {/* Amount Info */}
+                        <div>
+                          <p className="text-sm text-primary-foreground/70 mb-1">Principal Amount</p>
+                          <p className="font-semibold text-primary-foreground">
+                            ZMW {(loan.principalAmount || 0).toLocaleString()}
+                          </p>
+                          <p className="text-xs text-primary-foreground/50 mt-2">
+                            Term: {loan.loanTermMonths} months
+                          </p>
+                        </div>
+
+                        {/* Monthly Payment */}
+                        <div>
+                          <p className="text-sm text-primary-foreground/70 mb-1">Monthly Payment</p>
+                          <p className="font-semibold text-secondary">
+                            ZMW {(loan.monthlyPayment || 0).toFixed(2)}
+                          </p>
+                          <p className="text-xs text-primary-foreground/50 mt-2">
+                            Rate: {loan.interestRate}%
+                          </p>
+                        </div>
+
+                        {/* Customer Info */}
+                        <div>
+                          <p className="text-sm text-primary-foreground/70 mb-1">Credit Score</p>
+                          <p className="font-semibold text-primary-foreground">
+                            {loan.customer?.creditScore || 'N/A'}
+                          </p>
+                          <p className="text-xs text-primary-foreground/50 mt-2">
+                            KYC: {loan.customer?.kycVerificationStatus}
+                          </p>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex flex-col gap-2">
+                          <Button
+                            onClick={() => {
+                              setSelectedLoan(loan);
+                              setApprovalDialogOpen(true);
+                            }}
+                            className="bg-green-500 text-white hover:bg-green-600 text-sm"
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              setSelectedLoan(loan);
+                              setRejectionDialogOpen(true);
+                            }}
+                            variant="outline"
+                            className="border-red-500/20 text-red-600 hover:bg-red-500/10 text-sm"
+                          >
+                            Reject
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <Card className="bg-primary-foreground/5 border-primary-foreground/10">
+              <CardContent className="p-12 text-center">
+                <Clock className="w-12 h-12 text-primary-foreground/30 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-primary-foreground mb-2">No Pending Loans</h3>
+                <p className="text-primary-foreground/70">
+                  All loan applications have been reviewed. Check back later for new applications.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </motion.div>
+
+        {/* Approval Dialog */}
+        <Dialog open={approvalDialogOpen} onOpenChange={setApprovalDialogOpen}>
+          <DialogContent className="bg-primary-foreground/95 border-primary-foreground/20">
+            <DialogHeader>
+              <DialogTitle className="text-primary">Approve Loan</DialogTitle>
+              <DialogDescription className="text-primary/70">
+                {selectedLoan?.loanNumber} - {selectedLoan?.customer?.firstName} {selectedLoan?.customer?.lastName}
+              </DialogDescription>
+            </DialogHeader>
+
+            <form onSubmit={approvalForm.handleSubmit((data) => handleApprove(data))} className="space-y-4">
+              {/* Loan Summary */}
+              <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-gray-600">Name</p>
-                    <p className="font-medium text-gray-900">
-                      {selectedLoan.customer?.firstName} {selectedLoan.customer?.lastName}
+                    <p className="text-sm text-primary/70">Principal Amount</p>
+                    <p className="font-semibold text-primary">
+                      ZMW {(selectedLoan?.principalAmount || 0).toLocaleString()}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">National ID</p>
-                    <p className="font-medium text-gray-900">{selectedLoan.customer?.nationalIdNumber}</p>
+                    <p className="text-sm text-primary/70">Monthly Payment</p>
+                    <p className="font-semibold text-primary">
+                      ZMW {(selectedLoan?.monthlyPayment || 0).toFixed(2)}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Email</p>
-                    <p className="font-medium text-gray-900">{selectedLoan.customer?.emailAddress}</p>
+                    <p className="text-sm text-primary/70">Loan Term</p>
+                    <p className="font-semibold text-primary">{selectedLoan?.loanTermMonths} months</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Credit Score</p>
-                    <p className="font-medium text-gray-900">{selectedLoan.customer?.creditScore || 'N/A'}</p>
+                    <p className="text-sm text-primary/70">Interest Rate</p>
+                    <p className="font-semibold text-primary">{selectedLoan?.interestRate}%</p>
                   </div>
                 </div>
               </div>
 
-              {/* Loan Details */}
-              <div className="mb-6 pb-6 border-b border-gray-200">
-                <h3 className="font-semibold text-gray-900 mb-3">Loan Details</h3>
+              {/* Approval Notes */}
+              <div>
+                <Label className="text-primary mb-2 block">Approval Notes</Label>
+                <Textarea
+                  placeholder="Enter any approval notes or conditions..."
+                  className="bg-primary/5 border-primary/20 text-primary placeholder:text-primary/50"
+                  {...approvalForm.register('approvalNotes')}
+                />
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-3 justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setApprovalDialogOpen(false)}
+                  className="border-primary/20 text-primary hover:bg-primary/5"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-green-500 text-white hover:bg-green-600 disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Approving...' : 'Approve Loan'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Rejection Dialog */}
+        <Dialog open={rejectionDialogOpen} onOpenChange={setRejectionDialogOpen}>
+          <DialogContent className="bg-primary-foreground/95 border-primary-foreground/20">
+            <DialogHeader>
+              <DialogTitle className="text-primary">Reject Loan</DialogTitle>
+              <DialogDescription className="text-primary/70">
+                {selectedLoan?.loanNumber} - {selectedLoan?.customer?.firstName} {selectedLoan?.customer?.lastName}
+              </DialogDescription>
+            </DialogHeader>
+
+            <form onSubmit={rejectionForm.handleSubmit((data) => handleReject(data))} className="space-y-4">
+              {/* Loan Summary */}
+              <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-gray-600">Product</p>
-                    <p className="font-medium text-gray-900">{selectedLoan.product?.productName}</p>
+                    <p className="text-sm text-primary/70">Principal Amount</p>
+                    <p className="font-semibold text-primary">
+                      ZMW {(selectedLoan?.principalAmount || 0).toLocaleString()}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Principal Amount</p>
-                    <p className="font-medium text-gray-900">${selectedLoan.principalAmount?.toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Interest Rate</p>
-                    <p className="font-medium text-gray-900">{selectedLoan.interestRate}%</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Loan Term</p>
-                    <p className="font-medium text-gray-900">{selectedLoan.loanTermMonths} months</p>
+                    <p className="text-sm text-primary/70">Monthly Payment</p>
+                    <p className="font-semibold text-primary">
+                      ZMW {(selectedLoan?.monthlyPayment || 0).toFixed(2)}
+                    </p>
                   </div>
                 </div>
               </div>
 
-              {/* Approval Form */}
-              {selectedLoan.loanStatus === 'pending-approval' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Approval Notes
-                    </label>
-                    <Textarea
-                      value={approvalNotes}
-                      onChange={(e) => setApprovalNotes(e.target.value)}
-                      placeholder="Enter approval or rejection notes..."
-                      rows={4}
-                    />
-                  </div>
-
-                  <div className="flex gap-3">
-                    <Button
-                      onClick={handleApprove}
-                      disabled={isProcessing}
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                    >
-                      {isProcessing ? 'Processing...' : 'Approve Loan'}
-                    </Button>
-                    <Button
-                      onClick={handleReject}
-                      disabled={isProcessing || !approvalNotes}
-                      variant="destructive"
-                      className="flex-1"
-                    >
-                      {isProcessing ? 'Processing...' : 'Reject Loan'}
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {selectedLoan.loanStatus !== 'pending-approval' && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-                  <p className="text-blue-900 font-medium">
-                    This loan has already been {selectedLoan.loanStatus}
+              {/* Rejection Reason */}
+              <div>
+                <Label className="text-primary mb-2 block">Rejection Reason *</Label>
+                <Textarea
+                  placeholder="Enter the reason for rejection..."
+                  className="bg-primary/5 border-primary/20 text-primary placeholder:text-primary/50"
+                  {...rejectionForm.register('rejectionReason', { required: 'Rejection reason is required' })}
+                />
+                {rejectionForm.formState.errors.rejectionReason && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {rejectionForm.formState.errors.rejectionReason.message}
                   </p>
-                </div>
-              )}
-            </Card>
-          ) : (
-            <Card className="p-6 text-center">
-              <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Select a pending application to review</p>
-            </Card>
-          )}
-        </div>
+                )}
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-3 justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setRejectionDialogOpen(false)}
+                  className="border-primary/20 text-primary hover:bg-primary/5"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-red-500 text-white hover:bg-red-600 disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Rejecting...' : 'Reject Loan'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
