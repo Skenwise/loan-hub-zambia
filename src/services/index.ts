@@ -12,6 +12,10 @@ export { AuditService } from './AuditService';
 export { LoanService } from './LoanService';
 export { CustomerService } from './CustomerService';
 export { ComplianceService } from './ComplianceService';
+export { InterestCalculationService } from './InterestCalculationService';
+export { WriteoffService } from './WriteoffService';
+export { AnalyticsService } from './AnalyticsService';
+export { SubscriptionEnforcementService } from './SubscriptionEnforcementService';
 
 // Collection IDs
 export const CollectionIds = {
