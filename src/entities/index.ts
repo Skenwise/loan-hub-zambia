@@ -237,6 +237,8 @@ export interface Loans {
   loanTermMonths?: number;
   /** @wixFieldType date */
   closureDate?: Date | string;
+  /** @wixFieldType text */
+  organisationId?: string;
 }
 
 
@@ -333,6 +335,8 @@ export interface Repayments {
   interestAmount?: number;
   /** @wixFieldType text */
   paymentMethod?: string;
+  /** @wixFieldType text */
+  organisationId?: string;
 }
 
 

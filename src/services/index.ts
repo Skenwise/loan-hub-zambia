@@ -1,0 +1,128 @@
+/**
+ * Central export file for all services
+ */
+
+export { BaseCrudService } from './BaseCrudService';
+export { OrganisationService } from './OrganisationService';
+export { RoleService } from './RoleService';
+export { StaffService } from './StaffService';
+export { SubscriptionService } from './SubscriptionService';
+export { AuthorizationService } from './AuthorizationService';
+export { AuditService } from './AuditService';
+export { LoanService } from './LoanService';
+export { CustomerService } from './CustomerService';
+export { ComplianceService } from './ComplianceService';
+
+// Collection IDs
+export const CollectionIds = {
+  AUDIT_TRAIL: 'audittrail',
+  BOZ_PROVISIONS: 'bozprovisions',
+  CUSTOMER_ACCOUNTS: 'customeraccounts',
+  CUSTOMERS: 'customers',
+  ECL_RESULTS: 'eclresults',
+  KYC_VERIFICATION_HISTORY: 'kycverificationhistory',
+  LOAN_DOCUMENTS: 'loandocuments',
+  LOAN_PRODUCTS: 'loanproducts',
+  LOANS: 'loans',
+  LOAN_WORKFLOW_HISTORY: 'loanworkflowhistory',
+  ORGANISATIONS: 'organisations',
+  ORGANISATION_SETUP: 'organisationsetup',
+  REPAYMENTS: 'repayments',
+  ROLES: 'roles',
+  STAFF_MEMBERS: 'staffmembers',
+  STAFF_ROLE_ASSIGNMENTS: 'staffroleassignments',
+  SUBSCRIPTION_PLANS: 'subscriptionplans',
+} as const;
+
+// Permission constants
+export const Permissions = {
+  // Admin permissions
+  MANAGE_ORGANISATION: 'manage_organisation',
+  MANAGE_STAFF: 'manage_staff',
+  MANAGE_ROLES: 'manage_roles',
+  VIEW_AUDIT_TRAIL: 'view_audit_trail',
+  MANAGE_SUBSCRIPTION: 'manage_subscription',
+
+  // Credit Officer permissions
+  CREATE_CUSTOMER: 'create_customer',
+  VIEW_CUSTOMER: 'view_customer',
+  UPDATE_CUSTOMER: 'update_customer',
+  VERIFY_KYC: 'verify_kyc',
+  CREATE_LOAN_APPLICATION: 'create_loan_application',
+  VIEW_LOAN_APPLICATION: 'view_loan_application',
+
+  // Credit Manager permissions
+  APPROVE_LOAN: 'approve_loan',
+  REJECT_LOAN: 'reject_loan',
+  VIEW_LOAN_APPROVAL: 'view_loan_approval',
+
+  // Finance Officer permissions
+  DISBURSE_LOAN: 'disburse_loan',
+  RECORD_REPAYMENT: 'record_repayment',
+  VIEW_REPAYMENT: 'view_repayment',
+  MANAGE_PENALTIES: 'manage_penalties',
+
+  // Compliance Officer permissions
+  VIEW_COMPLIANCE_REPORTS: 'view_compliance_reports',
+  CALCULATE_ECL: 'calculate_ecl',
+  CALCULATE_BOZ_PROVISIONS: 'calculate_boz_provisions',
+  VIEW_IFRS9_REPORTS: 'view_ifrs9_reports',
+} as const;
+
+// Role definitions
+export const RoleDefinitions = {
+  ADMIN: {
+    name: 'Admin/Owner',
+    permissions: Object.values(Permissions),
+    hierarchyLevel: 1,
+    description: 'Full system access and organization management',
+  },
+  CREDIT_OFFICER: {
+    name: 'Credit Officer',
+    permissions: [
+      Permissions.CREATE_CUSTOMER,
+      Permissions.VIEW_CUSTOMER,
+      Permissions.UPDATE_CUSTOMER,
+      Permissions.VERIFY_KYC,
+      Permissions.CREATE_LOAN_APPLICATION,
+      Permissions.VIEW_LOAN_APPLICATION,
+    ],
+    hierarchyLevel: 3,
+    description: 'Manages customer onboarding and loan applications',
+  },
+  CREDIT_MANAGER: {
+    name: 'Credit Manager',
+    permissions: [
+      Permissions.VIEW_CUSTOMER,
+      Permissions.VIEW_LOAN_APPLICATION,
+      Permissions.APPROVE_LOAN,
+      Permissions.REJECT_LOAN,
+      Permissions.VIEW_LOAN_APPROVAL,
+    ],
+    hierarchyLevel: 2,
+    description: 'Reviews and approves loan applications',
+  },
+  FINANCE_OFFICER: {
+    name: 'Finance Officer',
+    permissions: [
+      Permissions.DISBURSE_LOAN,
+      Permissions.RECORD_REPAYMENT,
+      Permissions.VIEW_REPAYMENT,
+      Permissions.MANAGE_PENALTIES,
+    ],
+    hierarchyLevel: 3,
+    description: 'Manages loan disbursements and repayments',
+  },
+  COMPLIANCE_OFFICER: {
+    name: 'Compliance Officer',
+    permissions: [
+      Permissions.VIEW_COMPLIANCE_REPORTS,
+      Permissions.CALCULATE_ECL,
+      Permissions.CALCULATE_BOZ_PROVISIONS,
+      Permissions.VIEW_IFRS9_REPORTS,
+      Permissions.VIEW_AUDIT_TRAIL,
+    ],
+    hierarchyLevel: 2,
+    description: 'Manages IFRS 9 compliance and regulatory reporting',
+  },
+} as const;

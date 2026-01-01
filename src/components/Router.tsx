@@ -6,6 +6,7 @@ import { MemberProtectedRoute } from '@/components/ui/member-protected-route';
 import HomePage from '@/components/pages/HomePage';
 import ProfilePage from '@/components/pages/ProfilePage';
 import DashboardPage from '@/components/pages/DashboardPage';
+import AdminDashboardPage from '@/components/pages/AdminDashboardPage';
 import CustomersPage from '@/components/pages/CustomersPage';
 import LoansPage from '@/components/pages/LoansPage';
 import RepaymentsPage from '@/components/pages/RepaymentsPage';
@@ -79,7 +80,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "dashboard",
-        element: <DashboardPage />,
+        element: <AdminDashboardPage />,
       },
       {
         path: "customers",
