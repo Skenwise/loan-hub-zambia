@@ -93,7 +93,7 @@ export default function OrganisationSetupPage() {
   };
 
   const handleCompleteSetup = () => {
-    navigate('/dashboard');
+    navigate('/admin/dashboard');
   };
 
   return (

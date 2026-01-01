@@ -172,7 +172,7 @@ export default function DashboardPage() {
         {/* Quick Actions */}
         <div className="grid lg:grid-cols-4 gap-6 mb-12">
           <Button
-            onClick={() => navigate('/customers')}
+            onClick={() => navigate('/admin/customers')}
             className="bg-primary border border-primary-foreground/10 hover:border-secondary/30 text-primary-foreground h-auto py-6 flex flex-col items-center gap-3"
             variant="outline"
           >
@@ -180,7 +180,7 @@ export default function DashboardPage() {
             <span className="font-paragraph text-base">Manage Customers</span>
           </Button>
           <Button
-            onClick={() => navigate('/loans')}
+            onClick={() => navigate('/admin/loans')}
             className="bg-primary border border-primary-foreground/10 hover:border-secondary/30 text-primary-foreground h-auto py-6 flex flex-col items-center gap-3"
             variant="outline"
           >
@@ -188,7 +188,7 @@ export default function DashboardPage() {
             <span className="font-paragraph text-base">Manage Loans</span>
           </Button>
           <Button
-            onClick={() => navigate('/repayments')}
+            onClick={() => navigate('/admin/repayments')}
             className="bg-primary border border-primary-foreground/10 hover:border-secondary/30 text-primary-foreground h-auto py-6 flex flex-col items-center gap-3"
             variant="outline"
           >
@@ -196,7 +196,7 @@ export default function DashboardPage() {
             <span className="font-paragraph text-base">Process Repayments</span>
           </Button>
           <Button
-            onClick={() => navigate('/reports')}
+            onClick={() => navigate('/admin/reports')}
             className="bg-primary border border-primary-foreground/10 hover:border-secondary/30 text-primary-foreground h-auto py-6 flex flex-col items-center gap-3"
             variant="outline"
           >
@@ -212,7 +212,7 @@ export default function DashboardPage() {
               Recent Loans
             </CardTitle>
             <Button
-              onClick={() => navigate('/loans')}
+              onClick={() => navigate('/admin/loans')}
               variant="ghost"
               className="text-secondary hover:text-secondary/80"
             >
@@ -225,7 +225,7 @@ export default function DashboardPage() {
                 <AlertCircle className="w-12 h-12 text-primary-foreground/30 mx-auto mb-4" />
                 <p className="font-paragraph text-primary-foreground/60">No loans found</p>
                 <Button
-                  onClick={() => navigate('/loans')}
+                  onClick={() => navigate('/admin/loans')}
                   className="mt-4 bg-buttonbackground text-secondary-foreground hover:bg-buttonbackground/90"
                 >
                   Create First Loan

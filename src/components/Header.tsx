@@ -54,16 +54,16 @@ export default function Header() {
           <nav className="hidden md:flex items-center gap-8">
             {isAuthenticated && (
               <>
-                <Link to="/dashboard" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
+                <Link to="/admin/dashboard" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
                   Dashboard
                 </Link>
-                <Link to="/loans" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
+                <Link to="/admin/loans" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
                   Loans
                 </Link>
-                <Link to="/customers" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
+                <Link to="/admin/customers" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
                   Customers
                 </Link>
-                <Link to="/reports" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
+                <Link to="/admin/reports" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
                   Reports
                 </Link>
               </>
@@ -89,7 +89,7 @@ export default function Header() {
                     <User className="w-4 h-4 mr-2" />
                     Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/dashboard')} className="cursor-pointer">
+                  <DropdownMenuItem onClick={() => navigate('/admin/dashboard')} className="cursor-pointer">
                     <LayoutDashboard className="w-4 h-4 mr-2" />
                     Dashboard
                   </DropdownMenuItem>
