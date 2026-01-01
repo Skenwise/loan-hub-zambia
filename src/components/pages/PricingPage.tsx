@@ -26,7 +26,7 @@ const AnimatedReveal = ({ children, className, delay = 0 }: { children: React.Re
 const PRICING_PLANS = [
   {
     name: 'Starter',
-    price: 99,
+    price: 59,
     description: 'Perfect for small lending operations',
     features: [
       'Up to 100 loans',
@@ -43,7 +43,7 @@ const PRICING_PLANS = [
   },
   {
     name: 'Professional',
-    price: 299,
+    price: 199,
     description: 'For growing lending institutions',
     features: [
       'Up to 1,000 loans',
@@ -62,7 +62,7 @@ const PRICING_PLANS = [
   },
   {
     name: 'Enterprise',
-    price: 999,
+    price: 299,
     description: 'For large-scale operations',
     features: [
       'Unlimited loans',
