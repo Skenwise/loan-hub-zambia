@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMember } from '@/integrations';
 import { Button } from '@/components/ui/button';
@@ -8,14 +9,33 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { User, LogOut, LayoutDashboard } from 'lucide-react';
+import RoleSelectionDialog from '@/components/RoleSelectionDialog';
 
 export default function Header() {
   const { member, isAuthenticated, isLoading, actions } = useMember();
   const navigate = useNavigate();
+  const [showRoleDialog, setShowRoleDialog] = useState(false);
 
   const handleLogout = async () => {
     await actions.logout();
     navigate('/');
+  };
+
+  const handleSignIn = () => {
+    setShowRoleDialog(true);
+  };
+
+  const handleRoleSelect = (role: 'admin' | 'customer') => {
+    setShowRoleDialog(false);
+    // Store the selected role in sessionStorage for use after login
+    sessionStorage.setItem('selectedRole', role);
+    // Redirect to appropriate dashboard after login
+    if (role === 'customer') {
+      sessionStorage.setItem('redirectAfterLogin', '/customer-portal');
+    } else {
+      sessionStorage.setItem('redirectAfterLogin', '/admin/dashboard');
+    }
+    actions.login();
   };
 
   return (
@@ -81,7 +101,7 @@ export default function Header() {
               </DropdownMenu>
             ) : (
               <Button 
-                onClick={actions.login}
+                onClick={handleSignIn}
                 className="bg-buttonbackground text-secondary-foreground hover:bg-buttonbackground/90 font-paragraph rounded-lg h-10 px-6"
               >
                 Sign In
@@ -90,6 +110,12 @@ export default function Header() {
           </div>
         </div>
       </div>
+
+      <RoleSelectionDialog 
+        isOpen={showRoleDialog}
+        onClose={() => setShowRoleDialog(false)}
+        onSelectRole={handleRoleSelect}
+      />
     </header>
   );
 }

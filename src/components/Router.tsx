@@ -18,6 +18,7 @@ import LoanApprovalPage from '@/components/pages/LoanApprovalPage';
 import DisbursementPage from '@/components/pages/DisbursementPage';
 import IFRS9CompliancePage from '@/components/pages/IFRS9CompliancePage';
 import AdvancedReportsPage from '@/components/pages/AdvancedReportsPage';
+import CustomerPortalPage from '@/components/pages/CustomerPortalPage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -52,6 +53,14 @@ const router = createBrowserRouter([
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to access your profile">
             <ProfilePage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "customer-portal",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to access your portal">
+            <CustomerPortalPage />
           </MemberProtectedRoute>
         ),
       },

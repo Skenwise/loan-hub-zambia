@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import RoleSelectionDialog from '@/components/RoleSelectionDialog';
 import { 
   Shield, 
   TrendingUp, 
@@ -123,13 +124,27 @@ export default function HomePage() {
   const { isAuthenticated, actions } = useMember();
   const navigate = useNavigate();
   const containerRef = useRef(null);
+  const [showRoleDialog, setShowRoleDialog] = useState(false);
 
   const handleGetStarted = () => {
     if (isAuthenticated) {
-      navigate('/dashboard');
+      navigate('/admin/dashboard');
     } else {
-      actions.login();
+      setShowRoleDialog(true);
     }
+  };
+
+  const handleRoleSelect = (role: 'admin' | 'customer') => {
+    setShowRoleDialog(false);
+    // Store the selected role in sessionStorage for use after login
+    sessionStorage.setItem('selectedRole', role);
+    // Redirect to appropriate dashboard after login
+    if (role === 'customer') {
+      sessionStorage.setItem('redirectAfterLogin', '/customer-portal');
+    } else {
+      sessionStorage.setItem('redirectAfterLogin', '/admin/dashboard');
+    }
+    actions.login();
   };
 
   // Hero Animation
@@ -472,6 +487,12 @@ export default function HomePage() {
       </section>
 
       <Footer />
+
+      <RoleSelectionDialog 
+        isOpen={showRoleDialog}
+        onClose={() => setShowRoleDialog(false)}
+        onSelectRole={handleRoleSelect}
+      />
     </div>
   );
 }
