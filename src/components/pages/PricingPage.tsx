@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -110,6 +111,27 @@ const FAQ_ITEMS = [
 
 export default function PricingPage() {
   const { formatPrice } = useCurrencyStore();
+  const navigate = useNavigate();
+
+  const handleStartTrial = () => {
+    navigate('/setup');
+  };
+
+  const handleContactSales = () => {
+    navigate('/setup');
+  };
+
+  const handleLearnMore = () => {
+    navigate('/setup');
+  };
+
+  const handleCTAClick = (cta: string) => {
+    if (cta === 'Contact Sales') {
+      handleContactSales();
+    } else {
+      handleStartTrial();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-primary text-primary-foreground font-paragraph overflow-clip selection:bg-secondary selection:text-primary">
@@ -166,6 +188,7 @@ export default function PricingPage() {
                   </div>
 
                   <Button 
+                    onClick={() => handleCTAClick(plan.cta)}
                     className={`w-full h-12 rounded-full font-bold mb-8 transition-all ${
                       plan.highlighted
                         ? 'bg-secondary text-primary hover:bg-secondary/90'
@@ -199,7 +222,11 @@ export default function PricingPage() {
               <p className="text-primary-foreground/70 mb-6">
                 Save 2 months when you pay annually. Plus, get priority support and custom implementation assistance.
               </p>
-              <Button variant="link" className="text-secondary p-0 h-auto font-semibold text-lg group">
+              <Button 
+                onClick={handleLearnMore}
+                variant="link" 
+                className="text-secondary p-0 h-auto font-semibold text-lg group"
+              >
                 Learn More <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
@@ -298,10 +325,17 @@ export default function PricingPage() {
               14 days free. No credit card required. Full access to all features.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-              <Button className="bg-secondary text-primary hover:bg-secondary/90 h-16 px-12 text-xl rounded-full font-bold min-w-[200px]">
+              <Button 
+                onClick={handleStartTrial}
+                className="bg-secondary text-primary hover:bg-secondary/90 h-16 px-12 text-xl rounded-full font-bold min-w-[200px]"
+              >
                 Start Free Trial
               </Button>
-              <Button variant="outline" className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 h-16 px-12 text-xl rounded-full min-w-[200px]">
+              <Button 
+                onClick={handleContactSales}
+                variant="outline" 
+                className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 h-16 px-12 text-xl rounded-full min-w-[200px]"
+              >
                 Contact Sales <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </div>
