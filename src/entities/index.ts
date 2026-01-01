@@ -4,6 +4,29 @@
  */
 
 /**
+ * Collection ID: audittrail
+ * Interface for AuditTrail
+ */
+export interface AuditTrail {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  performedBy?: string;
+  /** @wixFieldType datetime */
+  timestamp?: Date | string;
+  /** @wixFieldType text */
+  actionDetails?: string;
+  /** @wixFieldType text */
+  actionType?: string;
+  /** @wixFieldType text */
+  resourceAffected?: string;
+  /** @wixFieldType text */
+  resourceId?: string;
+}
+
+
+/**
  * Collection ID: bozprovisions
  * Interface for BoZProvisions
  */
@@ -27,6 +50,29 @@ export interface BoZProvisions {
   ifrs9StageClassification?: string;
   /** @wixFieldType text */
   notes?: string;
+}
+
+
+/**
+ * Collection ID: customeraccounts
+ * Interface for CustomerAccounts
+ */
+export interface CustomerAccounts {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  customerProfileId?: string;
+  /** @wixFieldType text */
+  organizationId?: string;
+  /** @wixFieldType text */
+  accountIdentifier?: string;
+  /** @wixFieldType text */
+  accountStatus?: string;
+  /** @wixFieldType datetime */
+  dateCreated?: Date | string;
+  /** @wixFieldType datetime */
+  lastUpdated?: Date | string;
 }
 
 
@@ -79,6 +125,54 @@ export interface ECLResults {
   calculationTimestamp?: Date | string;
   /** @wixFieldType date */
   effectiveDate?: Date | string;
+}
+
+
+/**
+ * Collection ID: kycverificationhistory
+ * Interface for KYCVerificationHistory
+ */
+export interface KYCVerificationHistory {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  customerId?: string;
+  /** @wixFieldType text */
+  verificationStatus?: string;
+  /** @wixFieldType datetime */
+  verificationTimestamp?: Date | string;
+  /** @wixFieldType text */
+  verifierNotes?: string;
+  /** @wixFieldType text */
+  verifierId?: string;
+  /** @wixFieldType number */
+  attemptNumber?: number;
+}
+
+
+/**
+ * Collection ID: loandocuments
+ * Interface for LoanDocuments
+ */
+export interface LoanDocuments {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  loanId?: string;
+  /** @wixFieldType text */
+  documentName?: string;
+  /** @wixFieldType text */
+  documentType?: string;
+  /** @wixFieldType url */
+  documentUrl?: string;
+  /** @wixFieldType datetime */
+  uploadDate?: Date | string;
+  /** @wixFieldType text */
+  uploadedBy?: string;
+  /** @wixFieldType number */
+  fileSize?: number;
 }
 
 
@@ -143,6 +237,27 @@ export interface Loans {
   loanTermMonths?: number;
   /** @wixFieldType date */
   closureDate?: Date | string;
+}
+
+
+/**
+ * Collection ID: loanworkflowhistory
+ * Interface for LoanWorkflowHistory
+ */
+export interface LoanWorkflowHistory {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  loanId?: string;
+  /** @wixFieldType text */
+  stage?: string;
+  /** @wixFieldType datetime */
+  timestamp?: Date | string;
+  /** @wixFieldType text */
+  changedBy?: string;
+  /** @wixFieldType text */
+  notes?: string;
 }
 
 
@@ -268,6 +383,29 @@ export interface StaffMembers {
 
 
 /**
+ * Collection ID: staffroleassignments
+ * Interface for StaffRoleAssignments
+ */
+export interface StaffRoleAssignments {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  staffMemberId?: string;
+  /** @wixFieldType text */
+  roleId?: string;
+  /** @wixFieldType date */
+  assignmentDate?: Date | string;
+  /** @wixFieldType text */
+  organizationId?: string;
+  /** @wixFieldType text */
+  status?: string;
+  /** @wixFieldType text */
+  assignedBy?: string;
+}
+
+
+/**
  * Collection ID: subscriptionplans
  * Interface for SubscriptionPlans
  */
@@ -287,4 +425,142 @@ export interface SubscriptionPlans {
   planDescription?: string;
   /** @wixFieldType boolean */
   isActive?: boolean;
+}
+
+
+/**
+ * Collection ID: audittrail
+ * Interface for AuditTrail
+ */
+export interface AuditTrail {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  performedBy?: string;
+  /** @wixFieldType datetime */
+  timestamp?: Date | string;
+  /** @wixFieldType text */
+  actionDetails?: string;
+  /** @wixFieldType text */
+  actionType?: string;
+  /** @wixFieldType text */
+  resourceAffected?: string;
+  /** @wixFieldType text */
+  resourceId?: string;
+}
+
+
+/**
+ * Collection ID: loandocuments
+ * Interface for LoanDocuments
+ */
+export interface LoanDocuments {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  loanId?: string;
+  /** @wixFieldType text */
+  documentName?: string;
+  /** @wixFieldType text */
+  documentType?: string;
+  /** @wixFieldType url */
+  documentUrl?: string;
+  /** @wixFieldType datetime */
+  uploadDate?: Date | string;
+  /** @wixFieldType text */
+  uploadedBy?: string;
+  /** @wixFieldType number */
+  fileSize?: number;
+}
+
+
+/**
+ * Collection ID: kycverificationhistory
+ * Interface for KYCVerificationHistory
+ */
+export interface KYCVerificationHistory {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  customerId?: string;
+  /** @wixFieldType text */
+  verificationStatus?: string;
+  /** @wixFieldType datetime */
+  verificationTimestamp?: Date | string;
+  /** @wixFieldType text */
+  verifierNotes?: string;
+  /** @wixFieldType text */
+  verifierId?: string;
+  /** @wixFieldType number */
+  attemptNumber?: number;
+}
+
+
+/**
+ * Collection ID: staffroleassignments
+ * Interface for StaffRoleAssignments
+ */
+export interface StaffRoleAssignments {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  staffMemberId?: string;
+  /** @wixFieldType text */
+  roleId?: string;
+  /** @wixFieldType date */
+  assignmentDate?: Date | string;
+  /** @wixFieldType text */
+  organizationId?: string;
+  /** @wixFieldType text */
+  status?: string;
+  /** @wixFieldType text */
+  assignedBy?: string;
+}
+
+
+/**
+ * Collection ID: loanworkflowhistory
+ * Interface for LoanWorkflowHistory
+ */
+export interface LoanWorkflowHistory {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  loanId?: string;
+  /** @wixFieldType text */
+  stage?: string;
+  /** @wixFieldType datetime */
+  timestamp?: Date | string;
+  /** @wixFieldType text */
+  changedBy?: string;
+  /** @wixFieldType text */
+  notes?: string;
+}
+
+
+/**
+ * Collection ID: customeraccounts
+ * Interface for CustomerAccounts
+ */
+export interface CustomerAccounts {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  customerProfileId?: string;
+  /** @wixFieldType text */
+  organizationId?: string;
+  /** @wixFieldType text */
+  accountIdentifier?: string;
+  /** @wixFieldType text */
+  accountStatus?: string;
+  /** @wixFieldType datetime */
+  dateCreated?: Date | string;
+  /** @wixFieldType datetime */
+  lastUpdated?: Date | string;
 }
