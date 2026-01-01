@@ -4,6 +4,96 @@
  */
 
 /**
+ * Collection ID: organisations
+ * Interface for Organisations
+ */
+export interface Organisations {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  organizationName?: string;
+  /** @wixFieldType text */
+  subscriptionPlanType?: string;
+  /** @wixFieldType text */
+  organizationStatus?: string;
+  /** @wixFieldType date */
+  creationDate?: Date | string;
+  /** @wixFieldType text */
+  contactEmail?: string;
+  /** @wixFieldType url */
+  websiteUrl?: string;
+  /** @wixFieldType datetime */
+  lastActivityDate?: Date | string;
+}
+
+/**
+ * Collection ID: subscriptionplans
+ * Interface for SubscriptionPlans
+ */
+export interface SubscriptionPlans {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  planName?: string;
+  /** @wixFieldType number */
+  pricePerMonth?: number;
+  /** @wixFieldType text */
+  features?: string;
+  /** @wixFieldType text */
+  usageLimits?: string;
+  /** @wixFieldType text */
+  planDescription?: string;
+  /** @wixFieldType boolean */
+  isActive?: boolean;
+}
+
+/**
+ * Collection ID: roles
+ * Interface for Roles
+ */
+export interface Roles {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  roleName?: string;
+  /** @wixFieldType text */
+  description?: string;
+  /** @wixFieldType text */
+  permissions?: string;
+  /** @wixFieldType boolean */
+  isSystemRole?: boolean;
+  /** @wixFieldType number */
+  hierarchyLevel?: number;
+}
+
+/**
+ * Collection ID: organisationsetup
+ * Interface for OrganisationSetup
+ */
+export interface OrganisationSetup {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  organisationName?: string;
+  /** @wixFieldType text */
+  currentSetupStep?: string;
+  /** @wixFieldType text */
+  setupStatus?: string;
+  /** @wixFieldType datetime */
+  lastUpdated?: Date | string;
+  /** @wixFieldType boolean */
+  isSetupComplete?: boolean;
+  /** @wixFieldType datetime */
+  completionDate?: Date | string;
+  /** @wixFieldType text */
+  setupNotes?: string;
+}
+
+/**
  * Collection ID: bozprovisions
  * Interface for BoZProvisions
  */
@@ -28,7 +118,6 @@ export interface BoZProvisions {
   /** @wixFieldType text */
   notes?: string;
 }
-
 
 /**
  * Collection ID: customers
@@ -60,7 +149,6 @@ export interface CustomerProfiles {
   idDocumentImage?: string;
 }
 
-
 /**
  * Collection ID: eclresults
  * Interface for ECLResults
@@ -80,7 +168,6 @@ export interface ECLResults {
   /** @wixFieldType date */
   effectiveDate?: Date | string;
 }
-
 
 /**
  * Collection ID: loanproducts
@@ -111,7 +198,6 @@ export interface LoanProducts {
   /** @wixFieldType boolean */
   isActive?: boolean;
 }
-
 
 /**
  * Collection ID: loans
@@ -145,7 +231,6 @@ export interface Loans {
   closureDate?: Date | string;
 }
 
-
 /**
  * Collection ID: repayments
  * Interface for Repayments
@@ -169,7 +254,6 @@ export interface Repayments {
   /** @wixFieldType text */
   paymentMethod?: string;
 }
-
 
 /**
  * Collection ID: staffmembers

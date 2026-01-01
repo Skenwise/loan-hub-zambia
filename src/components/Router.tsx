@@ -10,6 +10,9 @@ import CustomersPage from '@/components/pages/CustomersPage';
 import LoansPage from '@/components/pages/LoansPage';
 import RepaymentsPage from '@/components/pages/RepaymentsPage';
 import ReportsPage from '@/components/pages/ReportsPage';
+import OrganisationSetupPage from '@/components/pages/OrganisationSetupPage';
+import AdminPortalLayout from '@/components/AdminPortalLayout';
+import { SubscriptionGuard } from '@/components/SubscriptionGuard';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -32,6 +35,14 @@ const router = createBrowserRouter([
         element: <HomePage />,
       },
       {
+        path: "setup",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to set up your organization">
+            <OrganisationSetupPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
         path: "profile",
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to access your profile">
@@ -39,51 +50,44 @@ const router = createBrowserRouter([
           </MemberProtectedRoute>
         ),
       },
+    ],
+  },
+  {
+    path: "/admin",
+    element: (
+      <MemberProtectedRoute messageToSignIn="Sign in to access admin portal">
+        <SubscriptionGuard>
+          <AdminPortalLayout />
+        </SubscriptionGuard>
+      </MemberProtectedRoute>
+    ),
+    errorElement: <ErrorPage />,
+    children: [
       {
         path: "dashboard",
-        element: (
-          <MemberProtectedRoute messageToSignIn="Sign in to access your dashboard">
-            <DashboardPage />
-          </MemberProtectedRoute>
-        ),
+        element: <DashboardPage />,
       },
       {
         path: "customers",
-        element: (
-          <MemberProtectedRoute messageToSignIn="Sign in to manage customers">
-            <CustomersPage />
-          </MemberProtectedRoute>
-        ),
+        element: <CustomersPage />,
       },
       {
         path: "loans",
-        element: (
-          <MemberProtectedRoute messageToSignIn="Sign in to manage loans">
-            <LoansPage />
-          </MemberProtectedRoute>
-        ),
+        element: <LoansPage />,
       },
       {
         path: "repayments",
-        element: (
-          <MemberProtectedRoute messageToSignIn="Sign in to process repayments">
-            <RepaymentsPage />
-          </MemberProtectedRoute>
-        ),
+        element: <RepaymentsPage />,
       },
       {
         path: "reports",
-        element: (
-          <MemberProtectedRoute messageToSignIn="Sign in to view reports">
-            <ReportsPage />
-          </MemberProtectedRoute>
-        ),
-      },
-      {
-        path: "*",
-        element: <Navigate to="/" replace />,
+        element: <ReportsPage />,
       },
     ],
+  },
+  {
+    path: "*",
+    element: <Navigate to="/" replace />,
   },
 ], {
   basename: import.meta.env.BASE_NAME,
