@@ -8,13 +8,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, LogOut, LayoutDashboard } from 'lucide-react';
+import { User, LogOut, LayoutDashboard, Globe, Settings } from 'lucide-react';
 import RoleSelectionDialog from '@/components/RoleSelectionDialog';
+import { useCurrencyStore, CURRENCY_RATES, type Currency } from '@/store/currencyStore';
 
 export default function Header() {
   const { member, isAuthenticated, isLoading, actions } = useMember();
   const navigate = useNavigate();
   const [showRoleDialog, setShowRoleDialog] = useState(false);
+  const { currency, setCurrency } = useCurrencyStore();
 
   const handleLogout = async () => {
     await actions.logout();
@@ -54,6 +56,9 @@ export default function Header() {
           <nav className="hidden md:flex items-center gap-8">
             {!isAuthenticated && (
               <>
+                <Link to="/" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
+                  Home
+                </Link>
                 <Link to="/features" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
                   Features
                 </Link>
@@ -85,6 +90,27 @@ export default function Header() {
 
           {/* User Menu */}
           <div className="flex items-center gap-4">
+            {/* Currency Selector */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="flex items-center gap-2 text-primary-foreground hover:bg-primary-foreground/10">
+                  <Globe className="w-4 h-4" />
+                  <span className="hidden md:inline font-paragraph text-sm">{currency}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-background border-primary-foreground/20">
+                {Object.entries(CURRENCY_RATES).map(([code, rate]) => (
+                  <DropdownMenuItem 
+                    key={code}
+                    onClick={() => setCurrency(code as Currency)}
+                    className="cursor-pointer"
+                  >
+                    {rate.symbol} {code} - {rate.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             {isLoading ? (
               <div className="w-8 h-8 rounded-full bg-primary-foreground/10 animate-pulse" />
             ) : isAuthenticated ? (
@@ -105,6 +131,10 @@ export default function Header() {
                   <DropdownMenuItem onClick={() => navigate('/admin/dashboard')} className="cursor-pointer">
                     <LayoutDashboard className="w-4 h-4 mr-2" />
                     Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/admin/settings/currency')} className="cursor-pointer">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Currency Settings
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive">
                     <LogOut className="w-4 h-4 mr-2" />

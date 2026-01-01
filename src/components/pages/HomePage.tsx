@@ -184,7 +184,7 @@ export default function HomePage() {
               </h1>
               
               <p className="text-xl text-primary-foreground/80 max-w-xl leading-relaxed border-l-2 border-primary-foreground/10 pl-6">
-                Enterprise-grade platform delivering full regulatory compliance with IFRS 9 Expected Credit Loss calculations and Bank of Zambia classification standards.
+                Enterprise-grade lending platform with full regulatory compliance, IFRS 9 Expected Credit Loss calculations, and support for multiple regulatory frameworks worldwide.
               </p>
               
               <div className="flex flex-wrap gap-4 pt-4">
@@ -425,11 +425,11 @@ export default function HomePage() {
               <Globe className="w-8 h-8 text-secondary" />
             </div>
             <h2 className="font-heading text-5xl lg:text-7xl font-bold mb-8">
-              Built for the <span className="text-secondary">Zambian Market</span>
+              Built for Global <span className="text-secondary">Lending</span>
             </h2>
             <p className="text-xl text-primary-foreground/60 max-w-3xl mx-auto mb-12">
-              Localized logic for tax, currency, and regulatory requirements. 
-              Designed to support Retail and SME lending across the region.
+              Multi-currency support, localized compliance frameworks, and regulatory standards for markets worldwide. 
+              Designed for Retail, SME, and Micro-lending operations globally.
             </p>
           </AnimatedReveal>
 

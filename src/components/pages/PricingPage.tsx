@@ -4,6 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { CheckCircle2, ArrowRight, Zap } from 'lucide-react';
 import { motion, useInView } from 'framer-motion';
+import { useCurrencyStore } from '@/store/currencyStore';
 
 const AnimatedReveal = ({ children, className, delay = 0 }: { children: React.ReactNode, className?: string, delay?: number }) => {
   const ref = useRef(null);
@@ -108,6 +109,8 @@ const FAQ_ITEMS = [
 ];
 
 export default function PricingPage() {
+  const { formatPrice } = useCurrencyStore();
+
   return (
     <div className="min-h-screen bg-primary text-primary-foreground font-paragraph overflow-clip selection:bg-secondary selection:text-primary">
       <Header />
@@ -156,7 +159,7 @@ export default function PricingPage() {
                     <h3 className="font-heading text-3xl font-bold mb-2">{plan.name}</h3>
                     <p className="text-primary-foreground/60 mb-6">{plan.description}</p>
                     <div className="flex items-baseline gap-2 mb-4">
-                      <span className="font-heading text-5xl font-bold">${plan.price}</span>
+                      <span className="font-heading text-5xl font-bold">{formatPrice(plan.price)}</span>
                       <span className="text-primary-foreground/60">/month</span>
                     </div>
                     <p className="text-sm text-primary-foreground/50">Billed monthly. Cancel anytime.</p>

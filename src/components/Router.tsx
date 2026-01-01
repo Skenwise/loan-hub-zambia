@@ -26,6 +26,7 @@ import CustomerPortalPage from '@/components/pages/CustomerPortalPage';
 import CustomerLoanApplicationPage from '@/components/pages/CustomerLoanApplicationPage';
 import CustomerLoansPage from '@/components/pages/CustomerLoansPage';
 import AdminLoansManagementPage from '@/components/pages/AdminLoansManagementPage';
+import CurrencySettingsPage from '@/components/pages/CurrencySettingsPage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -151,6 +152,14 @@ const router = createBrowserRouter([
       {
         path: "compliance/ifrs9",
         element: <IFRS9CompliancePage />,
+      },
+      {
+        path: "settings/currency",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to access currency settings">
+            <CurrencySettingsPage />
+          </MemberProtectedRoute>
+        ),
       },
     ],
   },
