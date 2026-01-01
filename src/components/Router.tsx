@@ -20,6 +20,9 @@ import DisbursementPage from '@/components/pages/DisbursementPage';
 import IFRS9CompliancePage from '@/components/pages/IFRS9CompliancePage';
 import AdvancedReportsPage from '@/components/pages/AdvancedReportsPage';
 import CustomerPortalPage from '@/components/pages/CustomerPortalPage';
+import CustomerLoanApplicationPage from '@/components/pages/CustomerLoanApplicationPage';
+import CustomerLoansPage from '@/components/pages/CustomerLoansPage';
+import AdminLoansManagementPage from '@/components/pages/AdminLoansManagementPage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -65,6 +68,22 @@ const router = createBrowserRouter([
           </MemberProtectedRoute>
         ),
       },
+      {
+        path: "customer-portal/apply",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to apply for a loan">
+            <CustomerLoanApplicationPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "customer-portal/loans",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to view your loans">
+            <CustomerLoansPage />
+          </MemberProtectedRoute>
+        ),
+      },
     ],
   },
   {
@@ -88,7 +107,7 @@ const router = createBrowserRouter([
       },
       {
         path: "loans",
-        element: <LoansPage />,
+        element: <AdminLoansManagementPage />,
       },
       {
         path: "loans/apply",

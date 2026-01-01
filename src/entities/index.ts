@@ -12,6 +12,8 @@ export interface AuditTrail {
   _createdDate?: Date;
   _updatedDate?: Date;
   /** @wixFieldType text */
+  staffMemberId?: string;
+  /** @wixFieldType text */
   performedBy?: string;
   /** @wixFieldType datetime */
   timestamp?: Date | string;
@@ -36,6 +38,8 @@ export interface BoZProvisions {
   _updatedDate?: Date;
   /** @wixFieldType text */
   loanId?: string;
+  /** @wixFieldType text */
+  organisationId?: string;
   /** @wixFieldType text */
   bozClassification?: string;
   /** @wixFieldType number */
@@ -87,6 +91,8 @@ export interface CustomerProfiles {
   /** @wixFieldType text */
   firstName?: string;
   /** @wixFieldType text */
+  organisationId?: string;
+  /** @wixFieldType text */
   lastName?: string;
   /** @wixFieldType text */
   nationalIdNumber?: string;
@@ -117,6 +123,8 @@ export interface ECLResults {
   _updatedDate?: Date;
   /** @wixFieldType text */
   loanReference?: string;
+  /** @wixFieldType text */
+  organisationId?: string;
   /** @wixFieldType number */
   eclValue?: number;
   /** @wixFieldType text */
@@ -138,6 +146,8 @@ export interface KYCVerificationHistory {
   _updatedDate?: Date;
   /** @wixFieldType text */
   customerId?: string;
+  /** @wixFieldType text */
+  organisationId?: string;
   /** @wixFieldType text */
   verificationStatus?: string;
   /** @wixFieldType datetime */
@@ -162,6 +172,8 @@ export interface LoanDocuments {
   /** @wixFieldType text */
   loanId?: string;
   /** @wixFieldType text */
+  organisationId?: string;
+  /** @wixFieldType text */
   documentName?: string;
   /** @wixFieldType text */
   documentType?: string;
@@ -184,6 +196,8 @@ export interface LoanProducts {
   _id: string;
   _createdDate?: Date;
   _updatedDate?: Date;
+  /** @wixFieldType text */
+  organisationId?: string;
   /** @wixFieldType text */
   productName?: string;
   /** @wixFieldType text */
@@ -218,6 +232,8 @@ export interface Loans {
   /** @wixFieldType text */
   loanNumber?: string;
   /** @wixFieldType text */
+  organisationId?: string;
+  /** @wixFieldType text */
   customerId?: string;
   /** @wixFieldType text */
   loanProductId?: string;
@@ -237,8 +253,6 @@ export interface Loans {
   loanTermMonths?: number;
   /** @wixFieldType date */
   closureDate?: Date | string;
-  /** @wixFieldType text */
-  organisationId?: string;
 }
 
 
@@ -252,6 +266,10 @@ export interface LoanWorkflowHistory {
   _updatedDate?: Date;
   /** @wixFieldType text */
   loanId?: string;
+  /** @wixFieldType text */
+  staffMemberId?: string;
+  /** @wixFieldType text */
+  organisationId?: string;
   /** @wixFieldType text */
   stage?: string;
   /** @wixFieldType datetime */
@@ -273,6 +291,8 @@ export interface Organizations {
   _updatedDate?: Date;
   /** @wixFieldType text */
   organizationName?: string;
+  /** @wixFieldType text */
+  subscriptionPlanId?: string;
   /** @wixFieldType text */
   subscriptionPlanType?: string;
   /** @wixFieldType text */
@@ -322,6 +342,8 @@ export interface Repayments {
   _createdDate?: Date;
   _updatedDate?: Date;
   /** @wixFieldType text */
+  organisationId?: string;
+  /** @wixFieldType text */
   transactionReference?: string;
   /** @wixFieldType text */
   loanId?: string;
@@ -335,8 +357,6 @@ export interface Repayments {
   interestAmount?: number;
   /** @wixFieldType text */
   paymentMethod?: string;
-  /** @wixFieldType text */
-  organisationId?: string;
 }
 
 
@@ -369,8 +389,14 @@ export interface StaffMembers {
   _id: string;
   _createdDate?: Date;
   _updatedDate?: Date;
+  /** @wixFieldType datetime */
+  lastLoginDate?: Date | string;
+  /** @wixFieldType text */
+  status?: string;
   /** @wixFieldType text */
   employeeId?: string;
+  /** @wixFieldType text */
+  roleId?: string;
   /** @wixFieldType text */
   fullName?: string;
   /** @wixFieldType text */
