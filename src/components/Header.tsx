@@ -52,6 +52,19 @@ export default function Header() {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-8">
+            {!isAuthenticated && (
+              <>
+                <Link to="/features" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
+                  Features
+                </Link>
+                <Link to="/pricing" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
+                  Pricing
+                </Link>
+                <Link to="/compliance" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
+                  Compliance
+                </Link>
+              </>
+            )}
             {isAuthenticated && (
               <>
                 <Link to="/admin/dashboard" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">

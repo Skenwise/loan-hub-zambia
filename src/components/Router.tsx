@@ -4,6 +4,9 @@ import { ScrollToTop } from '@/lib/scroll-to-top';
 import ErrorPage from '@/integrations/errorHandlers/ErrorPage';
 import { MemberProtectedRoute } from '@/components/ui/member-protected-route';
 import HomePage from '@/components/pages/HomePage';
+import FeaturesPage from '@/components/pages/FeaturesPage';
+import PricingPage from '@/components/pages/PricingPage';
+import CompliancePage from '@/components/pages/CompliancePage';
 import ProfilePage from '@/components/pages/ProfilePage';
 import DashboardPage from '@/components/pages/DashboardPage';
 import AdminDashboardPage from '@/components/pages/AdminDashboardPage';
@@ -43,6 +46,18 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <HomePage />,
+      },
+      {
+        path: "features",
+        element: <FeaturesPage />,
+      },
+      {
+        path: "pricing",
+        element: <PricingPage />,
+      },
+      {
+        path: "compliance",
+        element: <CompliancePage />,
       },
       {
         path: "setup",

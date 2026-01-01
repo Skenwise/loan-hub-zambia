@@ -119,7 +119,7 @@ export class WriteoffService {
     approvedBy: string,
     approvalNotes: string = ''
   ): Promise<void> {
-    await BaseCrudService.update<Partial<WriteoffRequest>>('writeoffs', {
+    await BaseCrudService.update('writeoffs', {
       _id: writeoffId,
       status: 'APPROVED',
       approvedBy,
@@ -136,7 +136,7 @@ export class WriteoffService {
     approvedBy: string,
     approvalNotes: string = ''
   ): Promise<void> {
-    await BaseCrudService.update<Partial<WriteoffRequest>>('writeoffs', {
+    await BaseCrudService.update('writeoffs', {
       _id: writeoffId,
       status: 'REJECTED',
       approvedBy,
@@ -149,7 +149,7 @@ export class WriteoffService {
    * Record write-off
    */
   static async recordWriteoff(writeoffId: string): Promise<void> {
-    await BaseCrudService.update<Partial<WriteoffRequest>>('writeoffs', {
+    await BaseCrudService.update('writeoffs', {
       _id: writeoffId,
       status: 'RECORDED',
       recordedDate: new Date(),
@@ -190,7 +190,7 @@ export class WriteoffService {
       const totalRecovery = (writeoff.recoveryAmount || 0) + paymentAmount;
       const recoveryRate = (totalRecovery / writeoff.writeoffAmount) * 100;
 
-      await BaseCrudService.update<Partial<WriteoffRequest>>('writeoffs', {
+      await BaseCrudService.update('writeoffs', {
         _id: writeoffId,
         recoveryAmount: totalRecovery,
         recoveryRate: Math.min(recoveryRate, 100),
