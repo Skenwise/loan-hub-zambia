@@ -23,11 +23,16 @@ export default function AdminPortalLayout() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/customers', label: 'Customers', icon: Users },
-    { path: '/loans', label: 'Loans', icon: FileText },
-    { path: '/repayments', label: 'Repayments', icon: FileText },
-    { path: '/reports', label: 'Reports', icon: BarChart3 },
+    { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/admin/customers', label: 'Customers', icon: Users },
+    { path: '/admin/loans', label: 'Loans', icon: FileText },
+    { path: '/admin/loans/apply', label: 'New Application', icon: FileText },
+    { path: '/admin/loans/approve', label: 'Approvals', icon: FileText },
+    { path: '/admin/loans/disburse', label: 'Disbursement', icon: FileText },
+    { path: '/admin/repayments', label: 'Repayments', icon: FileText },
+    { path: '/admin/reports', label: 'Reports', icon: BarChart3 },
+    { path: '/admin/reports/advanced', label: 'Advanced Reports', icon: BarChart3 },
+    { path: '/admin/compliance/ifrs9', label: 'IFRS 9 Compliance', icon: BarChart3 },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -74,9 +79,9 @@ export default function AdminPortalLayout() {
         {/* Footer */}
         <div className="p-4 border-t border-primary/20 space-y-2">
           <Link
-            to="/profile"
+            to="/admin/profile"
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-              isActive('/profile')
+              isActive('/admin/profile')
                 ? 'bg-secondary text-primary'
                 : 'text-white hover:bg-primary/80'
             }`}
@@ -131,7 +136,7 @@ export default function AdminPortalLayout() {
             {userMenuOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
                 <Link
-                  to="/profile"
+                  to="/admin/profile"
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 first:rounded-t-lg"
                 >
                   Profile

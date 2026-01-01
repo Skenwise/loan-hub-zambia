@@ -13,6 +13,11 @@ import ReportsPage from '@/components/pages/ReportsPage';
 import OrganisationSetupPage from '@/components/pages/OrganisationSetupPage';
 import AdminPortalLayout from '@/components/AdminPortalLayout';
 import { SubscriptionGuard } from '@/components/SubscriptionGuard';
+import LoanApplicationPage from '@/components/pages/LoanApplicationPage';
+import LoanApprovalPage from '@/components/pages/LoanApprovalPage';
+import DisbursementPage from '@/components/pages/DisbursementPage';
+import IFRS9CompliancePage from '@/components/pages/IFRS9CompliancePage';
+import AdvancedReportsPage from '@/components/pages/AdvancedReportsPage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -76,12 +81,32 @@ const router = createBrowserRouter([
         element: <LoansPage />,
       },
       {
+        path: "loans/apply",
+        element: <LoanApplicationPage />,
+      },
+      {
+        path: "loans/approve",
+        element: <LoanApprovalPage />,
+      },
+      {
+        path: "loans/disburse",
+        element: <DisbursementPage />,
+      },
+      {
         path: "repayments",
         element: <RepaymentsPage />,
       },
       {
         path: "reports",
         element: <ReportsPage />,
+      },
+      {
+        path: "reports/advanced",
+        element: <AdvancedReportsPage />,
+      },
+      {
+        path: "compliance/ifrs9",
+        element: <IFRS9CompliancePage />,
       },
     ],
   },

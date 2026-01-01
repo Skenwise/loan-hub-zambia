@@ -1,11 +1,11 @@
 import { create } from 'zustand';
-import { Organisations, SubscriptionPlans } from '@/entities';
+import { Organizations, SubscriptionPlans } from '@/entities';
 
 interface OrganisationState {
-  currentOrganisation: Organisations | null;
+  currentOrganisation: Organizations | null;
   subscriptionPlan: SubscriptionPlans | null;
   isSubscriptionValid: boolean;
-  setOrganisation: (org: Organisations) => void;
+  setOrganisation: (org: Organizations) => void;
   setSubscriptionPlan: (plan: SubscriptionPlans) => void;
   checkSubscriptionValidity: () => boolean;
   clearOrganisation: () => void;
@@ -16,7 +16,7 @@ export const useOrganisationStore = create<OrganisationState>((set, get) => ({
   subscriptionPlan: null,
   isSubscriptionValid: false,
 
-  setOrganisation: (org: Organisations) => {
+  setOrganisation: (org: Organizations) => {
     set({ currentOrganisation: org });
   },
 

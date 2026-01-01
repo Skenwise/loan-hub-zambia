@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BaseCrudService } from '@/integrations';
-import { Organisations, SubscriptionPlans, OrganisationSetup } from '@/entities';
+import { Organizations, SubscriptionPlans, OrganisationSetup } from '@/entities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -47,7 +47,7 @@ export default function OrganisationSetupPage() {
     try {
       // Create organisation
       const organisationId = crypto.randomUUID();
-      const newOrganisation: Organisations = {
+      const newOrganisation: Organizations = {
         _id: organisationId,
         organizationName: orgName,
         contactEmail: contactEmail,

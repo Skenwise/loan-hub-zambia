@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useOrganisationStore } from '@/store/organisationStore';
 import { BaseCrudService } from '@/integrations';
-import { Organisations, SubscriptionPlans } from '@/entities';
+import { Organizations, SubscriptionPlans } from '@/entities';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
