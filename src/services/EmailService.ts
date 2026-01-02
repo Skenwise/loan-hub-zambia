@@ -157,11 +157,11 @@ export class EmailService {
     loginUrl: string
   ): EmailTemplate {
     return {
-      subject: 'Welcome to ZamLoan - Your Account is Ready',
+      subject: 'Welcome to Lendly - Your Account is Ready',
       body: `
 Dear ${firstName},
 
-Welcome to ZamLoan! Your account has been created and is ready to use.
+Welcome to Lendly! Your account has been created and is ready to use.
 
 Your Login Credentials:
 Email: ${email}
@@ -174,10 +174,10 @@ For security, you will be prompted to change your password on first login.
 If you have any questions, please contact our support team.
 
 Best regards,
-ZamLoan Team
+Lendly Team
       `,
       htmlBody: `
-<h2>Welcome to ZamLoan!</h2>
+<h2>Welcome to Lendly!</h2>
 <p>Dear ${firstName},</p>
 <p>Your account has been created and is ready to use.</p>
 <h3>Your Login Credentials:</h3>
@@ -193,7 +193,7 @@ ZamLoan Team
 
   private static getPasswordResetTemplate(firstName: string, resetLink: string): EmailTemplate {
     return {
-      subject: 'Reset Your ZamLoan Password',
+      subject: 'Reset Your Lendly Password',
       body: `
 Dear ${firstName},
 
@@ -206,50 +206,50 @@ This link will expire in 24 hours.
 If you didn't request this, please ignore this email.
 
 Best regards,
-ZamLoan Team
+Lendly Team
       `,
     };
   }
 
   private static getKYCReminderTemplate(firstName: string, kycUrl: string): EmailTemplate {
     return {
-      subject: 'Complete Your KYC Verification - ZamLoan',
+      subject: 'Complete Your KYC Verification - Lendly',
       body: `
 Dear ${firstName},
 
-To access all features of ZamLoan, please complete your KYC (Know Your Customer) verification.
+To access all features of Lendly, please complete your KYC (Know Your Customer) verification.
 
 This is a quick process that helps us verify your identity and comply with regulations.
 
 Complete KYC: ${kycUrl}
 
 Thank you,
-ZamLoan Team
+Lendly Team
       `,
     };
   }
 
   private static getKYCApprovalTemplate(firstName: string): EmailTemplate {
     return {
-      subject: 'KYC Verification Approved - ZamLoan',
+      subject: 'KYC Verification Approved - Lendly',
       body: `
 Dear ${firstName},
 
 Great news! Your KYC verification has been approved.
 
-You now have full access to ZamLoan and can apply for loans.
+You now have full access to Lendly and can apply for loans.
 
-Log in to get started: https://zamloan.com/customer-portal
+Log in to get started: https://lendly.com/customer-portal
 
 Best regards,
-ZamLoan Team
+Lendly Team
       `,
     };
   }
 
   private static getKYCRejectionTemplate(firstName: string, reason: string): EmailTemplate {
     return {
-      subject: 'KYC Verification Status - ZamLoan',
+      subject: 'KYC Verification Status - Lendly',
       body: `
 Dear ${firstName},
 
@@ -260,7 +260,7 @@ Reason: ${reason}
 Please contact our support team for more information or to resubmit your documents.
 
 Best regards,
-ZamLoan Team
+Lendly Team
       `,
     };
   }
@@ -287,10 +287,10 @@ ${statusMessage}
 Loan Number: ${loanNumber}
 Status: ${status}
 
-Log in to view details: https://zamloan.com/customer-portal/loans
+Log in to view details: https://lendly.com/customer-portal/loans
 
 Best regards,
-ZamLoan Team
+Lendly Team
       `,
     };
   }

@@ -478,7 +478,7 @@ export default function HomePage() {
               <span className="text-secondary">Transformation.</span>
             </h2>
             <p className="text-2xl text-primary-foreground/70 mb-12 max-w-2xl mx-auto">
-              Join the financial institutions that trust ZamLoan for secure, compliant, and efficient loan management.
+              Join the financial institutions that trust Lendly for secure, compliant, and efficient loan management.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
               <Button 

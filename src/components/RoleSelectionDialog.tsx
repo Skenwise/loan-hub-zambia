@@ -27,7 +27,7 @@ export default function RoleSelectionDialog({ isOpen, onClose, onSelectRole }: R
             Choose Your Role
           </DialogTitle>
           <DialogDescription className="text-primary-foreground/70 text-lg mt-2">
-            Select how you'll be using ZamLoan to get started with the right experience.
+            Select how you'll be using Lendly to get started with the right experience.
           </DialogDescription>
         </DialogHeader>
 
