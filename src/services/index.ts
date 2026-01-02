@@ -21,6 +21,9 @@ export { KYCService } from './KYCService';
 export { EmailService } from './EmailService';
 export { InitializationService } from './InitializationService';
 export { DisbursementService } from './DisbursementService';
+export { RolePermissionsService } from './RolePermissionsService';
+export { ApprovalLimitsService } from './ApprovalLimitsService';
+export { CreditCommitteeService } from './CreditCommitteeService';
 
 // Collection IDs
 export const CollectionIds = {

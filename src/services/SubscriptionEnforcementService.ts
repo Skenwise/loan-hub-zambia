@@ -1,367 +1,437 @@
 /**
  * Subscription Enforcement Service
- * Handles subscription-based feature access control
+ * Manages subscription plan limits and feature enforcement
  */
 
-import { BaseCrudService } from './BaseCrudService';
-import { Organizations, SubscriptionPlans } from '@/entities';
+import { BaseCrudService } from '@/integrations';
+import { Organizations, SubscriptionPlans, StaffMembers } from '@/entities';
+import { CollectionIds } from './index';
 
-export type SubscriptionTier = 'STARTER' | 'PROFESSIONAL' | 'ENTERPRISE';
-
-export interface FeatureAccess {
-  feature: string;
-  requiredTier: SubscriptionTier;
-  usageLimit?: number;
-  currentUsage?: number;
+export interface SubscriptionPlanFeatures {
+  maxUsers: number;
+  maxBranches: number;
+  enabledRoles: string[];
+  creditCommitteeFeature: boolean;
+  ifrs9Module: boolean;
+  bulkDisbursement: boolean;
+  advancedReporting: boolean;
+  apiAccess: boolean;
+  customBranding: boolean;
+  dedicatedSupport: boolean;
 }
 
-export interface SubscriptionStatus {
-  isActive: boolean;
-  tier: SubscriptionTier;
-  expiryDate: Date | null;
-  daysRemaining: number;
-  isExpired: boolean;
-  features: FeatureAccess[];
+export interface SubscriptionEnforcementResult {
+  isCompliant: boolean;
+  violations: SubscriptionViolation[];
+  warnings: SubscriptionWarning[];
 }
 
-export const FEATURE_TIERS: Record<string, SubscriptionTier> = {
-  // Basic features - all tiers
-  'view-dashboard': 'STARTER',
-  'view-loans': 'STARTER',
-  'apply-loan': 'STARTER',
-  'view-repayments': 'STARTER',
+export interface SubscriptionViolation {
+  type: 'users' | 'branches' | 'roles' | 'features';
+  message: string;
+  current: number;
+  limit: number;
+  action: 'block' | 'warn';
+}
 
-  // Advanced features - Professional and above
-  'advanced-analytics': 'PROFESSIONAL',
-  'custom-reports': 'PROFESSIONAL',
-  'write-off-management': 'PROFESSIONAL',
-  'bulk-operations': 'PROFESSIONAL',
+export interface SubscriptionWarning {
+  type: string;
+  message: string;
+  percentageUsed: number;
+}
 
-  // Enterprise features - Enterprise only
-  'compliance-dashboard': 'ENTERPRISE',
-  'api-access': 'ENTERPRISE',
-  'white-label': 'ENTERPRISE',
-  'dedicated-support': 'ENTERPRISE',
-};
-
-export const USAGE_LIMITS: Record<SubscriptionTier, Record<string, number>> = {
-  STARTER: {
-    'max-loans': 100,
-    'max-users': 5,
-    'max-reports-per-month': 10,
-    'max-api-calls-per-day': 1000,
+export const SUBSCRIPTION_PLANS: Record<string, SubscriptionPlanFeatures> = {
+  'starter': {
+    maxUsers: 5,
+    maxBranches: 1,
+    enabledRoles: ['loan-officer', 'branch-manager'],
+    creditCommitteeFeature: false,
+    ifrs9Module: false,
+    bulkDisbursement: false,
+    advancedReporting: false,
+    apiAccess: false,
+    customBranding: false,
+    dedicatedSupport: false,
   },
-  PROFESSIONAL: {
-    'max-loans': 1000,
-    'max-users': 25,
-    'max-reports-per-month': 100,
-    'max-api-calls-per-day': 10000,
+  
+  'professional': {
+    maxUsers: 25,
+    maxBranches: 3,
+    enabledRoles: [
+      'loan-officer',
+      'branch-manager',
+      'credit-officer',
+      'kyc-officer',
+      'finance-officer',
+    ],
+    creditCommitteeFeature: false,
+    ifrs9Module: false,
+    bulkDisbursement: true,
+    advancedReporting: true,
+    apiAccess: false,
+    customBranding: false,
+    dedicatedSupport: false,
   },
-  ENTERPRISE: {
-    'max-loans': 999999,
-    'max-users': 999999,
-    'max-reports-per-month': 999999,
-    'max-api-calls-per-day': 999999,
+  
+  'enterprise': {
+    maxUsers: 100,
+    maxBranches: 10,
+    enabledRoles: [
+      'loan-officer',
+      'branch-manager',
+      'credit-officer',
+      'kyc-officer',
+      'finance-officer',
+      'credit-manager',
+      'ceo',
+      'internal-auditor',
+    ],
+    creditCommitteeFeature: true,
+    ifrs9Module: true,
+    bulkDisbursement: true,
+    advancedReporting: true,
+    apiAccess: true,
+    customBranding: true,
+    dedicatedSupport: true,
+  },
+  
+  'custom': {
+    maxUsers: Number.MAX_SAFE_INTEGER,
+    maxBranches: Number.MAX_SAFE_INTEGER,
+    enabledRoles: [
+      'loan-officer',
+      'branch-manager',
+      'credit-officer',
+      'kyc-officer',
+      'finance-officer',
+      'credit-manager',
+      'ceo',
+      'internal-auditor',
+    ],
+    creditCommitteeFeature: true,
+    ifrs9Module: true,
+    bulkDisbursement: true,
+    advancedReporting: true,
+    apiAccess: true,
+    customBranding: true,
+    dedicatedSupport: true,
   },
 };
 
 export class SubscriptionEnforcementService {
   /**
-   * Get subscription status for organization
+   * Get subscription plan features
    */
-  static async getSubscriptionStatus(organisationId: string): Promise<SubscriptionStatus> {
+  static getPlanFeatures(planType: string): SubscriptionPlanFeatures {
+    return SUBSCRIPTION_PLANS[planType.toLowerCase()] || SUBSCRIPTION_PLANS['starter'];
+  }
+
+  /**
+   * Check subscription compliance for organization
+   */
+  static async checkSubscriptionCompliance(
+    organisationId: string
+  ): Promise<SubscriptionEnforcementResult> {
     try {
-      const org = await BaseCrudService.getById<Organizations>('organisations', organisationId);
+      // Get organization subscription
+      const org = await BaseCrudService.getById<Organizations>(
+        CollectionIds.ORGANISATIONS,
+        organisationId
+      );
 
       if (!org) {
         return {
-          isActive: false,
-          tier: 'STARTER',
-          expiryDate: null,
-          daysRemaining: 0,
-          isExpired: true,
-          features: [],
+          isCompliant: false,
+          violations: [
+            {
+              type: 'features',
+              message: 'Organization not found',
+              current: 0,
+              limit: 0,
+              action: 'block',
+            },
+          ],
+          warnings: [],
         };
       }
 
-      // Get subscription plan
-      const planId = org.subscriptionPlanId;
-      const plan = planId ? await BaseCrudService.getById<SubscriptionPlans>('subscriptionplans', planId) : null;
+      const planType = org.subscriptionPlanType || 'starter';
+      const features = this.getPlanFeatures(planType);
 
-      // Determine tier from plan
-      const tier = this.getTierFromPlan(plan?.planName || org.subscriptionPlanType || 'STARTER');
+      const violations: SubscriptionViolation[] = [];
+      const warnings: SubscriptionWarning[] = [];
 
-      // Calculate days remaining
-      const expiryDate = null; // Placeholder - would come from subscription record
-      const daysRemaining = expiryDate ? Math.ceil((new Date(expiryDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 365;
-      const isExpired = daysRemaining < 0;
+      // Check user count
+      const { items: staffMembers } = await BaseCrudService.getAll<StaffMembers>(
+        CollectionIds.STAFF_MEMBERS
+      );
+      const activeUsers = staffMembers?.filter(
+        (s: any) => s.organisationId === organisationId && s.status !== 'INACTIVE'
+      ).length || 0;
 
-      // Get available features
-      const features = this.getAvailableFeatures(tier);
+      if (activeUsers > features.maxUsers) {
+        violations.push({
+          type: 'users',
+          message: `User limit exceeded: ${activeUsers} users, limit is ${features.maxUsers}`,
+          current: activeUsers,
+          limit: features.maxUsers,
+          action: 'block',
+        });
+      } else if (activeUsers > features.maxUsers * 0.8) {
+        warnings.push({
+          type: 'users',
+          message: `Approaching user limit: ${activeUsers}/${features.maxUsers}`,
+          percentageUsed: (activeUsers / features.maxUsers) * 100,
+        });
+      }
+
+      // Check branch count
+      // This would require a branches collection
+      // For now, we'll skip this check
 
       return {
-        isActive: org.organizationStatus === 'ACTIVE' && !isExpired,
-        tier,
-        expiryDate,
-        daysRemaining: Math.max(daysRemaining, 0),
-        isExpired,
+        isCompliant: violations.length === 0,
+        violations,
+        warnings,
+      };
+    } catch (error) {
+      console.error('Error checking subscription compliance:', error);
+      return {
+        isCompliant: false,
+        violations: [
+          {
+            type: 'features',
+            message: 'Error checking subscription compliance',
+            current: 0,
+            limit: 0,
+            action: 'block',
+          },
+        ],
+        warnings: [],
+      };
+    }
+  }
+
+  /**
+   * Check if feature is enabled for organization
+   */
+  static async isFeatureEnabled(
+    organisationId: string,
+    feature: keyof SubscriptionPlanFeatures
+  ): Promise<boolean> {
+    try {
+      const org = await BaseCrudService.getById<Organizations>(
+        CollectionIds.ORGANISATIONS,
+        organisationId
+      );
+
+      if (!org) return false;
+
+      const planType = org.subscriptionPlanType || 'starter';
+      const features = this.getPlanFeatures(planType);
+
+      return features[feature] as boolean;
+    } catch (error) {
+      console.error('Error checking feature:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Check if role is enabled for organization
+   */
+  static async isRoleEnabled(
+    organisationId: string,
+    roleId: string
+  ): Promise<boolean> {
+    try {
+      const org = await BaseCrudService.getById<Organizations>(
+        CollectionIds.ORGANISATIONS,
+        organisationId
+      );
+
+      if (!org) return false;
+
+      const planType = org.subscriptionPlanType || 'starter';
+      const features = this.getPlanFeatures(planType);
+
+      return features.enabledRoles.includes(roleId);
+    } catch (error) {
+      console.error('Error checking role:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Get available roles for organization
+   */
+  static async getAvailableRoles(organisationId: string): Promise<string[]> {
+    try {
+      const org = await BaseCrudService.getById<Organizations>(
+        CollectionIds.ORGANISATIONS,
+        organisationId
+      );
+
+      if (!org) return [];
+
+      const planType = org.subscriptionPlanType || 'starter';
+      const features = this.getPlanFeatures(planType);
+
+      return features.enabledRoles;
+    } catch (error) {
+      console.error('Error getting available roles:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Check if user can be added to organization
+   */
+  static async canAddUser(organisationId: string): Promise<{
+    canAdd: boolean;
+    reason?: string;
+    currentUsers: number;
+    limit: number;
+  }> {
+    try {
+      const org = await BaseCrudService.getById<Organizations>(
+        CollectionIds.ORGANISATIONS,
+        organisationId
+      );
+
+      if (!org) {
+        return {
+          canAdd: false,
+          reason: 'Organization not found',
+          currentUsers: 0,
+          limit: 0,
+        };
+      }
+
+      const planType = org.subscriptionPlanType || 'starter';
+      const features = this.getPlanFeatures(planType);
+
+      const { items: staffMembers } = await BaseCrudService.getAll<StaffMembers>(
+        CollectionIds.STAFF_MEMBERS
+      );
+      const activeUsers = staffMembers?.filter(
+        (s: any) => s.organisationId === organisationId && s.status !== 'INACTIVE'
+      ).length || 0;
+
+      if (activeUsers >= features.maxUsers) {
+        return {
+          canAdd: false,
+          reason: `User limit reached (${features.maxUsers}). Please upgrade your subscription.`,
+          currentUsers: activeUsers,
+          limit: features.maxUsers,
+        };
+      }
+
+      return {
+        canAdd: true,
+        currentUsers: activeUsers,
+        limit: features.maxUsers,
+      };
+    } catch (error) {
+      console.error('Error checking if user can be added:', error);
+      return {
+        canAdd: false,
+        reason: 'Error checking subscription limits',
+        currentUsers: 0,
+        limit: 0,
+      };
+    }
+  }
+
+  /**
+   * Get subscription usage summary
+   */
+  static async getSubscriptionUsageSummary(organisationId: string): Promise<{
+    planType: string;
+    users: { current: number; limit: number; percentageUsed: number };
+    features: SubscriptionPlanFeatures;
+  }> {
+    try {
+      const org = await BaseCrudService.getById<Organizations>(
+        CollectionIds.ORGANISATIONS,
+        organisationId
+      );
+
+      if (!org) {
+        return {
+          planType: 'starter',
+          users: { current: 0, limit: 0, percentageUsed: 0 },
+          features: SUBSCRIPTION_PLANS['starter'],
+        };
+      }
+
+      const planType = org.subscriptionPlanType || 'starter';
+      const features = this.getPlanFeatures(planType);
+
+      const { items: staffMembers } = await BaseCrudService.getAll<StaffMembers>(
+        CollectionIds.STAFF_MEMBERS
+      );
+      const activeUsers = staffMembers?.filter(
+        (s: any) => s.organisationId === organisationId && s.status !== 'INACTIVE'
+      ).length || 0;
+
+      return {
+        planType,
+        users: {
+          current: activeUsers,
+          limit: features.maxUsers,
+          percentageUsed: (activeUsers / features.maxUsers) * 100,
+        },
         features,
       };
-    } catch {
+    } catch (error) {
+      console.error('Error getting subscription usage:', error);
       return {
-        isActive: false,
-        tier: 'STARTER',
-        expiryDate: null,
-        daysRemaining: 0,
-        isExpired: true,
-        features: [],
+        planType: 'starter',
+        users: { current: 0, limit: 0, percentageUsed: 0 },
+        features: SUBSCRIPTION_PLANS['starter'],
       };
     }
   }
 
   /**
-   * Check if feature is accessible
+   * Upgrade subscription plan
    */
-  static async canAccessFeature(
+  static async upgradeSubscriptionPlan(
     organisationId: string,
-    feature: string
-  ): Promise<{ canAccess: boolean; reason?: string }> {
+    newPlanType: string
+  ): Promise<void> {
     try {
-      const status = await this.getSubscriptionStatus(organisationId);
-
-      if (!status.isActive) {
-        return { canAccess: false, reason: 'Subscription is not active' };
-      }
-
-      if (status.isExpired) {
-        return { canAccess: false, reason: 'Subscription has expired' };
-      }
-
-      const requiredTier = FEATURE_TIERS[feature];
-      if (!requiredTier) {
-        return { canAccess: true }; // Feature doesn't require specific tier
-      }
-
-      const tierHierarchy = { STARTER: 1, PROFESSIONAL: 2, ENTERPRISE: 3 };
-      if (tierHierarchy[status.tier] < tierHierarchy[requiredTier]) {
-        return { canAccess: false, reason: `Feature requires ${requiredTier} subscription` };
-      }
-
-      return { canAccess: true };
-    } catch {
-      return { canAccess: false, reason: 'Error checking subscription' };
+      await BaseCrudService.update(CollectionIds.ORGANISATIONS, {
+        _id: organisationId,
+        subscriptionPlanType: newPlanType,
+      });
+    } catch (error) {
+      console.error('Error upgrading subscription:', error);
+      throw error;
     }
   }
 
   /**
-   * Check usage limit
+   * Get upgrade recommendations
    */
-  static async checkUsageLimit(
-    organisationId: string,
-    limitType: string
-  ): Promise<{ withinLimit: boolean; current: number; limit: number }> {
+  static async getUpgradeRecommendations(organisationId: string): Promise<string[]> {
     try {
-      const status = await this.getSubscriptionStatus(organisationId);
-      const limit = USAGE_LIMITS[status.tier][limitType] || 0;
+      const compliance = await this.checkSubscriptionCompliance(organisationId);
+      const recommendations: string[] = [];
 
-      // Get current usage
-      let current = 0;
-
-      if (limitType === 'max-loans') {
-        const { items } = await BaseCrudService.getAll<any>('loans');
-        current = items.filter((l: any) => l.organisationId === organisationId).length;
-      } else if (limitType === 'max-users') {
-        const { items } = await BaseCrudService.getAll<any>('staffmembers');
-        current = items.filter((s: any) => s.organisationId === organisationId).length;
-      }
-
-      return {
-        withinLimit: current < limit,
-        current,
-        limit,
-      };
-    } catch {
-      return { withinLimit: false, current: 0, limit: 0 };
-    }
-  }
-
-  /**
-   * Get tier from plan name
-   */
-  private static getTierFromPlan(planName: string): SubscriptionTier {
-    const name = planName.toUpperCase();
-    if (name.includes('ENTERPRISE')) return 'ENTERPRISE';
-    if (name.includes('PROFESSIONAL')) return 'PROFESSIONAL';
-    return 'STARTER';
-  }
-
-  /**
-   * Get available features for tier
-   */
-  private static getAvailableFeatures(tier: SubscriptionTier): FeatureAccess[] {
-    const tierHierarchy = { STARTER: 1, PROFESSIONAL: 2, ENTERPRISE: 3 };
-    const tierLevel = tierHierarchy[tier];
-
-    return Object.entries(FEATURE_TIERS)
-      .filter(([_, requiredTier]) => tierHierarchy[requiredTier] <= tierLevel)
-      .map(([feature, requiredTier]) => ({
-        feature,
-        requiredTier,
-        usageLimit: USAGE_LIMITS[tier][feature],
-      }));
-  }
-
-  /**
-   * Get subscription summary
-   */
-  static async getSubscriptionSummary(organisationId: string): Promise<{
-    tier: SubscriptionTier;
-    status: string;
-    daysRemaining: number;
-    featureCount: number;
-    usageLimits: Record<string, { current: number; limit: number; percentage: number }>;
-  }> {
-    try {
-      const status = await this.getSubscriptionStatus(organisationId);
-
-      // Calculate usage percentages
-      const usageLimits: Record<string, { current: number; limit: number; percentage: number }> = {};
-
-      for (const [limitType, limit] of Object.entries(USAGE_LIMITS[status.tier])) {
-        const usage = await this.checkUsageLimit(organisationId, limitType);
-        usageLimits[limitType] = {
-          current: usage.current,
-          limit: usage.limit,
-          percentage: (usage.current / usage.limit) * 100,
-        };
-      }
-
-      return {
-        tier: status.tier,
-        status: status.isActive ? 'ACTIVE' : 'INACTIVE',
-        daysRemaining: status.daysRemaining,
-        featureCount: status.features.length,
-        usageLimits,
-      };
-    } catch {
-      return {
-        tier: 'STARTER',
-        status: 'INACTIVE',
-        daysRemaining: 0,
-        featureCount: 0,
-        usageLimits: {},
-      };
-    }
-  }
-
-  /**
-   * Check if upgrade is needed
-   */
-  static async checkUpgradeNeeded(organisationId: string): Promise<{
-    upgradeNeeded: boolean;
-    reason?: string;
-    recommendedTier?: SubscriptionTier;
-  }> {
-    try {
-      const status = await this.getSubscriptionStatus(organisationId);
-
-      // Check usage limits
-      for (const [limitType, limit] of Object.entries(USAGE_LIMITS[status.tier])) {
-        const usage = await this.checkUsageLimit(organisationId, limitType);
-        const percentage = (usage.current / usage.limit) * 100;
-
-        if (percentage > 80) {
-          const nextTier = status.tier === 'STARTER' ? 'PROFESSIONAL' : 'ENTERPRISE';
-          return {
-            upgradeNeeded: true,
-            reason: `${limitType} usage at ${Math.round(percentage)}%`,
-            recommendedTier: nextTier,
-          };
+      for (const violation of compliance.violations) {
+        if (violation.type === 'users') {
+          recommendations.push('Upgrade to Professional or Enterprise plan to add more users');
+        } else if (violation.type === 'features') {
+          recommendations.push('Upgrade to Enterprise plan to access advanced features');
         }
       }
 
-      return { upgradeNeeded: false };
-    } catch {
-      return { upgradeNeeded: false };
-    }
-  }
-
-  /**
-   * Get tier comparison
-   */
-  static getTierComparison(): Record<SubscriptionTier, {
-    name: string;
-    price: number;
-    features: string[];
-    limits: Record<string, number>;
-  }> {
-    return {
-      STARTER: {
-        name: 'Starter',
-        price: 59,
-        features: [
-          'Basic loan management',
-          'Up to 100 loans',
-          'Basic reporting',
-          'Email support',
-        ],
-        limits: USAGE_LIMITS.STARTER,
-      },
-      PROFESSIONAL: {
-        name: 'Professional',
-        price: 199,
-        features: [
-          'Advanced analytics',
-          'Up to 1000 loans',
-          'Custom reports',
-          'Write-off management',
-          'Priority support',
-        ],
-        limits: USAGE_LIMITS.PROFESSIONAL,
-      },
-      ENTERPRISE: {
-        name: 'Enterprise',
-        price: 299,
-        features: [
-          'All features',
-          'Unlimited loans',
-          'Advanced compliance',
-          'API access',
-          'White-label',
-          'Dedicated support',
-        ],
-        limits: USAGE_LIMITS.ENTERPRISE,
-      },
-    };
-  }
-
-  /**
-   * Validate subscription for operation
-   */
-  static async validateSubscriptionForOperation(
-    organisationId: string,
-    operation: string,
-    requiredTier: SubscriptionTier = 'STARTER'
-  ): Promise<{ valid: boolean; message?: string }> {
-    try {
-      const status = await this.getSubscriptionStatus(organisationId);
-
-      if (!status.isActive) {
-        return { valid: false, message: 'Subscription is not active' };
-      }
-
-      if (status.isExpired) {
-        return { valid: false, message: 'Subscription has expired' };
-      }
-
-      const tierHierarchy = { STARTER: 1, PROFESSIONAL: 2, ENTERPRISE: 3 };
-      if (tierHierarchy[status.tier] < tierHierarchy[requiredTier]) {
-        return { valid: false, message: `Operation requires ${requiredTier} subscription` };
-      }
-
-      return { valid: true };
-    } catch {
-      return { valid: false, message: 'Error validating subscription' };
+      return recommendations;
+    } catch (error) {
+      console.error('Error getting upgrade recommendations:', error);
+      return [];
     }
   }
 }
