@@ -82,9 +82,9 @@ export default function AdminPortalLayout() {
         {/* Footer */}
         <div className="p-4 border-t border-primary/20 space-y-2">
           <Link
-            to="/admin/profile"
+            to="/profile"
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-              isActive('/admin/profile')
+              isActive('/profile')
                 ? 'bg-secondary text-primary'
                 : 'text-white hover:bg-primary/80'
             }`}
@@ -139,7 +139,7 @@ export default function AdminPortalLayout() {
             {userMenuOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
                 <Link
-                  to="/admin/profile"
+                  to="/profile"
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 first:rounded-t-lg"
                 >
                   Profile
