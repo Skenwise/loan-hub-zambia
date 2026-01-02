@@ -97,8 +97,8 @@ export default function OrganisationSetupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary to-primary/90 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl shadow-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 flex items-center justify-center p-4">
+      <Card className="w-full max-w-2xl shadow-2xl bg-white">
         <div className="p-8">
           {/* Header */}
           <div className="mb-8">
@@ -108,16 +108,16 @@ export default function OrganisationSetupPage() {
 
           {/* Progress indicator */}
           <div className="flex gap-2 mb-8">
-            <div className={`flex-1 h-2 rounded-full ${currentStep === 'organisation-info' ? 'bg-primary' : 'bg-gray-300'}`} />
-            <div className={`flex-1 h-2 rounded-full ${currentStep === 'subscription-plan' ? 'bg-primary' : 'bg-gray-300'}`} />
-            <div className={`flex-1 h-2 rounded-full ${currentStep === 'confirmation' ? 'bg-primary' : 'bg-gray-300'}`} />
+            <div className={`flex-1 h-2 rounded-full ${currentStep === 'organisation-info' ? 'bg-secondary' : 'bg-gray-300'}`} />
+            <div className={`flex-1 h-2 rounded-full ${currentStep === 'subscription-plan' ? 'bg-secondary' : 'bg-gray-300'}`} />
+            <div className={`flex-1 h-2 rounded-full ${currentStep === 'confirmation' ? 'bg-secondary' : 'bg-gray-300'}`} />
           </div>
 
           {/* Step 1: Organisation Info */}
           {currentStep === 'organisation-info' && (
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-900 mb-2">
                   Organization Name *
                 </label>
                 <Input
@@ -125,12 +125,12 @@ export default function OrganisationSetupPage() {
                   value={orgName}
                   onChange={(e) => setOrgName(e.target.value)}
                   placeholder="Enter your organization name"
-                  className="w-full"
+                  className="w-full border-gray-300 text-gray-900"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-900 mb-2">
                   Contact Email *
                 </label>
                 <Input
@@ -138,12 +138,12 @@ export default function OrganisationSetupPage() {
                   value={contactEmail}
                   onChange={(e) => setContactEmail(e.target.value)}
                   placeholder="Enter contact email"
-                  className="w-full"
+                  className="w-full border-gray-300 text-gray-900"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-900 mb-2">
                   Website URL
                 </label>
                 <Input
@@ -151,7 +151,7 @@ export default function OrganisationSetupPage() {
                   value={websiteUrl}
                   onChange={(e) => setWebsiteUrl(e.target.value)}
                   placeholder="https://example.com"
-                  className="w-full"
+                  className="w-full border-gray-300 text-gray-900"
                 />
               </div>
 
@@ -163,7 +163,7 @@ export default function OrganisationSetupPage() {
                     alert('Please fill in required fields');
                   }
                 }}
-                className="w-full bg-primary hover:bg-primary/90 text-white"
+                className="w-full bg-secondary hover:bg-secondary/90 text-white"
               >
                 Continue
               </Button>
@@ -182,8 +182,8 @@ export default function OrganisationSetupPage() {
                     onClick={() => setSelectedPlanId(plan._id || '')}
                     className={`p-4 border-2 rounded-lg cursor-pointer transition ${
                       selectedPlanId === plan._id
-                        ? 'border-primary bg-primary/5'
-                        : 'border-gray-200 hover:border-primary/50'
+                        ? 'border-secondary bg-secondary/5'
+                        : 'border-gray-200 hover:border-secondary/50'
                     }`}
                   >
                     <div className="flex justify-between items-start">
@@ -192,13 +192,13 @@ export default function OrganisationSetupPage() {
                         <p className="text-gray-600 text-sm mt-1">{plan.planDescription}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-2xl font-bold text-primary">${plan.pricePerMonth}</p>
+                        <p className="text-2xl font-bold text-secondary">${plan.pricePerMonth}</p>
                         <p className="text-gray-600 text-sm">/month</p>
                       </div>
                     </div>
                     {plan.features && (
                       <div className="mt-4 pt-4 border-t border-gray-200">
-                        <p className="text-sm text-gray-600">{plan.features}</p>
+                        <p className="text-sm text-gray-700">{plan.features}</p>
                       </div>
                     )}
                   </div>
@@ -209,7 +209,7 @@ export default function OrganisationSetupPage() {
                 <Button
                   onClick={() => setCurrentStep('organisation-info')}
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 border-gray-300 text-gray-900 hover:bg-gray-50"
                 >
                   Back
                 </Button>
@@ -222,7 +222,7 @@ export default function OrganisationSetupPage() {
                     }
                   }}
                   disabled={isLoading || !selectedPlanId}
-                  className="flex-1 bg-primary hover:bg-primary/90 text-white"
+                  className="flex-1 bg-secondary hover:bg-secondary/90 text-white"
                 >
                   {isLoading ? 'Creating...' : 'Create Organization'}
                 </Button>
@@ -239,14 +239,14 @@ export default function OrganisationSetupPage() {
                 Your organization has been successfully created. You're ready to start managing loans.
               </p>
 
-              <div className="bg-primary/5 p-4 rounded-lg">
+              <div className="bg-secondary/5 p-4 rounded-lg border border-secondary/20">
                 <p className="text-sm text-gray-600 mb-2">Organization Name:</p>
                 <p className="font-semibold text-gray-900">{orgName}</p>
               </div>
 
               <Button
                 onClick={handleCompleteSetup}
-                className="w-full bg-primary hover:bg-primary/90 text-white"
+                className="w-full bg-secondary hover:bg-secondary/90 text-white"
               >
                 Go to Dashboard
               </Button>
