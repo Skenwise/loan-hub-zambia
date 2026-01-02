@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useMember } from '@/integrations';
 import { BaseCrudService } from '@/services';
-import { Loans, Repayments, CustomerProfiles } from '@/entities';
+import { Loans, Repayments, CustomerProfiles, Organizations } from '@/entities';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,8 @@ import { Label } from '@/components/ui/label';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import PaymentModal from '@/components/PaymentModal';
+import { useCurrencyStore } from '@/store/currencyStore';
+import { useOrganisationStore } from '@/store/organisationStore';
 import { TrendingUp, DollarSign, Calendar, FileText, Download, ArrowRight, CheckCircle2, AlertCircle, Clock, Shield, Bell, Mail, Phone, MessageSquare, Send, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -31,6 +33,9 @@ interface Notification {
 
 export default function CustomerPortalPage() {
   const { member } = useMember();
+  const { formatPrice, getCurrencySymbol } = useCurrencyStore();
+  const { currentOrganisation, setOrganisation } = useOrganisationStore();
+  
   const [customer, setCustomer] = useState<CustomerProfiles | null>(null);
   const [loans, setLoans] = useState<Loans[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -63,6 +68,15 @@ export default function CustomerPortalPage() {
         const { items: allLoans } = await BaseCrudService.getAll<Loans>('loans');
         const customerLoans = allLoans?.filter(l => l.customerId === currentCustomer._id) || [];
         setLoans(customerLoans);
+
+        // Load organization data to get currency settings
+        if (currentCustomer.organisationId) {
+          const org = await BaseCrudService.getById<Organizations>('organisations', currentCustomer.organisationId);
+          if (org) {
+            setOrganisation(org);
+            // TODO: Set currency based on organization settings when available
+          }
+        }
       }
     } catch (error) {
       console.error('Failed to load customer data:', error);
@@ -246,7 +260,7 @@ export default function CustomerPortalPage() {
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="text-primary-foreground/60 text-sm font-medium mb-2">Outstanding</p>
-                        <p className="text-3xl font-bold text-primary-foreground">${(loans.reduce((sum, l) => sum + (l.outstandingBalance || 0), 0) / 1000).toFixed(1)}K</p>
+                        <p className="text-3xl font-bold text-primary-foreground">{formatPrice(loans.reduce((sum, l) => sum + (l.outstandingBalance || 0), 0))}</p>
                       </div>
                       <div className="w-10 h-10 rounded-lg bg-secondary/30 flex items-center justify-center">
                         <DollarSign className="w-5 h-5 text-secondary" />
@@ -326,11 +340,11 @@ export default function CustomerPortalPage() {
                               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                                 <div className="bg-primary/40 rounded-lg p-3">
                                   <p className="text-primary-foreground/50 text-xs uppercase tracking-wider mb-1">Principal</p>
-                                  <p className="font-semibold text-primary-foreground">${loan.principalAmount?.toLocaleString()}</p>
+                                  <p className="font-semibold text-primary-foreground">{formatPrice(loan.principalAmount || 0)}</p>
                                 </div>
                                 <div className="bg-primary/40 rounded-lg p-3">
                                   <p className="text-primary-foreground/50 text-xs uppercase tracking-wider mb-1">Outstanding</p>
-                                  <p className="font-semibold text-primary-foreground">${loan.outstandingBalance?.toLocaleString()}</p>
+                                  <p className="font-semibold text-primary-foreground">{formatPrice(loan.outstandingBalance || 0)}</p>
                                 </div>
                                 <div className="bg-primary/40 rounded-lg p-3">
                                   <p className="text-primary-foreground/50 text-xs uppercase tracking-wider mb-1">Start Date</p>

@@ -11,7 +11,7 @@ export interface CurrencyRate {
 }
 
 export const CURRENCY_RATES: Record<Currency, CurrencyRate> = {
-  USD: { code: 'USD', symbol: '$', name: 'US Dollar', rate: 1 },
+  USD: { code: 'USD', symbol: ', name: 'US Dollar', rate: 1 },
   ZMW: { code: 'ZMW', symbol: 'K', name: 'Zambian Kwacha', rate: 20.5 }, // Example rate
   GBP: { code: 'GBP', symbol: '£', name: 'British Pound', rate: 0.79 },
   EUR: { code: 'EUR', symbol: '€', name: 'Euro', rate: 0.92 },
@@ -25,12 +25,14 @@ interface CurrencyStore {
   formatPrice: (priceInUSD: number) => string;
   getCurrencySymbol: () => string;
   getCurrencyCode: () => string;
+  getCurrencyName: () => string;
+  getCurrencyRate: () => number;
 }
 
 export const useCurrencyStore = create<CurrencyStore>()(
   persist(
     (set, get) => ({
-      currency: 'USD',
+      currency: 'ZMW', // Default to Zambian Kwacha
       
       setCurrency: (currency: Currency) => set({ currency }),
       
@@ -55,6 +57,16 @@ export const useCurrencyStore = create<CurrencyStore>()(
       getCurrencyCode: () => {
         const { currency } = get();
         return currency;
+      },
+
+      getCurrencyName: () => {
+        const { currency } = get();
+        return CURRENCY_RATES[currency].name;
+      },
+
+      getCurrencyRate: () => {
+        const { currency } = get();
+        return CURRENCY_RATES[currency].rate;
       },
     }),
     {

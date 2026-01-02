@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertCircle, CheckCircle2, Smartphone, CreditCard, Building2, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useCurrencyStore } from '@/store/currencyStore';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -19,6 +20,9 @@ interface PaymentModalProps {
 type PaymentMethod = 'mobile-money' | 'bank-transfer' | 'card';
 
 export default function PaymentModal({ isOpen, onClose, loanId, loanNumber, outstandingBalance }: PaymentModalProps) {
+  const { getCurrencySymbol, formatPrice } = useCurrencyStore();
+  const currencySymbol = getCurrencySymbol();
+  
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('mobile-money');
   const [amount, setAmount] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -105,7 +109,7 @@ export default function PaymentModal({ isOpen, onClose, loanId, loanNumber, outs
               Payment Successful!
             </h3>
             <p className="text-primary-foreground/70 mb-4">
-              Your payment of ${parseFloat(amount).toFixed(2)} has been processed successfully.
+              Your payment of {formatPrice(parseFloat(amount))} has been processed successfully.
             </p>
             <p className="text-sm text-primary-foreground/60">
               You will receive a confirmation email shortly.
@@ -119,7 +123,7 @@ export default function PaymentModal({ isOpen, onClose, loanId, loanNumber, outs
                 <div>
                   <p className="text-primary-foreground/60 text-sm mb-1">Outstanding Balance</p>
                   <p className="font-heading text-2xl font-bold text-primary-foreground">
-                    ${outstandingBalance.toLocaleString()}
+                    {formatPrice(outstandingBalance)}
                   </p>
                 </div>
                 <Button
@@ -175,10 +179,10 @@ export default function PaymentModal({ isOpen, onClose, loanId, loanNumber, outs
                       {/* Amount Input */}
                       <div>
                         <Label htmlFor="amount" className="text-primary-foreground font-medium mb-2 block">
-                          Payment Amount (USD)
+                          Payment Amount ({getCurrencySymbol()})
                         </Label>
                         <div className="relative">
-                          <span className="absolute left-3 top-3 text-primary-foreground/60">$</span>
+                          <span className="absolute left-3 top-3 text-primary-foreground/60">{currencySymbol}</span>
                           <Input
                             id="amount"
                             type="number"
@@ -193,7 +197,7 @@ export default function PaymentModal({ isOpen, onClose, loanId, loanNumber, outs
                           />
                         </div>
                         <p className="text-xs text-primary-foreground/60 mt-1">
-                          Maximum: ${outstandingBalance.toFixed(2)}
+                          Maximum: {formatPrice(outstandingBalance)}
                         </p>
                       </div>
 
@@ -280,7 +284,7 @@ export default function PaymentModal({ isOpen, onClose, loanId, loanNumber, outs
                             </>
                           ) : (
                             <>
-                              Pay ${parseFloat(amount || '0').toFixed(2)}
+                              Pay {formatPrice(parseFloat(amount || '0'))}
                             </>
                           )}
                         </Button>
