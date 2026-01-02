@@ -22,6 +22,9 @@ import {
   RefreshCw,
   Filter,
   Calendar,
+  ArrowRight,
+  Clock,
+  CheckCircle2,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -228,14 +231,23 @@ export default function ComprehensiveReportsPage() {
   const handleExportCSV = () => {
     if (!reportData || !selectedReport) return;
 
-    const csv = ReportingService.exportToCSV([reportData], Object.keys(reportData));
-    const element = document.createElement('a');
-    element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv));
-    element.setAttribute('download', `${selectedReport.id}-${Date.now()}.csv`);
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
+    try {
+      const csv = ReportingService.exportToCSV([reportData], Object.keys(reportData));
+      const element = document.createElement('a');
+      element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv));
+      element.setAttribute('download', `${selectedReport.id}-${Date.now()}.csv`);
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    } catch (error) {
+      console.error('Error exporting CSV:', error);
+    }
+  };
+
+  const handleExportPDF = () => {
+    if (!selectedReport) return;
+    alert('PDF export feature coming soon. Please use CSV export for now.');
   };
 
   return (

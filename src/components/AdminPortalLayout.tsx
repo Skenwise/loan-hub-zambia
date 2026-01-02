@@ -30,12 +30,20 @@ export default function AdminPortalLayout() {
     { path: '/admin/loans/approve', label: 'Approvals', icon: FileText },
     { path: '/admin/loans/disburse', label: 'Disbursement', icon: FileText },
     { path: '/admin/repayments', label: 'Repayments', icon: FileText },
+    { path: '/admin/repayments/bulk', label: 'Bulk Repayment', icon: FileText },
     { path: '/admin/collateral-register', label: 'Collateral Register', icon: FileText },
     { path: '/admin/reports', label: 'Reports', icon: BarChart3 },
     { path: '/admin/reports/advanced', label: 'Advanced Reports', icon: BarChart3 },
+    { path: '/admin/reports/comprehensive', label: 'Comprehensive Reports', icon: BarChart3 },
+    { path: '/admin/reports/disbursements', label: 'Disbursement Reports', icon: BarChart3 },
     { path: '/admin/compliance/ifrs9', label: 'IFRS 9 Compliance', icon: BarChart3 },
-    { path: '/admin/settings/organisation-admin', label: 'Org Settings', icon: Settings },
+    { path: '/admin/settings/organisation', label: 'Organisation Settings', icon: Settings },
+    { path: '/admin/settings/organisation-admin', label: 'Org Admin Settings', icon: Settings },
     { path: '/admin/settings/branch-manager', label: 'Branch Settings', icon: Settings },
+    { path: '/admin/settings/kyc-configuration', label: 'KYC Configuration', icon: Settings },
+    { path: '/admin/settings/currency', label: 'Currency Settings', icon: Settings },
+    { path: '/admin/settings/system-owner', label: 'System Settings', icon: Settings },
+    { path: '/admin/dashboard/loan-officer', label: 'Loan Officer Dashboard', icon: LayoutDashboard },
   ];
 
   const isActive = (path: string) => location.pathname === path;
