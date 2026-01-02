@@ -275,66 +275,100 @@ export default function LoanApplicationPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {customers.length === 0 ? (
-                <div className="text-center py-12">
-                  <AlertCircle className="w-12 h-12 text-primary-foreground/30 mx-auto mb-4" />
-                  <p className="text-primary-foreground mb-2">No customers found</p>
-                  <p className="text-sm text-primary-foreground/70">Please add customers first in the Customer Management section</p>
-                </div>
-              ) : (
-                <>
-                  <div className="space-y-3 max-h-96 overflow-y-auto border border-primary-foreground/10 rounded-lg p-4">
-                    {customers.map(customer => (
-                      <button
-                        key={customer._id}
-                        onClick={() => setSelectedCustomerId(customer._id || '')}
-                        className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-                          selectedCustomerId === customer._id
-                            ? 'bg-secondary/10 border-secondary'
-                            : 'bg-primary-foreground/5 border-primary-foreground/10 hover:border-primary-foreground/20'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-semibold text-primary-foreground">
-                              {customer.firstName} {customer.lastName}
-                            </p>
-                            <p className="text-sm text-primary-foreground/70">{customer.nationalIdNumber}</p>
-                            <p className="text-sm text-primary-foreground/70">{customer.emailAddress}</p>
-                          </div>
-                          {selectedCustomerId === customer._id && (
-                            <CheckCircle className="w-5 h-5 text-secondary" />
-                          )}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
+              {/* Tabs for Existing Customers and Create New */}
+              <Tabs defaultValue="existing" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 bg-primary-foreground/10">
+                  <TabsTrigger value="existing" className="data-[state=active]:bg-secondary data-[state=active]:text-primary">
+                    Existing Customers
+                  </TabsTrigger>
+                  <TabsTrigger value="create" className="data-[state=active]:bg-secondary data-[state=active]:text-primary">
+                    Create New Customer
+                  </TabsTrigger>
+                </TabsList>
 
-                  {selectedCustomer && (
-                    <div className="bg-secondary/10 border border-secondary/20 rounded-lg p-6">
-                      <h3 className="font-semibold text-primary-foreground mb-4">Customer Details</h3>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <p className="text-primary-foreground/70">Email</p>
-                          <p className="font-medium text-primary-foreground">{selectedCustomer.emailAddress}</p>
-                        </div>
-                        <div>
-                          <p className="text-primary-foreground/70">Phone</p>
-                          <p className="font-medium text-primary-foreground">{selectedCustomer.phoneNumber}</p>
-                        </div>
-                        <div>
-                          <p className="text-primary-foreground/70">Credit Score</p>
-                          <p className="font-medium text-primary-foreground">{selectedCustomer.creditScore || 'N/A'}</p>
-                        </div>
-                        <div>
-                          <p className="text-primary-foreground/70">KYC Status</p>
-                          <p className="font-medium text-primary-foreground">{selectedCustomer.kycVerificationStatus}</p>
-                        </div>
-                      </div>
+                {/* Existing Customers Tab */}
+                <TabsContent value="existing" className="space-y-4">
+                  {customers.length === 0 ? (
+                    <div className="text-center py-12">
+                      <AlertCircle className="w-12 h-12 text-primary-foreground/30 mx-auto mb-4" />
+                      <p className="text-primary-foreground mb-2">No customers found</p>
+                      <p className="text-sm text-primary-foreground/70">Switch to the "Create New Customer" tab to add a new customer</p>
                     </div>
+                  ) : (
+                    <>
+                      <div className="space-y-3 max-h-96 overflow-y-auto border border-primary-foreground/10 rounded-lg p-4">
+                        {customers.map(customer => (
+                          <button
+                            key={customer._id}
+                            onClick={() => setSelectedCustomerId(customer._id || '')}
+                            className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                              selectedCustomerId === customer._id
+                                ? 'bg-secondary/10 border-secondary'
+                                : 'bg-primary-foreground/5 border-primary-foreground/10 hover:border-primary-foreground/20'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="font-semibold text-primary-foreground">
+                                  {customer.firstName} {customer.lastName}
+                                </p>
+                                <p className="text-sm text-primary-foreground/70">{customer.nationalIdNumber}</p>
+                                <p className="text-sm text-primary-foreground/70">{customer.emailAddress}</p>
+                              </div>
+                              {selectedCustomerId === customer._id && (
+                                <CheckCircle className="w-5 h-5 text-secondary" />
+                              )}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+
+                      {selectedCustomer && (
+                        <div className="bg-secondary/10 border border-secondary/20 rounded-lg p-6">
+                          <h3 className="font-semibold text-primary-foreground mb-4">Customer Details</h3>
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <p className="text-primary-foreground/70">Email</p>
+                              <p className="font-medium text-primary-foreground">{selectedCustomer.emailAddress}</p>
+                            </div>
+                            <div>
+                              <p className="text-primary-foreground/70">Phone</p>
+                              <p className="font-medium text-primary-foreground">{selectedCustomer.phoneNumber}</p>
+                            </div>
+                            <div>
+                              <p className="text-primary-foreground/70">Credit Score</p>
+                              <p className="font-medium text-primary-foreground">{selectedCustomer.creditScore || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-primary-foreground/70">KYC Status</p>
+                              <p className="font-medium text-primary-foreground">{selectedCustomer.kycVerificationStatus}</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
-                </>
-              )}
+                </TabsContent>
+
+                {/* Create New Customer Tab */}
+                <TabsContent value="create" className="space-y-4">
+                  <div className="bg-secondary/10 border border-secondary/20 rounded-lg p-8 text-center">
+                    <Users className="w-12 h-12 text-secondary mx-auto mb-4" />
+                    <h3 className="font-semibold text-primary-foreground mb-2 text-lg">Create New Customer</h3>
+                    <p className="text-primary-foreground/70 mb-6">
+                      Navigate to the Customers section to create a new customer profile. Once created, you can select them here.
+                    </p>
+                    <Button
+                      onClick={() => navigate('/admin/customers')}
+                      className="bg-secondary hover:bg-secondary/90 text-primary font-semibold"
+                    >
+                      <Users className="w-4 h-4 mr-2" />
+                      Go to Customers Section
+                      <ChevronRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </div>
+                </TabsContent>
+              </Tabs>
 
               <div className="flex gap-4 pt-6">
                 <Button
@@ -344,7 +378,7 @@ export default function LoanApplicationPage() {
                   className="flex-1"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
+                  Previous Page
                 </Button>
                 <Button
                   onClick={goToNextStep}
