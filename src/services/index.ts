@@ -19,6 +19,7 @@ export { SubscriptionEnforcementService } from './SubscriptionEnforcementService
 export { CollateralService } from './CollateralService';
 export { KYCService } from './KYCService';
 export { EmailService } from './EmailService';
+export { InitializationService } from './InitializationService';
 
 // Collection IDs
 export const CollectionIds = {

@@ -9,7 +9,7 @@ import { useOrganisationStore } from '@/store/organisationStore';
 import { useCurrencyStore, CURRENCY_RATES } from '@/store/currencyStore';
 import { useNavigate } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { StaffService, RoleService } from '@/services';
+import { StaffService, RoleService, InitializationService } from '@/services';
 
 type SetupStep = 'organisation-info' | 'subscription-plan' | 'confirmation';
 
@@ -63,6 +63,13 @@ export default function OrganisationSetupPage() {
 
     setIsLoading(true);
     try {
+      // Initialize system roles and plans if not already done
+      const isInitialized = await InitializationService.isSystemInitialized();
+      if (!isInitialized) {
+        console.log('System not initialized, initializing now...');
+        await InitializationService.initializeSystem();
+      }
+
       // Create organisation
       const organisationId = crypto.randomUUID();
       const newOrganisation: Organizations = {
