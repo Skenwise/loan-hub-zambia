@@ -34,8 +34,19 @@ export default function OrganisationSetupPage() {
   const loadSubscriptionPlans = async () => {
     try {
       const { items } = await BaseCrudService.getAll<SubscriptionPlans>('subscriptionplans');
-      const activePlans = items.filter(plan => plan.isActive === true);
-      setSubscriptionPlans(activePlans);
+      // Filter to only show active plans with the correct names
+      const allowedPlanNames = ['Starter', 'Professional', 'Enterprise'];
+      const activePlans = items.filter(plan => 
+        plan.isActive === true && 
+        plan.planName && 
+        allowedPlanNames.includes(plan.planName)
+      );
+      // Sort by the order: Starter, Professional, Enterprise
+      const sortedPlans = activePlans.sort((a, b) => {
+        const orderMap = { 'Starter': 0, 'Professional': 1, 'Enterprise': 2 };
+        return (orderMap[a.planName as keyof typeof orderMap] ?? 999) - (orderMap[b.planName as keyof typeof orderMap] ?? 999);
+      });
+      setSubscriptionPlans(sortedPlans);
     } catch (error) {
       console.error('Failed to load subscription plans:', error);
     }
