@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import PaymentModal from '@/components/PaymentModal';
 import { TrendingUp, DollarSign, Calendar, FileText, Download, ArrowRight, CheckCircle2, AlertCircle, Clock, Shield, Bell, Mail, Phone, MessageSquare, Send, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -38,6 +39,8 @@ export default function CustomerPortalPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [contactSubmitted, setContactSubmitted] = useState(false);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [selectedLoanForPayment, setSelectedLoanForPayment] = useState<Loans | null>(null);
 
   useEffect(() => {
     loadCustomerData();
@@ -365,7 +368,14 @@ export default function CustomerPortalPage() {
                                 </Button>
                               </Link>
                               {loan.loanStatus === 'disbursed' && (
-                                <Button className="w-full bg-secondary text-primary hover:bg-secondary/90">
+                                <Button 
+                                  className="w-full bg-secondary text-primary hover:bg-secondary/90 font-semibold"
+                                  onClick={() => {
+                                    setSelectedLoanForPayment(loan);
+                                    setPaymentModalOpen(true);
+                                  }}
+                                >
+                                  <DollarSign className="w-4 h-4 mr-2" />
                                   Make Payment
                                 </Button>
                               )}
@@ -383,8 +393,40 @@ export default function CustomerPortalPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.7 }}
-                className="grid md:grid-cols-2 gap-6"
+                className="grid md:grid-cols-3 gap-6"
               >
+                {/* Make a Payment Card - Prominent */}
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="md:col-span-1"
+                >
+                  <Card className="p-8 bg-gradient-to-br from-secondary/30 to-secondary/10 border-secondary/50 hover:border-secondary/70 transition-all shadow-lg">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-12 h-12 rounded-lg bg-secondary/40 flex items-center justify-center">
+                        <DollarSign className="w-6 h-6 text-secondary" />
+                      </div>
+                    </div>
+                    <h3 className="font-heading text-xl font-bold text-primary-foreground mb-2">Make a Payment</h3>
+                    <p className="text-primary-foreground/70 text-sm mb-4">
+                      Pay your loan using mobile money, bank transfer, or card. Quick and secure.
+                    </p>
+                    <Button 
+                      className="bg-secondary text-primary hover:bg-secondary/90 w-full font-semibold"
+                      onClick={() => {
+                        const activeLoan = loans.find(l => l.loanStatus === 'disbursed');
+                        if (activeLoan) {
+                          setSelectedLoanForPayment(activeLoan);
+                          setPaymentModalOpen(true);
+                        }
+                      }}
+                      disabled={!loans.some(l => l.loanStatus === 'disbursed')}
+                    >
+                      <DollarSign className="w-4 h-4 mr-2" />
+                      Pay Now
+                    </Button>
+                  </Card>
+                </motion.div>
+
                 <Card className="p-8 bg-gradient-to-br from-brandaccent/20 to-transparent border-brandaccent/30 hover:border-brandaccent/50 transition-all">
                   <div className="flex items-start justify-between mb-4">
                     <div className="w-12 h-12 rounded-lg bg-brandaccent/30 flex items-center justify-center">
@@ -680,6 +722,20 @@ export default function CustomerPortalPage() {
       </main>
 
       <Footer />
+
+      {/* Payment Modal */}
+      {selectedLoanForPayment && (
+        <PaymentModal
+          isOpen={paymentModalOpen}
+          onClose={() => {
+            setPaymentModalOpen(false);
+            setSelectedLoanForPayment(null);
+          }}
+          loanId={selectedLoanForPayment._id}
+          loanNumber={selectedLoanForPayment.loanNumber || 'Unknown'}
+          outstandingBalance={selectedLoanForPayment.outstandingBalance || 0}
+        />
+      )}
     </div>
   );
 }

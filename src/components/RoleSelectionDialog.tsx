@@ -118,17 +118,17 @@ export default function RoleSelectionDialog({ isOpen, onClose, onSelectRole }: R
               </h3>
 
               <p className="text-primary-foreground/70 mb-6 leading-relaxed">
-                Apply for loans, track applications, and manage repayments. Limited access to personal account.
+                Track applications, manage repayments, and access loan details. Limited access to personal account.
               </p>
 
               <ul className="space-y-3 mb-8">
                 {[
-                  'Apply for loans',
                   'Track application status',
                   'View loan details',
                   'Make repayments',
                   'Download statements',
-                  'Manage profile'
+                  'Manage profile',
+                  'Access support'
                 ].map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-3 text-sm text-primary-foreground/60">
                     <div className="w-5 h-5 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
