@@ -108,9 +108,6 @@ export default function Header() {
                 <Link to="/customer-portal/loans" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
                   My Loans
                 </Link>
-                <Link to="/customer-portal/apply" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
-                  Apply
-                </Link>
               </>
             )}
           </nav>

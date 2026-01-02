@@ -445,13 +445,8 @@ export default function KYCUploadPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-primary-foreground/70 mb-4">
-                  Your KYC verification is complete. You can now apply for loans.
+                  Your KYC verification is complete. Contact your administrator to apply for loans.
                 </p>
-                <Link to="/customer-portal/apply">
-                  <Button className="bg-secondary text-primary hover:bg-secondary/90">
-                    Apply for a Loan
-                  </Button>
-                </Link>
               </CardContent>
             </Card>
           </motion.div>

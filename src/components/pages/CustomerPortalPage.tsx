@@ -190,13 +190,8 @@ export default function CustomerPortalPage() {
               <FileText className="w-16 h-16 text-primary-foreground/30 mx-auto mb-4" />
               <h3 className="font-heading text-2xl font-bold text-primary-foreground mb-2">No Active Loans</h3>
               <p className="text-primary-foreground/70 mb-6 max-w-md mx-auto">
-                You don't have any loans yet. Apply for a loan to get started and access funds quickly.
+                You don't have any loans yet. Contact your administrator to apply for a loan.
               </p>
-              <Link to="/customer-portal/apply">
-                <Button className="bg-secondary text-primary hover:bg-secondary/90">
-                  Apply for Your First Loan
-                </Button>
-              </Link>
             </Card>
           ) : (
             <div className="space-y-4">
@@ -277,25 +272,8 @@ export default function CustomerPortalPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.7 }}
-          className="mt-12 grid md:grid-cols-3 gap-6"
+          className="mt-12 grid md:grid-cols-2 gap-6"
         >
-          <Link to="/customer-portal/apply" className="group">
-            <Card className="p-8 bg-gradient-to-br from-secondary/20 to-transparent border-secondary/30 hover:border-secondary/50 transition-all h-full">
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 rounded-lg bg-secondary/30 flex items-center justify-center group-hover:bg-secondary/40 transition-all">
-                  <ArrowRight className="w-6 h-6 text-secondary" />
-                </div>
-              </div>
-              <h3 className="font-heading text-xl font-bold text-primary-foreground mb-2">Apply for Loan</h3>
-              <p className="text-primary-foreground/70 text-sm mb-4">
-                Need more funds? Apply for a new loan in minutes with our simple process.
-              </p>
-              <div className="text-secondary font-semibold text-sm flex items-center gap-2">
-                Start Now <ArrowRight className="w-4 h-4" />
-              </div>
-            </Card>
-          </Link>
-
           <Card className="p-8 bg-gradient-to-br from-brandaccent/20 to-transparent border-brandaccent/30 hover:border-brandaccent/50 transition-all">
             <div className="flex items-start justify-between mb-4">
               <div className="w-12 h-12 rounded-lg bg-brandaccent/30 flex items-center justify-center">
@@ -321,7 +299,7 @@ export default function CustomerPortalPage() {
             <h3 className="font-heading text-xl font-bold text-primary-foreground mb-2">KYC Verification</h3>
             <p className="text-primary-foreground/70 text-sm mb-4">
               {kycStatus === 'APPROVED'
-                ? 'Your identity has been verified. You can apply for loans.'
+                ? 'Your identity has been verified.'
                 : 'Upload your documents to complete KYC verification.'}
             </p>
             <Link to="/customer-portal/kyc">

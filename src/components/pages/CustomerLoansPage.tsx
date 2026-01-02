@@ -135,11 +135,6 @@ export default function CustomerLoansPage() {
                 Track your loan applications and repayments
               </p>
             </div>
-            <Link to="/customer-portal/apply">
-              <Button className="bg-secondary text-primary hover:bg-secondary/90">
-                Apply for Loan
-              </Button>
-            </Link>
           </div>
         </motion.div>
 
@@ -316,13 +311,8 @@ export default function CustomerLoansPage() {
                 <TrendingUp className="w-12 h-12 text-primary-foreground/30 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-primary-foreground mb-2">No Loans Yet</h3>
                 <p className="text-primary-foreground/70 mb-6">
-                  You haven't applied for any loans yet. Start by applying for a loan.
+                  You haven't applied for any loans yet. Contact your administrator to apply for a loan.
                 </p>
-                <Link to="/customer-portal/apply">
-                  <Button className="bg-secondary text-primary hover:bg-secondary/90">
-                    Apply for Your First Loan
-                  </Button>
-                </Link>
               </CardContent>
             </Card>
           )}
