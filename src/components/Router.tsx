@@ -34,6 +34,7 @@ import KYCUploadPage from '@/components/pages/KYCUploadPage';
 import KYCConfigurationPage from '@/components/pages/KYCConfigurationPage';
 import DisbursementReportsPage from '@/components/pages/DisbursementReportsPage';
 import LoanOfficerDashboardPage from '@/components/pages/LoanOfficerDashboardPage';
+import RepaymentManagementPage from '@/components/pages/RepaymentManagementPage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -213,6 +214,14 @@ const router = createBrowserRouter([
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to access your dashboard">
             <LoanOfficerDashboardPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "repayments",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to access repayment management">
+            <RepaymentManagementPage />
           </MemberProtectedRoute>
         ),
       },

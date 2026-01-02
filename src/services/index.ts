@@ -24,6 +24,7 @@ export { DisbursementService } from './DisbursementService';
 export { RolePermissionsService } from './RolePermissionsService';
 export { ApprovalLimitsService } from './ApprovalLimitsService';
 export { CreditCommitteeService } from './CreditCommitteeService';
+export { RepaymentService } from './RepaymentService';
 
 // Collection IDs
 export const CollectionIds = {
@@ -70,6 +71,7 @@ export const Permissions = {
 
   // Finance Officer permissions
   DISBURSE_LOAN: 'disburse_loan',
+  POST_REPAYMENT: 'post_repayment',
   RECORD_REPAYMENT: 'record_repayment',
   VIEW_REPAYMENT: 'view_repayment',
   MANAGE_PENALTIES: 'manage_penalties',
