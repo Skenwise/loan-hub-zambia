@@ -5,13 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { useOrganisationStore } from '@/store/organisationStore';
+import { useCurrencyStore, CURRENCY_RATES } from '@/store/currencyStore';
 import { useNavigate } from 'react-router-dom';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type SetupStep = 'organisation-info' | 'subscription-plan' | 'confirmation';
 
 export default function OrganisationSetupPage() {
   const navigate = useNavigate();
   const { setOrganisation, setSubscriptionPlan } = useOrganisationStore();
+  const { currency, setCurrency, formatPrice } = useCurrencyStore();
 
   const [currentStep, setCurrentStep] = useState<SetupStep>('organisation-info');
   const [isLoading, setIsLoading] = useState(false);
@@ -22,6 +25,7 @@ export default function OrganisationSetupPage() {
   const [contactEmail, setContactEmail] = useState('');
   const [websiteUrl, setWebsiteUrl] = useState('');
   const [selectedPlanId, setSelectedPlanId] = useState<string>('');
+  const [selectedCurrency, setSelectedCurrency] = useState<string>(currency);
 
   useEffect(() => {
     loadSubscriptionPlans();
@@ -96,6 +100,11 @@ export default function OrganisationSetupPage() {
     navigate('/admin/dashboard');
   };
 
+  const handleCurrencyChange = (newCurrency: string) => {
+    setSelectedCurrency(newCurrency);
+    setCurrency(newCurrency as any);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 flex items-center justify-center p-4">
       <Card className="w-full max-w-2xl shadow-2xl bg-white">
@@ -155,12 +164,30 @@ export default function OrganisationSetupPage() {
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">
+                  Currency *
+                </label>
+                <Select value={selectedCurrency} onValueChange={handleCurrencyChange}>
+                  <SelectTrigger className="w-full border-gray-300 text-gray-900">
+                    <SelectValue placeholder="Select currency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(CURRENCY_RATES).map(([code, rate]) => (
+                      <SelectItem key={code} value={code}>
+                        {rate.name} ({rate.symbol})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <Button
                 onClick={() => {
-                  if (orgName && contactEmail) {
+                  if (orgName && contactEmail && selectedCurrency) {
                     setCurrentStep('subscription-plan');
                   } else {
-                    alert('Please fill in required fields');
+                    alert('Please fill in all required fields');
                   }
                 }}
                 className="w-full bg-secondary hover:bg-secondary/90 text-white"
@@ -192,7 +219,7 @@ export default function OrganisationSetupPage() {
                         <p className="text-gray-600 text-sm mt-1">{plan.planDescription}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-2xl font-bold text-secondary">${plan.pricePerMonth}</p>
+                        <p className="text-2xl font-bold text-secondary">{formatPrice(plan.pricePerMonth || 0)}</p>
                         <p className="text-gray-600 text-sm">/month</p>
                       </div>
                     </div>
