@@ -23,7 +23,6 @@ import DisbursementPage from '@/components/pages/DisbursementPage';
 import IFRS9CompliancePage from '@/components/pages/IFRS9CompliancePage';
 import AdvancedReportsPage from '@/components/pages/AdvancedReportsPage';
 import CustomerPortalPage from '@/components/pages/CustomerPortalPage';
-import CustomerLoanApplicationPage from '@/components/pages/CustomerLoanApplicationPage';
 import CustomerLoansPage from '@/components/pages/CustomerLoansPage';
 import AdminLoansManagementPage from '@/components/pages/AdminLoansManagementPage';
 import CurrencySettingsPage from '@/components/pages/CurrencySettingsPage';
@@ -86,14 +85,6 @@ const router = createBrowserRouter([
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to access your portal">
             <CustomerPortalPage />
-          </MemberProtectedRoute>
-        ),
-      },
-      {
-        path: "customer-portal/apply",
-        element: (
-          <MemberProtectedRoute messageToSignIn="Sign in to apply for a loan">
-            <CustomerLoanApplicationPage />
           </MemberProtectedRoute>
         ),
       },

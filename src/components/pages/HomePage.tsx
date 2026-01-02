@@ -7,6 +7,7 @@ import { Image } from '@/components/ui/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import RoleSelectionDialog from '@/components/RoleSelectionDialog';
+import { useNavigate as useNavigateRouter } from 'react-router-dom';
 import { 
   Shield, 
   TrendingUp, 

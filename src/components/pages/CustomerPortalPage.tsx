@@ -92,12 +92,6 @@ export default function CustomerPortalPage() {
                 Your personal loan dashboard. Manage loans, track payments, and access documents.
               </p>
             </div>
-            <Link to="/customer-portal/apply">
-              <Button className="bg-secondary text-primary hover:bg-secondary/90 whitespace-nowrap">
-                <ArrowRight className="w-4 h-4 mr-2" />
-                Apply for Loan
-              </Button>
-            </Link>
           </div>
         </motion.div>
 
