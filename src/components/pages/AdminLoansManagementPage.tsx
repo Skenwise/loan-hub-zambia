@@ -39,6 +39,13 @@ export default function AdminLoansManagementPage() {
     const checkPermissions = async () => {
       if (!currentStaff?._id || !currentOrganisation?._id) return;
 
+      // First check if user is admin/owner - grant full access
+      if (currentStaff?.role === 'System Owner' || currentStaff?.role === 'Admin/Owner') {
+        setCanApprove(true);
+        setCanDisburse(true);
+        return;
+      }
+
       const canApproveLoan = await AuthorizationService.hasPermission(
         currentStaff._id,
         currentOrganisation._id,

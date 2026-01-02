@@ -57,34 +57,58 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
           // Get staff member by email
           let staffMember = await StaffService.getStaffByEmail(member.loginEmail);
           
-          // If staff member doesn't exist, create a temporary admin staff record for system access
-          if (!staffMember) {
-            console.warn('Staff member not found for email:', member.loginEmail);
-            // Create a temporary staff member with System Owner role for admin access
-            staffMember = {
-              _id: crypto.randomUUID(),
-              email: member.loginEmail,
-              fullName: member.profile?.nickname || 'Administrator',
-              role: 'System Owner',
-              status: 'ACTIVE',
-            } as StaffMembers;
-          }
+          // If staff member doesn't exist, create one with Admin/Owner role
+           if (!staffMember) {
+             console.warn('Staff member not found for email:', member.loginEmail);
+             // Create a staff member with Admin/Owner role
+             const newStaffId = crypto.randomUUID();
+             staffMember = {
+               _id: newStaffId,
+               email: member.loginEmail,
+               fullName: member.profile?.nickname || 'Administrator',
+               role: 'Admin/Owner',
+               status: 'active',
+               employeeId: `EMP-${newStaffId.substring(0, 8).toUpperCase()}`,
+               dateHired: new Date(),
+             } as StaffMembers;
+             
+             // Create the staff member in the database
+             await BaseCrudService.create('staffmembers', staffMember);
+             
+             // Assign Admin/Owner role
+             const adminRole = await RoleService.getRoleByName('Admin/Owner');
+             if (adminRole) {
+               await StaffService.assignRole(
+                 newStaffId,
+                 adminRole._id,
+                 currentOrganisation._id,
+                 member.loginEmail
+               );
+             }
+           }
           
           setStaff(staffMember);
 
           // Get staff member's role assignment
           let roleAssignment = await StaffService.getStaffRole(staffMember._id, currentOrganisation._id);
           
-          // If no role assignment exists, assign System Owner role for admin access
+          // If no role assignment exists, assign Admin/Owner role
           if (!roleAssignment) {
-            console.warn('No role assignment found for staff member, assigning System Owner role');
-            // Get or create System Owner role
-            const systemOwnerRole = await RoleService.getRoleByName('System Owner');
-            if (systemOwnerRole) {
+            console.warn('No role assignment found for staff member, assigning Admin/Owner role');
+            // Get or create Admin/Owner role
+            const adminRole = await RoleService.getRoleByName('Admin/Owner');
+            if (adminRole) {
+              await StaffService.assignRole(
+                staffMember._id,
+                adminRole._id,
+                currentOrganisation._id,
+                member.loginEmail
+              );
+              
               roleAssignment = {
                 _id: crypto.randomUUID(),
                 staffMemberId: staffMember._id,
-                roleId: systemOwnerRole._id,
+                roleId: adminRole._id,
                 organizationId: currentOrganisation._id,
                 status: 'ACTIVE',
               };
@@ -104,22 +128,25 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
           }
         } catch (error) {
           console.error('Failed to load staff information:', error);
-          // Create a fallback System Owner staff member to allow admin access
+          // Create a fallback Admin/Owner staff member to allow admin access
           try {
+            const fallbackStaffId = crypto.randomUUID();
             const fallbackStaff: StaffMembers = {
-              _id: crypto.randomUUID(),
+              _id: fallbackStaffId,
               email: member?.loginEmail || 'admin@system.local',
               fullName: member?.profile?.nickname || 'System Administrator',
-              role: 'System Owner',
-              status: 'ACTIVE',
+              role: 'Admin/Owner',
+              status: 'active',
+              employeeId: `EMP-${fallbackStaffId.substring(0, 8).toUpperCase()}`,
+              dateHired: new Date(),
             };
             setStaff(fallbackStaff);
             
-            // Get System Owner role
-            const systemOwnerRole = await RoleService.getRoleByName('System Owner');
-            if (systemOwnerRole) {
-              setRole(systemOwnerRole);
-              const permissions = await RoleService.getRolePermissions(systemOwnerRole._id);
+            // Get Admin/Owner role
+            const adminRole = await RoleService.getRoleByName('Admin/Owner');
+            if (adminRole) {
+              setRole(adminRole);
+              const permissions = await RoleService.getRolePermissions(adminRole._id);
               setPermissions(permissions);
             }
           } catch (fallbackError) {

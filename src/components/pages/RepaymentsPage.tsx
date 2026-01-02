@@ -57,6 +57,12 @@ export default function RepaymentsPage() {
     const checkPermissions = async () => {
       if (!currentStaff?._id || !currentOrganisation?._id) return;
 
+      // First check if user is admin/owner - grant full access
+      if (currentStaff?.role === 'System Owner' || currentStaff?.role === 'Admin/Owner') {
+        setCanRecordPayment(true);
+        return;
+      }
+
       const hasPermission = await AuthorizationService.hasPermission(
         currentStaff._id,
         currentOrganisation._id,

@@ -58,6 +58,12 @@ export default function DisbursementPage() {
         return;
       }
 
+      // First check if user is admin/owner - grant full access
+      if (currentStaff?.role === 'System Owner' || currentStaff?.role === 'Admin/Owner') {
+        setCanDisburse(true);
+        return;
+      }
+
       try {
         const hasPermission = await AuthorizationService.hasPermission(
           currentStaff._id,
