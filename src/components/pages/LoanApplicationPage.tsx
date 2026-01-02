@@ -25,7 +25,9 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-type ApplicationStep = 'customer' | 'product' | 'terms' | 'calculations' | 'schedule' | 'kyc-docs' | 'collateral' | 'guarantors' | 'risk' | 'approval' | 'notes' | 'review' | 'confirmation';
+type ApplicationStep = 'customer' | 'product' | 'terms' | 'interest-method' | 'calculations' | 'schedule' | 'kyc-docs' | 'collateral' | 'guarantors' | 'risk' | 'approval' | 'notes' | 'review' | 'confirmation';
+
+type InterestCalculationMethod = 'simple' | 'compound' | 'declining-balance' | 'flat-rate';
 
 export default function LoanApplicationPage() {
   const navigate = useNavigate();
@@ -50,6 +52,7 @@ export default function LoanApplicationPage() {
   const [riskAssessment, setRiskAssessment] = useState('');
   const [approvalNotes, setApprovalNotes] = useState('');
   const [comments, setComments] = useState('');
+  const [interestCalculationMethod, setInterestCalculationMethod] = useState<InterestCalculationMethod>('simple');
 
   // Calculated values
   const selectedProduct = loanProducts.find(p => p._id === selectedProductId);
@@ -59,25 +62,108 @@ export default function LoanApplicationPage() {
   const interestRate = selectedProduct?.interestRate || 0;
   const months = parseInt(loanTermMonths || '1');
   
-  // Calculate total interest
-  const totalInterest = principal * (interestRate / 100);
-  const totalAmount = principal + totalInterest;
-  const monthlyPayment = months > 0 ? totalAmount / months : 0;
+  // Calculate interest based on selected method
+  const calculateInterest = () => {
+    if (principal <= 0 || months <= 0) return { totalInterest: 0, totalAmount: principal, monthlyPayment: 0 };
+    
+    const monthlyRate = interestRate / 100 / 12;
+    
+    switch (interestCalculationMethod) {
+      case 'simple':
+        // Simple Interest: I = P * R * T
+        const simpleInterest = principal * (interestRate / 100) * (months / 12);
+        return {
+          totalInterest: simpleInterest,
+          totalAmount: principal + simpleInterest,
+          monthlyPayment: (principal + simpleInterest) / months
+        };
+      
+      case 'compound':
+        // Compound Interest: A = P(1 + r/n)^(nt)
+        const compoundAmount = principal * Math.pow(1 + monthlyRate, months);
+        const compoundInterest = compoundAmount - principal;
+        return {
+          totalInterest: compoundInterest,
+          totalAmount: compoundAmount,
+          monthlyPayment: compoundAmount / months
+        };
+      
+      case 'declining-balance':
+        // Declining Balance: Monthly payment using amortization formula
+        // PMT = P * [r(1+r)^n] / [(1+r)^n - 1]
+        if (monthlyRate === 0) {
+          return {
+            totalInterest: 0,
+            totalAmount: principal,
+            monthlyPayment: principal / months
+          };
+        }
+        const monthlyPayment = principal * (monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
+        const totalPaid = monthlyPayment * months;
+        const decliningInterest = totalPaid - principal;
+        return {
+          totalInterest: decliningInterest,
+          totalAmount: totalPaid,
+          monthlyPayment: monthlyPayment
+        };
+      
+      case 'flat-rate':
+        // Flat Rate: Interest is calculated on the principal for the entire loan period
+        const flatInterest = principal * (interestRate / 100) * (months / 12);
+        return {
+          totalInterest: flatInterest,
+          totalAmount: principal + flatInterest,
+          monthlyPayment: (principal + flatInterest) / months
+        };
+      
+      default:
+        return { totalInterest: 0, totalAmount: principal, monthlyPayment: 0 };
+    }
+  };
 
-  // Generate repayment schedule
-  const repaymentSchedule = Array.from({ length: months }, (_, i) => {
-    const monthNumber = i + 1;
-    const dueDate = new Date();
-    dueDate.setMonth(dueDate.getMonth() + monthNumber);
-    return {
-      month: monthNumber,
-      dueDate: dueDate.toLocaleDateString(),
-      payment: monthlyPayment.toFixed(2),
-      principal: (principal / months).toFixed(2),
-      interest: (totalInterest / months).toFixed(2),
-      balance: (principal - (principal / months) * monthNumber).toFixed(2)
-    };
-  });
+  const { totalInterest, totalAmount, monthlyPayment } = calculateInterest();
+
+  // Generate repayment schedule based on calculation method
+  const generateRepaymentSchedule = () => {
+    const schedule = [];
+    let balance = principal;
+    const monthlyRate = interestRate / 100 / 12;
+    
+    for (let i = 1; i <= months; i++) {
+      const dueDate = new Date();
+      dueDate.setMonth(dueDate.getMonth() + i);
+      
+      let monthInterest = 0;
+      let monthPrincipal = 0;
+      
+      if (interestCalculationMethod === 'declining-balance') {
+        monthInterest = balance * monthlyRate;
+        monthPrincipal = monthlyPayment - monthInterest;
+        balance = Math.max(0, balance - monthPrincipal);
+      } else if (interestCalculationMethod === 'compound') {
+        monthInterest = (totalInterest / months);
+        monthPrincipal = (principal / months);
+        balance = Math.max(0, balance - monthPrincipal);
+      } else if (interestCalculationMethod === 'simple' || interestCalculationMethod === 'flat-rate') {
+        monthInterest = (totalInterest / months);
+        monthPrincipal = (principal / months);
+        balance = Math.max(0, balance - monthPrincipal);
+      }
+      
+      schedule.push({
+        month: i,
+        dueDate: dueDate.toLocaleDateString(),
+        payment: monthlyPayment.toFixed(2),
+        principal: monthPrincipal.toFixed(2),
+        interest: monthInterest.toFixed(2),
+        balance: balance.toFixed(2)
+      });
+    }
+    
+    return schedule;
+  };
+
+  const repaymentSchedule = generateRepaymentSchedule();
 
   useEffect(() => {
     loadInitialData();
@@ -132,7 +218,7 @@ export default function LoanApplicationPage() {
     }
   };
 
-  const steps: ApplicationStep[] = ['customer', 'product', 'terms', 'calculations', 'schedule', 'kyc-docs', 'collateral', 'guarantors', 'risk', 'approval', 'notes', 'review', 'confirmation'];
+  const steps: ApplicationStep[] = ['customer', 'product', 'terms', 'interest-method', 'calculations', 'schedule', 'kyc-docs', 'collateral', 'guarantors', 'risk', 'approval', 'notes', 'review', 'confirmation'];
   const currentStepIndex = steps.indexOf(currentStep);
 
   const goToNextStep = () => {
@@ -429,7 +515,103 @@ export default function LoanApplicationPage() {
           </Card>
         )}
 
-        {/* Step 4: Automated Loan Calculations */}
+        {/* Step 4: Interest Calculation Method */}
+        {currentStep === 'interest-method' && (
+          <Card className="bg-primary border-primary-foreground/10">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-secondary">
+                <TrendingUp className="w-5 h-5" />
+                Interest Calculation Method
+              </CardTitle>
+              <CardDescription className="text-primary-foreground/70">
+                Select how interest will be calculated for this loan
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-4">
+                {[
+                  {
+                    id: 'simple',
+                    name: 'Simple Interest',
+                    description: 'Interest calculated on principal amount only. Formula: I = P × R × T',
+                    formula: 'Interest = Principal × Rate × Time'
+                  },
+                  {
+                    id: 'compound',
+                    name: 'Compound Interest',
+                    description: 'Interest calculated on principal plus accumulated interest. Formula: A = P(1 + r/n)^(nt)',
+                    formula: 'Amount = Principal × (1 + Rate)^Time'
+                  },
+                  {
+                    id: 'declining-balance',
+                    name: 'Declining Balance (Amortization)',
+                    description: 'Interest calculated on remaining balance. Most common for installment loans.',
+                    formula: 'PMT = P × [r(1+r)^n] / [(1+r)^n - 1]'
+                  },
+                  {
+                    id: 'flat-rate',
+                    name: 'Flat Rate',
+                    description: 'Fixed interest amount calculated on principal for the entire loan period.',
+                    formula: 'Interest = Principal × Rate × Time'
+                  }
+                ].map((method) => (
+                  <button
+                    key={method.id}
+                    onClick={() => setInterestCalculationMethod(method.id as InterestCalculationMethod)}
+                    className={`text-left p-6 rounded-lg border-2 transition-all ${
+                      interestCalculationMethod === method.id
+                        ? 'bg-secondary/10 border-secondary'
+                        : 'bg-primary-foreground/5 border-primary-foreground/10 hover:border-primary-foreground/20'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-primary-foreground text-lg">{method.name}</h3>
+                        <p className="text-sm text-primary-foreground/70 mt-1">{method.description}</p>
+                        <p className="text-xs text-primary-foreground/50 mt-2 font-mono bg-primary-foreground/5 p-2 rounded mt-3">
+                          {method.formula}
+                        </p>
+                      </div>
+                      {interestCalculationMethod === method.id && (
+                        <CheckCircle className="w-5 h-5 text-secondary flex-shrink-0 ml-4" />
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              <div className="bg-secondary/10 border border-secondary/20 rounded-lg p-6">
+                <h3 className="font-semibold text-primary-foreground mb-3">Method Comparison</h3>
+                <div className="text-sm space-y-2 text-primary-foreground/70">
+                  <p>• <span className="font-medium">Simple:</span> Lower total interest, less common for loans</p>
+                  <p>• <span className="font-medium">Compound:</span> Higher total interest, common for savings</p>
+                  <p>• <span className="font-medium">Declining Balance:</span> Fair to borrower, most common for mortgages and personal loans</p>
+                  <p>• <span className="font-medium">Flat Rate:</span> Easy to calculate, but higher effective rate</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 pt-6">
+                <Button
+                  onClick={goToPreviousStep}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Previous Page
+                </Button>
+                <Button
+                  onClick={goToNextStep}
+                  className="flex-1 bg-secondary hover:bg-secondary/90 text-primary"
+                >
+                  Continue
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Step 5: Automated Loan Calculations */}
         {currentStep === 'calculations' && (
           <Card className="bg-primary border-primary-foreground/10">
             <CardHeader>
@@ -455,6 +637,10 @@ export default function LoanApplicationPage() {
                   <p className="text-sm text-primary-foreground/70 mb-1">Loan Term</p>
                   <p className="font-semibold text-primary-foreground text-lg">{months} months</p>
                 </div>
+                <div className="bg-primary-foreground/5 border border-primary-foreground/10 rounded-lg p-4">
+                  <p className="text-sm text-primary-foreground/70 mb-1">Calculation Method</p>
+                  <p className="font-semibold text-primary-foreground text-lg capitalize">{interestCalculationMethod.replace('-', ' ')}</p>
+                </div>
                 <div className="bg-secondary/10 border border-secondary/20 rounded-lg p-4">
                   <p className="text-sm text-primary-foreground/70 mb-1">Total Interest</p>
                   <p className="font-semibold text-secondary text-lg">ZMW {totalInterest.toLocaleString('en-US', { maximumFractionDigits: 2 })}</p>
@@ -463,7 +649,7 @@ export default function LoanApplicationPage() {
                   <p className="text-sm text-primary-foreground/70 mb-1">Total Amount</p>
                   <p className="font-semibold text-secondary text-lg">ZMW {totalAmount.toLocaleString('en-US', { maximumFractionDigits: 2 })}</p>
                 </div>
-                <div className="bg-secondary/10 border border-secondary/20 rounded-lg p-4">
+                <div className="bg-secondary/10 border border-secondary/20 rounded-lg p-4 md:col-span-3">
                   <p className="text-sm text-primary-foreground/70 mb-1">Monthly Payment</p>
                   <p className="font-semibold text-secondary text-lg">ZMW {monthlyPayment.toLocaleString('en-US', { maximumFractionDigits: 2 })}</p>
                 </div>
@@ -476,7 +662,7 @@ export default function LoanApplicationPage() {
                   className="flex-1"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
+                  Previous Page
                 </Button>
                 <Button
                   onClick={goToNextStep}
@@ -490,7 +676,7 @@ export default function LoanApplicationPage() {
           </Card>
         )}
 
-        {/* Step 5: Repayment Schedule Preview */}
+        {/* Step 6: Repayment Schedule Preview */}
         {currentStep === 'schedule' && (
           <Card className="bg-primary border-primary-foreground/10">
             <CardHeader>
@@ -540,7 +726,7 @@ export default function LoanApplicationPage() {
                   className="flex-1"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
+                  Previous Page
                 </Button>
                 <Button
                   onClick={goToNextStep}
@@ -554,7 +740,7 @@ export default function LoanApplicationPage() {
           </Card>
         )}
 
-        {/* Step 6: KYC & Document Status */}
+        {/* Step 7: KYC & Document Status */}
         {currentStep === 'kyc-docs' && (
           <Card className="bg-primary border-primary-foreground/10">
             <CardHeader>
@@ -609,7 +795,7 @@ export default function LoanApplicationPage() {
                   className="flex-1"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
+                  Previous Page
                 </Button>
                 <Button
                   onClick={goToNextStep}
@@ -623,7 +809,7 @@ export default function LoanApplicationPage() {
           </Card>
         )}
 
-        {/* Step 7: Collateral Register */}
+        {/* Step 8: Collateral Register */}
         {currentStep === 'collateral' && (
           <Card className="bg-primary border-primary-foreground/10">
             <CardHeader>
@@ -654,7 +840,7 @@ export default function LoanApplicationPage() {
                   className="flex-1"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
+                  Previous Page
                 </Button>
                 <Button
                   onClick={goToNextStep}
@@ -668,7 +854,7 @@ export default function LoanApplicationPage() {
           </Card>
         )}
 
-        {/* Step 8: Guarantors */}
+        {/* Step 9: Guarantors */}
         {currentStep === 'guarantors' && (
           <Card className="bg-primary border-primary-foreground/10">
             <CardHeader>
@@ -712,7 +898,7 @@ export default function LoanApplicationPage() {
                   className="flex-1"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
+                  Previous Page
                 </Button>
                 <Button
                   onClick={goToNextStep}
@@ -726,7 +912,7 @@ export default function LoanApplicationPage() {
           </Card>
         )}
 
-        {/* Step 9: Credit & Risk Assessment */}
+        {/* Step 10: Credit & Risk Assessment */}
         {currentStep === 'risk' && (
           <Card className="bg-primary border-primary-foreground/10">
             <CardHeader>
@@ -768,7 +954,7 @@ export default function LoanApplicationPage() {
                   className="flex-1"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
+                  Previous Page
                 </Button>
                 <Button
                   onClick={goToNextStep}
@@ -782,7 +968,7 @@ export default function LoanApplicationPage() {
           </Card>
         )}
 
-        {/* Step 10: Approval Workflow */}
+        {/* Step 11: Approval Workflow */}
         {currentStep === 'approval' && (
           <Card className="bg-primary border-primary-foreground/10">
             <CardHeader>
@@ -825,7 +1011,7 @@ export default function LoanApplicationPage() {
                   className="flex-1"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
+                  Previous Page
                 </Button>
                 <Button
                   onClick={goToNextStep}
@@ -839,7 +1025,7 @@ export default function LoanApplicationPage() {
           </Card>
         )}
 
-        {/* Step 11: Notes & Comments & Audit Trail */}
+        {/* Step 12: Notes & Comments & Audit Trail */}
         {currentStep === 'notes' && (
           <Card className="bg-primary border-primary-foreground/10">
             <CardHeader>
@@ -884,7 +1070,7 @@ export default function LoanApplicationPage() {
                   className="flex-1"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
+                  Previous Page
                 </Button>
                 <Button
                   onClick={goToNextStep}
@@ -898,7 +1084,7 @@ export default function LoanApplicationPage() {
           </Card>
         )}
 
-        {/* Step 12: Review & Submit */}
+        {/* Step 13: Review & Submit */}
         {currentStep === 'review' && (
           <Card className="bg-primary border-primary-foreground/10">
             <CardHeader>
@@ -967,7 +1153,7 @@ export default function LoanApplicationPage() {
                   className="flex-1"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
+                  Previous Page
                 </Button>
                 <Button
                   onClick={handleCreateApplication}
@@ -982,7 +1168,7 @@ export default function LoanApplicationPage() {
           </Card>
         )}
 
-        {/* Step 13: Confirmation */}
+        {/* Step 14: Confirmation */}
         {currentStep === 'confirmation' && (
           <Card className="bg-primary border-primary-foreground/10 text-center">
             <CardContent className="py-12">
