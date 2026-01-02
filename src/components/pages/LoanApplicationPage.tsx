@@ -374,8 +374,7 @@ export default function LoanApplicationPage() {
                 <Button
                   onClick={goToPreviousStep}
                   disabled={currentStepIndex === 0}
-                  variant="outline"
-                  className="flex-1"
+                  className="flex-1 bg-slate-600 hover:bg-slate-700 text-white disabled:opacity-50"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Previous Page
@@ -383,7 +382,7 @@ export default function LoanApplicationPage() {
                 <Button
                   onClick={goToNextStep}
                   disabled={!selectedCustomerId}
-                  className="flex-1 bg-secondary hover:bg-secondary/90 text-primary"
+                  className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-50"
                 >
                   Continue
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -452,8 +451,7 @@ export default function LoanApplicationPage() {
               <div className="flex gap-4 pt-6">
                 <Button
                   onClick={goToPreviousStep}
-                  variant="outline"
-                  className="flex-1"
+                  className="flex-1 bg-slate-600 hover:bg-slate-700 text-white disabled:opacity-50"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back
@@ -461,7 +459,7 @@ export default function LoanApplicationPage() {
                 <Button
                   onClick={goToNextStep}
                   disabled={!selectedProductId}
-                  className="flex-1 bg-secondary hover:bg-secondary/90 text-primary"
+                  className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-50"
                 >
                   Continue
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -530,8 +528,7 @@ export default function LoanApplicationPage() {
               <div className="flex gap-4 pt-6">
                 <Button
                   onClick={goToPreviousStep}
-                  variant="outline"
-                  className="flex-1"
+                  className="flex-1 bg-slate-600 hover:bg-slate-700 text-white disabled:opacity-50"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back
@@ -539,7 +536,7 @@ export default function LoanApplicationPage() {
                 <Button
                   onClick={goToNextStep}
                   disabled={!principalAmount || !loanTermMonths}
-                  className="flex-1 bg-secondary hover:bg-secondary/90 text-primary"
+                  className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-50"
                 >
                   Continue
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -627,15 +624,14 @@ export default function LoanApplicationPage() {
               <div className="flex gap-4 pt-6">
                 <Button
                   onClick={goToPreviousStep}
-                  variant="outline"
-                  className="flex-1"
+                  className="flex-1 bg-slate-600 hover:bg-slate-700 text-white disabled:opacity-50"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Previous Page
                 </Button>
                 <Button
                   onClick={goToNextStep}
-                  className="flex-1 bg-secondary hover:bg-secondary/90 text-primary"
+                  className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-50"
                 >
                   Continue
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -692,15 +688,14 @@ export default function LoanApplicationPage() {
               <div className="flex gap-4 pt-6">
                 <Button
                   onClick={goToPreviousStep}
-                  variant="outline"
-                  className="flex-1"
+                  className="flex-1 bg-slate-600 hover:bg-slate-700 text-white disabled:opacity-50"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Previous Page
                 </Button>
                 <Button
                   onClick={goToNextStep}
-                  className="flex-1 bg-secondary hover:bg-secondary/90 text-primary"
+                  className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-50"
                 >
                   Continue
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -756,15 +751,14 @@ export default function LoanApplicationPage() {
               <div className="flex gap-4 pt-6">
                 <Button
                   onClick={goToPreviousStep}
-                  variant="outline"
-                  className="flex-1"
+                  className="flex-1 bg-slate-600 hover:bg-slate-700 text-white disabled:opacity-50"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Previous Page
                 </Button>
                 <Button
                   onClick={goToNextStep}
-                  className="flex-1 bg-secondary hover:bg-secondary/90 text-primary"
+                  className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-50"
                 >
                   Continue
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -825,15 +819,14 @@ export default function LoanApplicationPage() {
               <div className="flex gap-4 pt-6">
                 <Button
                   onClick={goToPreviousStep}
-                  variant="outline"
-                  className="flex-1"
+                  className="flex-1 bg-slate-600 hover:bg-slate-700 text-white disabled:opacity-50"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Previous Page
                 </Button>
                 <Button
                   onClick={goToNextStep}
-                  className="flex-1 bg-secondary hover:bg-secondary/90 text-primary"
+                  className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-50"
                 >
                   Continue
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -870,15 +863,14 @@ export default function LoanApplicationPage() {
               <div className="flex gap-4 pt-6">
                 <Button
                   onClick={goToPreviousStep}
-                  variant="outline"
-                  className="flex-1"
+                  className="flex-1 bg-slate-600 hover:bg-slate-700 text-white disabled:opacity-50"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Previous Page
                 </Button>
                 <Button
                   onClick={goToNextStep}
-                  className="flex-1 bg-secondary hover:bg-secondary/90 text-primary"
+                  className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-50"
                 >
                   Continue
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -928,15 +920,14 @@ export default function LoanApplicationPage() {
               <div className="flex gap-4 pt-6">
                 <Button
                   onClick={goToPreviousStep}
-                  variant="outline"
-                  className="flex-1"
+                  className="flex-1 bg-slate-600 hover:bg-slate-700 text-white disabled:opacity-50"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Previous Page
                 </Button>
                 <Button
                   onClick={goToNextStep}
-                  className="flex-1 bg-secondary hover:bg-secondary/90 text-primary"
+                  className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-50"
                 >
                   Continue
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -984,15 +975,14 @@ export default function LoanApplicationPage() {
               <div className="flex gap-4 pt-6">
                 <Button
                   onClick={goToPreviousStep}
-                  variant="outline"
-                  className="flex-1"
+                  className="flex-1 bg-slate-600 hover:bg-slate-700 text-white disabled:opacity-50"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Previous Page
                 </Button>
                 <Button
                   onClick={goToNextStep}
-                  className="flex-1 bg-secondary hover:bg-secondary/90 text-primary"
+                  className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-50"
                 >
                   Continue
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -1041,15 +1031,14 @@ export default function LoanApplicationPage() {
               <div className="flex gap-4 pt-6">
                 <Button
                   onClick={goToPreviousStep}
-                  variant="outline"
-                  className="flex-1"
+                  className="flex-1 bg-slate-600 hover:bg-slate-700 text-white disabled:opacity-50"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Previous Page
                 </Button>
                 <Button
                   onClick={goToNextStep}
-                  className="flex-1 bg-secondary hover:bg-secondary/90 text-primary"
+                  className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-50"
                 >
                   Continue
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -1183,8 +1172,7 @@ export default function LoanApplicationPage() {
               <div className="flex gap-4 pt-6">
                 <Button
                   onClick={goToPreviousStep}
-                  variant="outline"
-                  className="flex-1"
+                  className="flex-1 bg-slate-600 hover:bg-slate-700 text-white disabled:opacity-50"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Previous Page
@@ -1192,7 +1180,7 @@ export default function LoanApplicationPage() {
                 <Button
                   onClick={handleCreateApplication}
                   disabled={isLoading}
-                  className="flex-1 bg-secondary hover:bg-secondary/90 text-primary"
+                  className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-50"
                 >
                   {isLoading ? 'Submitting...' : 'Submit Application'}
                   <Send className="w-4 h-4 ml-2" />
