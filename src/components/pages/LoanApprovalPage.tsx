@@ -51,15 +51,25 @@ export default function LoanApprovalPage() {
 
   useEffect(() => {
     const checkPermissions = async () => {
-      if (!currentStaff?._id || !currentOrganisation?._id) return;
+      // Check if staff member has permission to approve loans
+      if (!currentStaff?._id || !currentOrganisation?._id) {
+        // If no staff info, deny access
+        setCanApprove(false);
+        return;
+      }
 
-      const hasPermission = await AuthorizationService.hasPermission(
-        currentStaff._id,
-        currentOrganisation._id,
-        Permissions.APPROVE_LOAN
-      );
+      try {
+        const hasPermission = await AuthorizationService.hasPermission(
+          currentStaff._id,
+          currentOrganisation._id,
+          Permissions.APPROVE_LOAN
+        );
 
-      setCanApprove(hasPermission);
+        setCanApprove(hasPermission);
+      } catch (error) {
+        console.error('Error checking approval permission:', error);
+        setCanApprove(false);
+      }
     };
 
     checkPermissions();

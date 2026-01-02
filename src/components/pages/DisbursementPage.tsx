@@ -51,15 +51,25 @@ export default function DisbursementPage() {
 
   useEffect(() => {
     const checkPermissions = async () => {
-      if (!currentStaff?._id || !currentOrganisation?._id) return;
+      // Check if staff member has permission to disburse loans
+      if (!currentStaff?._id || !currentOrganisation?._id) {
+        // If no staff info, deny access
+        setCanDisburse(false);
+        return;
+      }
 
-      const hasPermission = await AuthorizationService.hasPermission(
-        currentStaff._id,
-        currentOrganisation._id,
-        Permissions.DISBURSE_LOAN
-      );
+      try {
+        const hasPermission = await AuthorizationService.hasPermission(
+          currentStaff._id,
+          currentOrganisation._id,
+          Permissions.DISBURSE_LOAN
+        );
 
-      setCanDisburse(hasPermission);
+        setCanDisburse(hasPermission);
+      } catch (error) {
+        console.error('Error checking disbursement permission:', error);
+        setCanDisburse(false);
+      }
     };
 
     checkPermissions();

@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useMember } from '@/integrations';
 import { useOrganisationStore } from '@/store/organisationStore';
 import { BaseCrudService } from '@/integrations';
-import { Organizations, SubscriptionPlans } from '@/entities';
+import { Organizations, SubscriptionPlans, StaffMembers } from '@/entities';
+import { StaffService, RoleService } from '@/services';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +15,8 @@ interface SubscriptionGuardProps {
 
 export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
   const navigate = useNavigate();
-  const { currentOrganisation, subscriptionPlan, setOrganisation, setSubscriptionPlan } = useOrganisationStore();
+  const { member } = useMember();
+  const { currentOrganisation, subscriptionPlan, setOrganisation, setSubscriptionPlan, setStaff, setRole, setPermissions } = useOrganisationStore();
   const [isLoading, setIsLoading] = useState(true);
   const [subscriptionExpired, setSubscriptionExpired] = useState(false);
 
@@ -45,6 +48,36 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
           if (!plan.isActive) {
             setSubscriptionExpired(true);
           }
+        }
+      }
+
+      // Load staff member and role information for the current user
+      if (member?.loginEmail) {
+        try {
+          // Get staff member by email
+          const staffMember = await StaffService.getStaffByEmail(member.loginEmail);
+          
+          if (staffMember) {
+            setStaff(staffMember);
+
+            // Get staff member's role assignment
+            const roleAssignment = await StaffService.getStaffRole(staffMember._id, currentOrganisation._id);
+            
+            if (roleAssignment?.roleId) {
+              // Get the role details
+              const role = await RoleService.getRole(roleAssignment.roleId);
+              if (role) {
+                setRole(role);
+                
+                // Get role permissions
+                const permissions = await RoleService.getRolePermissions(roleAssignment.roleId);
+                setPermissions(permissions);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Failed to load staff information:', error);
+          // Continue anyway - staff info is optional for some pages
         }
       }
     } catch (error) {
