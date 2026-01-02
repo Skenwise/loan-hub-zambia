@@ -320,7 +320,7 @@ export default function CustomerPortalPage() {
                               </p>
 
                               {/* Loan Details Grid */}
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                                 <div className="bg-primary/40 rounded-lg p-3">
                                   <p className="text-primary-foreground/50 text-xs uppercase tracking-wider mb-1">Principal</p>
                                   <p className="font-semibold text-primary-foreground">${loan.principalAmount?.toLocaleString()}</p>
@@ -330,9 +330,15 @@ export default function CustomerPortalPage() {
                                   <p className="font-semibold text-primary-foreground">${loan.outstandingBalance?.toLocaleString()}</p>
                                 </div>
                                 <div className="bg-primary/40 rounded-lg p-3">
-                                  <p className="text-primary-foreground/50 text-xs uppercase tracking-wider mb-1">Disbursed</p>
+                                  <p className="text-primary-foreground/50 text-xs uppercase tracking-wider mb-1">Start Date</p>
                                   <p className="font-semibold text-primary-foreground">
                                     {loan.disbursementDate ? new Date(loan.disbursementDate).toLocaleDateString() : 'N/A'}
+                                  </p>
+                                </div>
+                                <div className="bg-primary/40 rounded-lg p-3">
+                                  <p className="text-primary-foreground/50 text-xs uppercase tracking-wider mb-1">Completion Date</p>
+                                  <p className="font-semibold text-primary-foreground">
+                                    {loan.closureDate ? new Date(loan.closureDate).toLocaleDateString() : 'N/A'}
                                   </p>
                                 </div>
                                 <div className="bg-primary/40 rounded-lg p-3">
@@ -340,6 +346,10 @@ export default function CustomerPortalPage() {
                                   <p className="font-semibold text-primary-foreground">
                                     {loan.nextPaymentDate ? new Date(loan.nextPaymentDate).toLocaleDateString() : 'N/A'}
                                   </p>
+                                </div>
+                                <div className="bg-primary/40 rounded-lg p-3">
+                                  <p className="text-primary-foreground/50 text-xs uppercase tracking-wider mb-1">Term</p>
+                                  <p className="font-semibold text-primary-foreground">{loan.loanTermMonths} months</p>
                                 </div>
                               </div>
                             </div>
