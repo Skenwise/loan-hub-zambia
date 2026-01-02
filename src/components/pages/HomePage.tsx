@@ -209,7 +209,7 @@ export default function HomePage() {
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-brandaccent to-secondary">Compliance.</span>
               </h1>
               
-              <p className="text-xl text-primary-foreground/80 max-w-xl leading-relaxed border-l-2 border-primary-foreground/10 pl-6">
+              <p className="text-xl text-primary-foreground max-w-xl leading-relaxed border-l-2 border-primary-foreground/20 pl-6">
                 Enterprise-grade lending platform with full regulatory compliance, IFRS 9 Expected Credit Loss calculations, and support for multiple regulatory frameworks worldwide.
               </p>
               
@@ -321,7 +321,7 @@ export default function HomePage() {
             <h2 className="font-heading text-5xl lg:text-7xl font-bold mb-6">
               Engineered for <span className="text-secondary">Scale</span>
             </h2>
-            <p className="text-xl text-primary-foreground/70 max-w-2xl">
+            <p className="text-xl text-primary-foreground max-w-2xl">
               A complete ecosystem for modern lending. From origination to closure, every step is optimized for efficiency and compliance.
             </p>
           </AnimatedReveal>
@@ -339,7 +339,7 @@ export default function HomePage() {
                   <h3 className="font-heading text-2xl font-bold mb-3 group-hover:text-secondary transition-colors">
                     {feature.title}
                   </h3>
-                  <p className="text-primary-foreground/60 leading-relaxed">
+                  <p className="text-primary-foreground leading-relaxed">
                     {feature.description}
                   </p>
                 </div>

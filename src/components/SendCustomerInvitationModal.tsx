@@ -116,13 +116,13 @@ export default function SendCustomerInvitationModal({
         <div className="space-y-6">
           {/* Customer Info */}
           <div className="bg-primary-foreground/5 p-4 rounded-lg border border-primary-foreground/10">
-            <p className="text-sm text-primary-foreground/70 mb-1">Sending to:</p>
+            <p className="text-sm text-primary-foreground mb-1">Sending to:</p>
             <p className="font-paragraph text-lg text-primary-foreground font-semibold">
               {customer.firstName} {customer.lastName}
             </p>
-            <p className="text-sm text-primary-foreground/60">{customer.emailAddress}</p>
+            <p className="text-sm text-primary-foreground">{customer.emailAddress}</p>
             {customer.phoneNumber && (
-              <p className="text-sm text-primary-foreground/60">{customer.phoneNumber}</p>
+              <p className="text-sm text-primary-foreground">{customer.phoneNumber}</p>
             )}
           </div>
 
@@ -168,7 +168,7 @@ export default function SendCustomerInvitationModal({
                 {copied ? '✓ Copied' : <Copy className="w-4 h-4" />}
               </Button>
             </div>
-            <p className="text-xs text-primary-foreground/60">
+            <p className="text-xs text-primary-foreground">
               Customer will be prompted to change this password on first login
             </p>
           </div>
@@ -188,8 +188,8 @@ export default function SendCustomerInvitationModal({
 
             <TabsContent value="email" className="space-y-4">
               <div className="bg-primary-foreground/5 p-4 rounded-lg border border-primary-foreground/10">
-                <p className="text-sm text-primary-foreground/70 mb-2">Email will include:</p>
-                <ul className="text-sm text-primary-foreground/60 space-y-1 list-disc list-inside">
+                <p className="text-sm text-primary-foreground mb-2">Email will include:</p>
+                <ul className="text-sm text-primary-foreground space-y-1 list-disc list-inside">
                   <li>Portal access link</li>
                   <li>Temporary password</li>
                   <li>Instructions to set permanent password</li>
@@ -212,8 +212,8 @@ export default function SendCustomerInvitationModal({
 
             <TabsContent value="sms" className="space-y-4">
               <div className="bg-primary-foreground/5 p-4 rounded-lg border border-primary-foreground/10">
-                <p className="text-sm text-primary-foreground/70 mb-2">SMS will include:</p>
-                <ul className="text-sm text-primary-foreground/60 space-y-1 list-disc list-inside">
+                <p className="text-sm text-primary-foreground mb-2">SMS will include:</p>
+                <ul className="text-sm text-primary-foreground space-y-1 list-disc list-inside">
                   <li>Portal access link</li>
                   <li>Temporary password</li>
                 </ul>

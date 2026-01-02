@@ -110,7 +110,7 @@ export default function ReportsPage() {
           <h1 className="font-heading text-4xl font-bold text-secondary mb-2">
             Reports & Analytics
           </h1>
-          <p className="font-paragraph text-base text-primary-foreground/70">
+          <p className="font-paragraph text-base text-primary-foreground">
             Comprehensive reporting for compliance and decision-making
           </p>
         </div>
@@ -143,7 +143,7 @@ export default function ReportsPage() {
                   <div className="font-heading text-3xl font-bold text-primary-foreground mb-1">
                     ZMW {totalDisbursed.toLocaleString()}
                   </div>
-                  <div className="font-paragraph text-sm text-primary-foreground/60">
+                  <div className="font-paragraph text-sm text-primary-foreground">
                     Total Disbursed
                   </div>
                 </CardContent>
@@ -159,7 +159,7 @@ export default function ReportsPage() {
                   <div className="font-heading text-3xl font-bold text-primary-foreground mb-1">
                     ZMW {totalOutstanding.toLocaleString()}
                   </div>
-                  <div className="font-paragraph text-sm text-primary-foreground/60">
+                  <div className="font-paragraph text-sm text-primary-foreground">
                     Outstanding Balance
                   </div>
                 </CardContent>
@@ -175,7 +175,7 @@ export default function ReportsPage() {
                   <div className="font-heading text-3xl font-bold text-primary-foreground mb-1">
                     ZMW {totalRepaid.toLocaleString()}
                   </div>
-                  <div className="font-paragraph text-sm text-primary-foreground/60">
+                  <div className="font-paragraph text-sm text-primary-foreground">
                     Total Repaid
                   </div>
                 </CardContent>
@@ -191,7 +191,7 @@ export default function ReportsPage() {
                   <div className="font-heading text-3xl font-bold text-primary-foreground mb-1">
                     {totalDisbursed > 0 ? ((totalRepaid / totalDisbursed) * 100).toFixed(1) : 0}%
                   </div>
-                  <div className="font-paragraph text-sm text-primary-foreground/60">
+                  <div className="font-paragraph text-sm text-primary-foreground">
                     Collection Rate
                   </div>
                 </CardContent>
@@ -207,27 +207,27 @@ export default function ReportsPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex justify-between items-center py-2 border-b border-primary-foreground/10">
-                    <span className="font-paragraph text-sm text-primary-foreground/70">Total Customers</span>
+                    <span className="font-paragraph text-sm text-primary-foreground">Total Customers</span>
                     <span className="font-paragraph text-base text-primary-foreground font-semibold">{customers.length}</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-primary-foreground/10">
-                    <span className="font-paragraph text-sm text-primary-foreground/70">Total Loans</span>
+                    <span className="font-paragraph text-sm text-primary-foreground">Total Loans</span>
                     <span className="font-paragraph text-base text-primary-foreground font-semibold">{loans.length}</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-primary-foreground/10">
-                    <span className="font-paragraph text-sm text-primary-foreground/70">Active Loans</span>
+                    <span className="font-paragraph text-sm text-primary-foreground">Active Loans</span>
                     <span className="font-paragraph text-base text-primary-foreground font-semibold">
                       {loans.filter(l => l.loanStatus === 'Active').length}
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-primary-foreground/10">
-                    <span className="font-paragraph text-sm text-primary-foreground/70">Closed Loans</span>
+                    <span className="font-paragraph text-sm text-primary-foreground">Closed Loans</span>
                     <span className="font-paragraph text-base text-primary-foreground font-semibold">
                       {loans.filter(l => l.loanStatus === 'Closed').length}
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-2">
-                    <span className="font-paragraph text-sm text-primary-foreground/70">Defaulted Loans</span>
+                    <span className="font-paragraph text-sm text-primary-foreground">Defaulted Loans</span>
                     <span className="font-paragraph text-base text-destructive font-semibold">
                       {loans.filter(l => l.loanStatus === 'Defaulted').length}
                     </span>
@@ -243,21 +243,21 @@ export default function ReportsPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex justify-between items-center py-2 border-b border-primary-foreground/10">
-                    <span className="font-paragraph text-sm text-primary-foreground/70">Total ECL</span>
+                    <span className="font-paragraph text-sm text-primary-foreground">Total ECL</span>
                     <span className="font-paragraph text-base text-destructive font-semibold">ZMW {totalECL.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-primary-foreground/10">
-                    <span className="font-paragraph text-sm text-primary-foreground/70">Total Provisions</span>
+                    <span className="font-paragraph text-sm text-primary-foreground">Total Provisions</span>
                     <span className="font-paragraph text-base text-destructive font-semibold">ZMW {totalProvisions.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-primary-foreground/10">
-                    <span className="font-paragraph text-sm text-primary-foreground/70">ECL Coverage Ratio</span>
+                    <span className="font-paragraph text-sm text-primary-foreground">ECL Coverage Ratio</span>
                     <span className="font-paragraph text-base text-primary-foreground font-semibold">
                       {totalOutstanding > 0 ? ((totalECL / totalOutstanding) * 100).toFixed(2) : 0}%
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-2">
-                    <span className="font-paragraph text-sm text-primary-foreground/70">Provision Coverage Ratio</span>
+                    <span className="font-paragraph text-sm text-primary-foreground">Provision Coverage Ratio</span>
                     <span className="font-paragraph text-base text-primary-foreground font-semibold">
                       {totalOutstanding > 0 ? ((totalProvisions / totalOutstanding) * 100).toFixed(2) : 0}%
                     </span>
@@ -279,7 +279,7 @@ export default function ReportsPage() {
                   <div className="font-heading text-3xl font-bold text-primary-foreground mb-1">
                     ZMW {eclByStage.Stage1.toLocaleString()}
                   </div>
-                  <div className="font-paragraph text-sm text-primary-foreground/60">
+                  <div className="font-paragraph text-sm text-primary-foreground">
                     Stage 1 ECL
                   </div>
                 </CardContent>

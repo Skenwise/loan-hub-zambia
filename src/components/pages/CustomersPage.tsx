@@ -169,7 +169,7 @@ export default function CustomersPage() {
             <h1 className="font-heading text-4xl font-bold text-secondary mb-2">
               Customer Management
             </h1>
-            <p className="font-paragraph text-base text-primary-foreground/70">
+            <p className="font-paragraph text-base text-primary-foreground">
               Manage customer profiles and KYC information
             </p>
           </div>
