@@ -26,8 +26,11 @@ export default function Header() {
       setUserRole('customer');
     } else if (path.startsWith('/admin')) {
       setUserRole('admin');
+    } else if (isAuthenticated && !path.startsWith('/')) {
+      // If authenticated but on a public page, default to customer
+      setUserRole('customer');
     }
-  }, []);
+  }, [isAuthenticated]);
 
   const handleLogout = async () => {
     await actions.logout();

@@ -121,14 +121,26 @@ const ParallaxImage = ({ src, alt, className }: { src: string, alt: string, clas
 // --- Main Page Component ---
 
 export default function HomePage() {
-  const { isAuthenticated, actions } = useMember();
+  const { isAuthenticated, member, actions } = useMember();
   const navigate = useNavigate();
   const containerRef = useRef(null);
   const [showRoleDialog, setShowRoleDialog] = useState(false);
 
+  // Redirect authenticated users based on their role/path
+  useEffect(() => {
+    if (isAuthenticated && member?.loginEmail) {
+      // Check if user is accessing from a specific role context
+      const path = window.location.pathname;
+      if (path === '/') {
+        // Redirect to customer portal by default for authenticated users
+        navigate('/customer-portal');
+      }
+    }
+  }, [isAuthenticated, member, navigate]);
+
   const handleGetStarted = () => {
     if (isAuthenticated) {
-      navigate('/admin/dashboard');
+      navigate('/customer-portal');
     } else {
       setShowRoleDialog(true);
     }
