@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BaseCrudService } from '@/integrations';
 import { Loans, LoanProducts, CustomerProfiles, KYCDocumentSubmissions, LoanDocuments } from '@/entities';
+import { InterestCalculationService, type InterestType } from '@/services/InterestCalculationService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -62,105 +63,87 @@ export default function LoanApplicationPage() {
   const interestRate = selectedProduct?.interestRate || 0;
   const months = parseInt(loanTermMonths || '1');
   
-  // Calculate interest based on selected method
+  // Calculate interest based on selected method using industry-standard formulas
   const calculateInterest = () => {
     if (principal <= 0 || months <= 0) return { totalInterest: 0, totalAmount: principal, monthlyPayment: 0 };
     
-    const monthlyRate = interestRate / 100 / 12;
-    
+    let totalInterest = 0;
+    let monthlyPayment = 0;
+
     switch (interestCalculationMethod) {
       case 'simple':
-        // Simple Interest: I = P * R * T
-        const simpleInterest = principal * (interestRate / 100) * (months / 12);
-        return {
-          totalInterest: simpleInterest,
-          totalAmount: principal + simpleInterest,
-          monthlyPayment: (principal + simpleInterest) / months
-        };
+        // Simple Interest: I = P × r × t
+        // Used by: Some microfinance institutions, short-term loans
+        totalInterest = InterestCalculationService.calculateSimpleInterest(principal, interestRate, months);
+        monthlyPayment = (principal + totalInterest) / months;
+        break;
       
       case 'compound':
         // Compound Interest: A = P(1 + r/n)^(nt)
-        const compoundAmount = principal * Math.pow(1 + monthlyRate, months);
-        const compoundInterest = compoundAmount - principal;
-        return {
-          totalInterest: compoundInterest,
-          totalAmount: compoundAmount,
-          monthlyPayment: compoundAmount / months
-        };
+        // Used by: Banks (savings accounts, investment products)
+        totalInterest = InterestCalculationService.calculateCompoundInterest(principal, interestRate, months);
+        monthlyPayment = (principal + totalInterest) / months;
+        break;
       
       case 'declining-balance':
-        // Declining Balance: Monthly payment using amortization formula
-        // PMT = P * [r(1+r)^n] / [(1+r)^n - 1]
-        if (monthlyRate === 0) {
-          return {
-            totalInterest: 0,
-            totalAmount: principal,
-            monthlyPayment: principal / months
-          };
-        }
-        const monthlyPayment = principal * (monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
-        const totalPaid = monthlyPayment * months;
-        const decliningInterest = totalPaid - principal;
-        return {
-          totalInterest: decliningInterest,
-          totalAmount: totalPaid,
-          monthlyPayment: monthlyPayment
-        };
+        // Declining Balance (Reducing Balance): Most common for loans
+        // Uses amortization formula: M = P × [r(1+r)^n] / [(1+r)^n - 1]
+        // Interest calculated on outstanding balance each month
+        monthlyPayment = InterestCalculationService.calculateMonthlyPayment(principal, interestRate, months);
+        totalInterest = InterestCalculationService.calculateDecliningBalanceInterest(principal, interestRate, months);
+        break;
       
       case 'flat-rate':
-        // Flat Rate: Interest is calculated on the principal for the entire loan period
-        const flatInterest = principal * (interestRate / 100) * (months / 12);
-        return {
-          totalInterest: flatInterest,
-          totalAmount: principal + flatInterest,
-          monthlyPayment: (principal + flatInterest) / months
-        };
+        // Flat Rate: I = (P × r × t) / 100
+        // Used by: Some microfinance institutions, vehicle loans
+        // Total interest is fixed upfront and divided equally across payments
+        totalInterest = InterestCalculationService.calculateFlatRateInterest(principal, interestRate, months);
+        monthlyPayment = (principal + totalInterest) / months;
+        break;
       
       default:
         return { totalInterest: 0, totalAmount: principal, monthlyPayment: 0 };
     }
+
+    return {
+      totalInterest: Math.round(totalInterest * 100) / 100,
+      totalAmount: Math.round((principal + totalInterest) * 100) / 100,
+      monthlyPayment: Math.round(monthlyPayment * 100) / 100
+    };
   };
 
   const { totalInterest, totalAmount, monthlyPayment } = calculateInterest();
 
-  // Generate repayment schedule based on calculation method
+  // Generate repayment schedule based on calculation method using industry-standard practices
   const generateRepaymentSchedule = () => {
-    const schedule = [];
-    let balance = principal;
-    const monthlyRate = interestRate / 100 / 12;
-    
-    for (let i = 1; i <= months; i++) {
-      const dueDate = new Date();
-      dueDate.setMonth(dueDate.getMonth() + i);
-      
-      let monthInterest = 0;
-      let monthPrincipal = 0;
-      
-      if (interestCalculationMethod === 'declining-balance') {
-        monthInterest = balance * monthlyRate;
-        monthPrincipal = monthlyPayment - monthInterest;
-        balance = Math.max(0, balance - monthPrincipal);
-      } else if (interestCalculationMethod === 'compound') {
-        monthInterest = (totalInterest / months);
-        monthPrincipal = (principal / months);
-        balance = Math.max(0, balance - monthPrincipal);
-      } else if (interestCalculationMethod === 'simple' || interestCalculationMethod === 'flat-rate') {
-        monthInterest = (totalInterest / months);
-        monthPrincipal = (principal / months);
-        balance = Math.max(0, balance - monthPrincipal);
-      }
-      
-      schedule.push({
-        month: i,
-        dueDate: dueDate.toLocaleDateString(),
-        payment: monthlyPayment.toFixed(2),
-        principal: monthPrincipal.toFixed(2),
-        interest: monthInterest.toFixed(2),
-        balance: balance.toFixed(2)
-      });
-    }
-    
-    return schedule;
+    if (principal <= 0 || months <= 0) return [];
+
+    // Map UI method names to service InterestType
+    const interestTypeMap: Record<InterestCalculationMethod, InterestType> = {
+      'simple': 'SIMPLE',
+      'compound': 'COMPOUND',
+      'declining-balance': 'REDUCING',
+      'flat-rate': 'FLAT'
+    };
+
+    const interestType = interestTypeMap[interestCalculationMethod];
+    const result = InterestCalculationService.generateAmortizationSchedule(
+      principal,
+      interestRate,
+      months,
+      new Date(),
+      interestType
+    );
+
+    // Format schedule for display
+    return result.schedule.map(item => ({
+      month: item.paymentNumber,
+      dueDate: item.dueDate.toLocaleDateString(),
+      payment: item.totalPayment.toFixed(2),
+      principal: item.principalAmount.toFixed(2),
+      interest: item.interestAmount.toFixed(2),
+      balance: item.outstandingBalance.toFixed(2)
+    }));
   };
 
   const repaymentSchedule = generateRepaymentSchedule();
