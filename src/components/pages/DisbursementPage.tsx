@@ -360,14 +360,6 @@ export default function DisbursementPage() {
     );
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpinner />
-      </div>
-    );
-  }
-
   if (!canDisburse) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 p-6">
@@ -453,36 +445,36 @@ export default function DisbursementPage() {
             animate={{ opacity: 1, y: 0 }}
             className="mb-6"
           >
-            <Card className="bg-primary-foreground/5 border-primary-foreground/10">
+            <Card className="bg-slate-50 border-slate-300">
               <CardHeader>
-                <CardTitle className="text-primary">Disbursement Queue Filters</CardTitle>
+                <CardTitle className="text-slate-900">Disbursement Queue Filters</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <Label className="text-primary-foreground/70 text-sm mb-2 block">
+                    <Label className="text-slate-700 text-sm mb-2 block">
                       Date From
                     </Label>
                     <Input
                       type="date"
                       value={filters.dateFrom}
                       onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
-                      className="bg-primary/5 border-primary/20 text-primary"
+                      className="bg-white border-slate-300 text-slate-900"
                     />
                   </div>
                   <div>
-                    <Label className="text-primary-foreground/70 text-sm mb-2 block">
+                    <Label className="text-slate-700 text-sm mb-2 block">
                       Date To
                     </Label>
                     <Input
                       type="date"
                       value={filters.dateTo}
                       onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
-                      className="bg-primary/5 border-primary/20 text-primary"
+                      className="bg-white border-slate-300 text-slate-900"
                     />
                   </div>
                   <div>
-                    <Label className="text-primary-foreground/70 text-sm mb-2 block">
+                    <Label className="text-slate-700 text-sm mb-2 block">
                       Amount Range
                     </Label>
                     <div className="flex gap-2">
@@ -491,14 +483,14 @@ export default function DisbursementPage() {
                         placeholder="Min"
                         value={filters.amountMin}
                         onChange={(e) => setFilters({ ...filters, amountMin: e.target.value })}
-                        className="bg-primary/5 border-primary/20 text-primary placeholder:text-primary/50"
+                        className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
                       />
                       <Input
                         type="number"
                         placeholder="Max"
                         value={filters.amountMax}
                         onChange={(e) => setFilters({ ...filters, amountMax: e.target.value })}
-                        className="bg-primary/5 border-primary/20 text-primary placeholder:text-primary/50"
+                        className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
                       />
                     </div>
                   </div>
@@ -523,43 +515,43 @@ export default function DisbursementPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.05 }}
                   >
-                    <Card className="bg-primary-foreground/5 border-primary-foreground/10 hover:border-secondary/50 transition-all">
+                    <Card className="bg-slate-50 border-slate-300 hover:border-blue-400 transition-all">
                       <CardContent className="p-6">
                         <div className="grid grid-cols-1 md:grid-cols-7 gap-4 items-center">
                           {/* Loan ID */}
                           <div>
-                            <p className="text-xs text-primary-foreground/70 mb-1">Loan ID</p>
-                            <p className="font-semibold text-primary-foreground text-sm">
+                            <p className="text-xs text-slate-600 mb-1">Loan ID</p>
+                            <p className="font-semibold text-slate-900 text-sm">
                               {loan.loanNumber}
                             </p>
                           </div>
 
                           {/* Customer */}
                           <div>
-                            <p className="text-xs text-primary-foreground/70 mb-1">Customer</p>
-                            <p className="font-semibold text-primary-foreground text-sm">
+                            <p className="text-xs text-slate-600 mb-1">Customer</p>
+                            <p className="font-semibold text-slate-900 text-sm">
                               {loan.customer?.firstName} {loan.customer?.lastName}
                             </p>
                           </div>
 
                           {/* Amount */}
                           <div>
-                            <p className="text-xs text-primary-foreground/70 mb-1">Amount</p>
-                            <p className="font-semibold text-secondary">
+                            <p className="text-xs text-slate-600 mb-1">Amount</p>
+                            <p className="font-semibold text-blue-600">
                               ZMW {(loan.principalAmount || 0).toLocaleString()}
                             </p>
                           </div>
 
                           {/* Status */}
                           <div>
-                            <p className="text-xs text-primary-foreground/70 mb-1">Status</p>
+                            <p className="text-xs text-slate-600 mb-1">Status</p>
                             {loan.validationResult?.isValid ? (
-                              <Badge className="bg-green-500/10 text-green-600 border-green-500/20 border text-xs">
+                              <Badge className="bg-green-100 text-green-700 border-green-300 border text-xs">
                                 <CheckCircle2 className="w-3 h-3 mr-1" />
                                 Ready
                               </Badge>
                             ) : (
-                              <Badge className="bg-red-500/10 text-red-600 border-red-500/20 border text-xs">
+                              <Badge className="bg-red-100 text-red-700 border-red-300 border text-xs">
                                 <Lock className="w-3 h-3 mr-1" />
                                 Blocked
                               </Badge>
@@ -569,8 +561,8 @@ export default function DisbursementPage() {
                           {/* Validation Issues */}
                           {!loan.validationResult?.isValid && (
                             <div className="md:col-span-2">
-                              <p className="text-xs text-primary-foreground/70 mb-1">Issues</p>
-                              <div className="text-xs text-red-500 space-y-1">
+                              <p className="text-xs text-slate-600 mb-1">Issues</p>
+                              <div className="text-xs text-red-700 space-y-1">
                                 {loan.validationResult?.failedChecks.slice(0, 2).map((check, i) => (
                                   <p key={i}>• {check}</p>
                                 ))}
@@ -583,7 +575,7 @@ export default function DisbursementPage() {
                             <Button
                               onClick={() => handleSelectLoan(loan)}
                               disabled={!loan.validationResult?.isValid}
-                              className="bg-secondary text-primary hover:bg-secondary/90 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+                              className="bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
                             >
                               Initiate
                             </Button>
@@ -595,13 +587,13 @@ export default function DisbursementPage() {
                 ))}
               </div>
             ) : (
-              <Card className="bg-primary-foreground/5 border-primary-foreground/10">
+              <Card className="bg-slate-50 border-slate-300">
                 <CardContent className="p-12 text-center">
-                  <Clock className="w-12 h-12 text-primary-foreground/30 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-primary-foreground mb-2">
+                  <Clock className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-slate-900 mb-2">
                     No Loans Ready for Disbursement
                   </h3>
-                  <p className="text-primary-foreground/70">
+                  <p className="text-slate-600">
                     All approved loans have been disbursed or are pending compliance checks.
                   </p>
                 </CardContent>
@@ -612,24 +604,24 @@ export default function DisbursementPage() {
 
         {/* Disbursement Dialog */}
         <Dialog open={disbursementDialogOpen} onOpenChange={setDisbursementDialogOpen}>
-          <DialogContent className="bg-primary-foreground/95 border-primary-foreground/20 max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="bg-white border-slate-300 max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="text-primary">Disbursement Processing</DialogTitle>
-              <DialogDescription className="text-primary/70">
+              <DialogTitle className="text-slate-900">Disbursement Processing</DialogTitle>
+              <DialogDescription className="text-slate-600">
                 {selectedLoan?.loanNumber} - {selectedLoan?.customer?.firstName}{' '}
                 {selectedLoan?.customer?.lastName}
               </DialogDescription>
             </DialogHeader>
 
             <Tabs value={currentStep} onValueChange={(v) => setCurrentStep(v as any)}>
-              <TabsList className="grid w-full grid-cols-4 bg-primary/10">
-                <TabsTrigger value="validation" className="text-xs">
+              <TabsList className="grid w-full grid-cols-4 bg-slate-100">
+                <TabsTrigger value="validation" className="text-xs text-slate-700">
                   Validation
                 </TabsTrigger>
-                <TabsTrigger value="setup" className="text-xs">
+                <TabsTrigger value="setup" className="text-xs text-slate-700">
                   Setup
                 </TabsTrigger>
-                <TabsTrigger value="confirmation" className="text-xs">
+                <TabsTrigger value="confirmation" className="text-xs text-slate-700">
                   Confirm
                 </TabsTrigger>
               </TabsList>
@@ -637,7 +629,7 @@ export default function DisbursementPage() {
               {/* Validation Step */}
               <TabsContent value="validation" className="space-y-4">
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-primary flex items-center gap-2">
+                  <h3 className="font-semibold text-slate-900 flex items-center gap-2">
                     <AlertTriangle className="w-4 h-4" />
                     Pre-Disbursement Validation
                   </h3>
@@ -647,14 +639,14 @@ export default function DisbursementPage() {
                       {Object.entries(validationResult.checks).map(([key, value]) => (
                         <div
                           key={key}
-                          className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10"
+                          className="flex items-center gap-3 p-3 rounded-lg bg-slate-100 border border-slate-300"
                         >
                           {value ? (
-                            <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                            <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
                           ) : (
-                            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
                           )}
-                          <span className="text-sm text-primary capitalize">
+                          <span className="text-sm text-slate-900 capitalize">
                             {key.replace(/([A-Z])/g, ' $1').trim()}
                           </span>
                         </div>
@@ -663,17 +655,17 @@ export default function DisbursementPage() {
                   )}
 
                   {validationResult?.failedChecks.length === 0 ? (
-                    <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
-                      <p className="text-green-600 text-sm font-semibold">
+                    <div className="p-4 rounded-lg bg-green-100 border border-green-300">
+                      <p className="text-green-700 text-sm font-semibold">
                         ✓ All validation checks passed. Ready to proceed.
                       </p>
                     </div>
                   ) : (
-                    <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
-                      <p className="text-red-600 text-sm font-semibold mb-2">
+                    <div className="p-4 rounded-lg bg-red-100 border border-red-300">
+                      <p className="text-red-700 text-sm font-semibold mb-2">
                         ✗ Disbursement is blocked due to:
                       </p>
-                      <ul className="text-red-600 text-sm space-y-1">
+                      <ul className="text-red-700 text-sm space-y-1">
                         {validationResult?.failedChecks.map((check, i) => (
                           <li key={i}>• {check}</li>
                         ))}
@@ -684,7 +676,7 @@ export default function DisbursementPage() {
                   <Button
                     onClick={() => setCurrentStep('setup')}
                     disabled={!validationResult?.isValid}
-                    className="w-full bg-secondary text-primary hover:bg-secondary/90 disabled:opacity-50"
+                    className="w-full bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
                   >
                     Proceed to Disbursement Setup
                   </Button>
@@ -696,33 +688,33 @@ export default function DisbursementPage() {
                 <form onSubmit={form.handleSubmit((data) => setCurrentStep('confirmation'))}>
                   {/* Loan Summary */}
                   <div className="space-y-4">
-                    <h3 className="font-semibold text-primary">Loan Summary (Read-Only)</h3>
-                    <div className="grid grid-cols-2 gap-4 p-4 rounded-lg bg-primary/5 border border-primary/10">
+                    <h3 className="font-semibold text-slate-900">Loan Summary (Read-Only)</h3>
+                    <div className="grid grid-cols-2 gap-4 p-4 rounded-lg bg-slate-100 border border-slate-300">
                       <div>
-                        <p className="text-xs text-primary/70">Customer Name</p>
-                        <p className="font-semibold text-primary">
+                        <p className="text-xs text-slate-600">Customer Name</p>
+                        <p className="font-semibold text-slate-900">
                           {selectedLoan?.customer?.firstName} {selectedLoan?.customer?.lastName}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-primary/70">Loan Product</p>
-                        <p className="font-semibold text-primary">{selectedLoan?.product?.productName}</p>
+                        <p className="text-xs text-slate-600">Loan Product</p>
+                        <p className="font-semibold text-slate-900">{selectedLoan?.product?.productName}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-primary/70">Approved Amount</p>
-                        <p className="font-semibold text-primary">
+                        <p className="text-xs text-slate-600">Approved Amount</p>
+                        <p className="font-semibold text-slate-900">
                           ZMW {(selectedLoan?.principalAmount || 0).toLocaleString()}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-primary/70">Processing Fee</p>
-                        <p className="font-semibold text-primary">
+                        <p className="text-xs text-slate-600">Processing Fee</p>
+                        <p className="font-semibold text-slate-900">
                           ZMW {(selectedLoan?.product?.processingFee || 0).toLocaleString()}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-primary/70">Net Disbursement</p>
-                        <p className="font-semibold text-secondary">
+                        <p className="text-xs text-slate-600">Net Disbursement</p>
+                        <p className="font-semibold text-blue-600">
                           ZMW{' '}
                           {(
                             (selectedLoan?.principalAmount || 0) -
@@ -731,8 +723,8 @@ export default function DisbursementPage() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-primary/70">Repayment Start Date</p>
-                        <p className="font-semibold text-primary">
+                        <p className="text-xs text-slate-600">Repayment Start Date</p>
+                        <p className="font-semibold text-slate-900">
                           {selectedLoan?.nextPaymentDate
                             ? new Date(selectedLoan.nextPaymentDate).toLocaleDateString()
                             : 'TBD'}
@@ -743,7 +735,7 @@ export default function DisbursementPage() {
 
                   {/* Disbursement Method */}
                   <div className="space-y-4">
-                    <h3 className="font-semibold text-primary">Disbursement Method</h3>
+                    <h3 className="font-semibold text-slate-900">Disbursement Method</h3>
                     <Select
                       value={selectedMethod}
                       onValueChange={(value) => {
@@ -751,7 +743,7 @@ export default function DisbursementPage() {
                         form.setValue('disbursementMethod', value as any);
                       }}
                     >
-                      <SelectTrigger className="bg-primary/5 border-primary/20 text-primary">
+                      <SelectTrigger className="bg-white border-slate-300 text-slate-900">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -785,54 +777,54 @@ export default function DisbursementPage() {
 
                   {/* Payment Details - Bank Transfer */}
                   {selectedMethod === 'bank_transfer' && (
-                    <div className="space-y-4 p-4 rounded-lg bg-primary/5 border border-primary/10">
-                      <h4 className="font-semibold text-primary text-sm flex items-center gap-2">
+                    <div className="space-y-4 p-4 rounded-lg bg-slate-100 border border-slate-300">
+                      <h4 className="font-semibold text-slate-900 text-sm flex items-center gap-2">
                         <Building2 className="w-4 h-4" />
                         Bank Account Details
                       </h4>
                       <div>
-                        <Label className="text-primary text-sm mb-2 block">Bank Name *</Label>
+                        <Label className="text-slate-700 text-sm mb-2 block">Bank Name *</Label>
                         <Input
                           placeholder="Enter bank name"
-                          className="bg-primary/5 border-primary/20 text-primary placeholder:text-primary/50"
+                          className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
                           {...form.register('bankName', { required: 'Bank name is required' })}
                         />
                         {form.formState.errors.bankName && (
-                          <p className="text-red-500 text-xs mt-1">
+                          <p className="text-red-600 text-xs mt-1">
                             {form.formState.errors.bankName.message}
                           </p>
                         )}
                       </div>
                       <div>
-                        <Label className="text-primary text-sm mb-2 block">Bank Branch</Label>
+                        <Label className="text-slate-700 text-sm mb-2 block">Bank Branch</Label>
                         <Input
                           placeholder="Enter branch name"
-                          className="bg-primary/5 border-primary/20 text-primary placeholder:text-primary/50"
+                          className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
                           {...form.register('bankBranch')}
                         />
                       </div>
                       <div>
-                        <Label className="text-primary text-sm mb-2 block">Account Name *</Label>
+                        <Label className="text-slate-700 text-sm mb-2 block">Account Name *</Label>
                         <Input
                           placeholder="Enter account holder name"
-                          className="bg-primary/5 border-primary/20 text-primary placeholder:text-primary/50"
+                          className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
                           {...form.register('accountName', { required: 'Account name is required' })}
                         />
                         {form.formState.errors.accountName && (
-                          <p className="text-red-500 text-xs mt-1">
+                          <p className="text-red-600 text-xs mt-1">
                             {form.formState.errors.accountName.message}
                           </p>
                         )}
                       </div>
                       <div>
-                        <Label className="text-primary text-sm mb-2 block">Account Number *</Label>
+                        <Label className="text-slate-700 text-sm mb-2 block">Account Number *</Label>
                         <Input
                           placeholder="Enter account number"
-                          className="bg-primary/5 border-primary/20 text-primary placeholder:text-primary/50"
+                          className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
                           {...form.register('accountNumber', { required: 'Account number is required' })}
                         />
                         {form.formState.errors.accountNumber && (
-                          <p className="text-red-500 text-xs mt-1">
+                          <p className="text-red-600 text-xs mt-1">
                             {form.formState.errors.accountNumber.message}
                           </p>
                         )}
@@ -842,32 +834,32 @@ export default function DisbursementPage() {
 
                   {/* Payment Details - Mobile Money */}
                   {selectedMethod === 'mobile_money' && (
-                    <div className="space-y-4 p-4 rounded-lg bg-primary/5 border border-primary/10">
-                      <h4 className="font-semibold text-primary text-sm flex items-center gap-2">
+                    <div className="space-y-4 p-4 rounded-lg bg-slate-100 border border-slate-300">
+                      <h4 className="font-semibold text-slate-900 text-sm flex items-center gap-2">
                         <Smartphone className="w-4 h-4" />
                         Mobile Money Details
                       </h4>
                       <div>
-                        <Label className="text-primary text-sm mb-2 block">Network *</Label>
+                        <Label className="text-slate-700 text-sm mb-2 block">Network *</Label>
                         <Input
                           placeholder="e.g., MTN, Airtel, Zamtel"
-                          className="bg-primary/5 border-primary/20 text-primary placeholder:text-primary/50"
+                          className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
                           {...form.register('mobileNetwork', { required: 'Network is required' })}
                         />
                       </div>
                       <div>
-                        <Label className="text-primary text-sm mb-2 block">Mobile Number *</Label>
+                        <Label className="text-slate-700 text-sm mb-2 block">Mobile Number *</Label>
                         <Input
                           placeholder="Enter mobile number"
-                          className="bg-primary/5 border-primary/20 text-primary placeholder:text-primary/50"
+                          className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
                           {...form.register('mobileNumber', { required: 'Mobile number is required' })}
                         />
                       </div>
                       <div>
-                        <Label className="text-primary text-sm mb-2 block">Account Holder *</Label>
+                        <Label className="text-slate-700 text-sm mb-2 block">Account Holder *</Label>
                         <Input
                           placeholder="Enter account holder name"
-                          className="bg-primary/5 border-primary/20 text-primary placeholder:text-primary/50"
+                          className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
                           {...form.register('mobileAccountHolder', {
                             required: 'Account holder is required',
                           })}
@@ -878,24 +870,24 @@ export default function DisbursementPage() {
 
                   {/* Payment Details - Cheque */}
                   {selectedMethod === 'cheque' && (
-                    <div className="space-y-4 p-4 rounded-lg bg-primary/5 border border-primary/10">
-                      <h4 className="font-semibold text-primary text-sm flex items-center gap-2">
+                    <div className="space-y-4 p-4 rounded-lg bg-slate-100 border border-slate-300">
+                      <h4 className="font-semibold text-slate-900 text-sm flex items-center gap-2">
                         <FileText className="w-4 h-4" />
                         Cheque Details
                       </h4>
                       <div>
-                        <Label className="text-primary text-sm mb-2 block">Cheque Number *</Label>
+                        <Label className="text-slate-700 text-sm mb-2 block">Cheque Number *</Label>
                         <Input
                           placeholder="Enter cheque number"
-                          className="bg-primary/5 border-primary/20 text-primary placeholder:text-primary/50"
+                          className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
                           {...form.register('chequeNumber', { required: 'Cheque number is required' })}
                         />
                       </div>
                       <div>
-                        <Label className="text-primary text-sm mb-2 block">Cheque Date *</Label>
+                        <Label className="text-slate-700 text-sm mb-2 block">Cheque Date *</Label>
                         <Input
                           type="date"
-                          className="bg-primary/5 border-primary/20 text-primary"
+                          className="bg-white border-slate-300 text-slate-900"
                           {...form.register('chequeDate', { required: 'Cheque date is required' })}
                         />
                       </div>
@@ -905,20 +897,20 @@ export default function DisbursementPage() {
                   {/* Common Fields */}
                   <div className="space-y-4">
                     <div>
-                      <Label className="text-primary text-sm mb-2 block">Disbursement Date *</Label>
+                      <Label className="text-slate-700 text-sm mb-2 block">Disbursement Date *</Label>
                       <Input
                         type="date"
-                        className="bg-primary/5 border-primary/20 text-primary"
+                        className="bg-white border-slate-300 text-slate-900"
                         {...form.register('disbursementDate', {
                           required: 'Disbursement date is required',
                         })}
                       />
                     </div>
                     <div>
-                      <Label className="text-primary text-sm mb-2 block">Reference Number *</Label>
+                      <Label className="text-slate-700 text-sm mb-2 block">Reference Number *</Label>
                       <Input
                         placeholder="e.g., DISB-2024-001"
-                        className="bg-primary/5 border-primary/20 text-primary placeholder:text-primary/50"
+                        className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
                         {...form.register('referenceNumber', {
                           required: 'Reference number is required',
                         })}
@@ -928,7 +920,7 @@ export default function DisbursementPage() {
 
                   <Button
                     type="submit"
-                    className="w-full bg-secondary text-primary hover:bg-secondary/90"
+                    className="w-full bg-blue-600 text-white hover:bg-blue-700"
                   >
                     Review & Confirm
                   </Button>
@@ -940,23 +932,23 @@ export default function DisbursementPage() {
                 <form onSubmit={form.handleSubmit((data) => handleDisburse(data))}>
                   {/* Summary */}
                   <div className="space-y-4">
-                    <h3 className="font-semibold text-primary">Disbursement Summary</h3>
-                    <div className="grid grid-cols-2 gap-4 p-4 rounded-lg bg-primary/5 border border-primary/10">
+                    <h3 className="font-semibold text-slate-900">Disbursement Summary</h3>
+                    <div className="grid grid-cols-2 gap-4 p-4 rounded-lg bg-slate-100 border border-slate-300">
                       <div>
-                        <p className="text-xs text-primary/70">Principal Amount</p>
-                        <p className="font-semibold text-primary text-lg">
+                        <p className="text-xs text-slate-600">Principal Amount</p>
+                        <p className="font-semibold text-slate-900 text-lg">
                           ZMW {(selectedLoan?.principalAmount || 0).toLocaleString()}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-primary/70">Processing Fee</p>
-                        <p className="font-semibold text-primary">
+                        <p className="text-xs text-slate-600">Processing Fee</p>
+                        <p className="font-semibold text-slate-900">
                           ZMW {(selectedLoan?.product?.processingFee || 0).toLocaleString()}
                         </p>
                       </div>
-                      <div className="col-span-2 border-t border-primary/20 pt-4">
-                        <p className="text-xs text-primary/70">Net Disbursement Amount</p>
-                        <p className="font-semibold text-secondary text-xl">
+                      <div className="col-span-2 border-t border-slate-300 pt-4">
+                        <p className="text-xs text-slate-600">Net Disbursement Amount</p>
+                        <p className="font-semibold text-blue-600 text-xl">
                           ZMW{' '}
                           {(
                             (selectedLoan?.principalAmount || 0) -
@@ -969,8 +961,8 @@ export default function DisbursementPage() {
 
                   {/* Confirmations */}
                   <div className="space-y-3">
-                    <h3 className="font-semibold text-primary text-sm">Confirmations Required</h3>
-                    <div className="flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
+                    <h3 className="font-semibold text-slate-900 text-sm">Confirmations Required</h3>
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-slate-100 border border-slate-300">
                       <Checkbox
                         id="confirm-details"
                         checked={form.watch('confirmPaymentDetails')}
@@ -979,11 +971,11 @@ export default function DisbursementPage() {
                         }
                         className="mt-1"
                       />
-                      <label htmlFor="confirm-details" className="text-sm text-primary cursor-pointer">
+                      <label htmlFor="confirm-details" className="text-sm text-slate-900 cursor-pointer">
                         I confirm that all payment details are correct and match customer profile
                       </label>
                     </div>
-                    <div className="flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-slate-100 border border-slate-300">
                       <Checkbox
                         id="confirm-amount"
                         checked={form.watch('confirmNetAmount')}
@@ -992,7 +984,7 @@ export default function DisbursementPage() {
                         }
                         className="mt-1"
                       />
-                      <label htmlFor="confirm-amount" className="text-sm text-primary cursor-pointer">
+                      <label htmlFor="confirm-amount" className="text-sm text-slate-900 cursor-pointer">
                         I confirm the net disbursement amount and authorize this irreversible transaction
                       </label>
                     </div>
@@ -1004,7 +996,7 @@ export default function DisbursementPage() {
                       type="button"
                       variant="outline"
                       onClick={() => setCurrentStep('setup')}
-                      className="border-primary/20 text-primary hover:bg-primary/5"
+                      className="border-slate-300 text-slate-900 hover:bg-slate-100"
                     >
                       Back
                     </Button>
@@ -1015,7 +1007,7 @@ export default function DisbursementPage() {
                         !form.watch('confirmPaymentDetails') ||
                         !form.watch('confirmNetAmount')
                       }
-                      className="bg-secondary text-primary hover:bg-secondary/90 disabled:opacity-50"
+                      className="bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
                     >
                       {isSubmitting ? 'Processing...' : 'Confirm & Disburse'}
                     </Button>
