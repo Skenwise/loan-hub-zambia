@@ -43,11 +43,12 @@ export default function KYCUploadPage() {
   const [documents, setDocuments] = useState<KYCDocumentSubmissions[]>([]);
   const [kycStatus, setKycStatus] = useState<KYCStatusTracking | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDragging, setIsDragging] = useState<string | null>(null);
+  const [isDraggingCategory, setIsDraggingCategory] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [fileInputRefs, setFileInputRefs] = useState<{ [key: string]: HTMLInputElement | null }>({});
 
   // Document categories with detailed structure
   const documentCategories: DocumentCategory[] = [
@@ -163,18 +164,22 @@ export default function KYCUploadPage() {
     }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (e: React.DragEvent, categoryId: string) => {
     e.preventDefault();
-    setIsDragging('active');
+    e.stopPropagation();
+    setIsDraggingCategory(categoryId);
   };
 
-  const handleDragLeave = () => {
-    setIsDragging(null);
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingCategory(null);
   };
 
   const handleDrop = (e: React.DragEvent, categoryId: string) => {
     e.preventDefault();
-    setIsDragging(null);
+    e.stopPropagation();
+    setIsDraggingCategory(null);
     const files = e.dataTransfer.files;
     handleFiles(files, categoryId);
   };
@@ -183,6 +188,13 @@ export default function KYCUploadPage() {
     const files = e.currentTarget.files;
     if (files) {
       handleFiles(files, categoryId);
+    }
+  };
+
+  const triggerFileInput = (categoryId: string) => {
+    const input = fileInputRefs[categoryId];
+    if (input) {
+      input.click();
     }
   };
 
@@ -437,6 +449,7 @@ export default function KYCUploadPage() {
                       <div className="space-y-3">
                         {category.documents.map((doc) => {
                           const uploadedDoc = categoryDocs.find(d => d.documentType === doc.id);
+                          const docInputKey = `${category.id}-${doc.id}`;
                           return (
                             <div
                               key={doc.id}
@@ -475,11 +488,14 @@ export default function KYCUploadPage() {
                                   <Download className="w-4 h-4" />
                                 </Button>
                               ) : (
-                                <label>
+                                <>
                                   <input
+                                    ref={(el) => {
+                                      if (el) setFileInputRefs(prev => ({ ...prev, [docInputKey]: el }));
+                                    }}
                                     type="file"
                                     accept=".pdf,.jpg,.jpeg,.png"
-                                    onChange={(e) => handleFileInput(e, doc.id)}
+                                    onChange={(e) => handleFileInput(e, category.id)}
                                     disabled={isUploading}
                                     className="hidden"
                                   />
@@ -489,14 +505,14 @@ export default function KYCUploadPage() {
                                     size="sm"
                                     disabled={isUploading}
                                     className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10"
-                                    onClick={(e) => {
-                                      const input = e.currentTarget.parentElement?.querySelector('input');
-                                      input?.click();
+                                    onClick={() => {
+                                      const input = fileInputRefs[docInputKey];
+                                      if (input) input.click();
                                     }}
                                   >
                                     <Upload className="w-4 h-4" />
                                   </Button>
-                                </label>
+                                </>
                               )}
                             </div>
                           );
@@ -505,15 +521,27 @@ export default function KYCUploadPage() {
 
                       {/* Drag and Drop Area */}
                       <div
-                        onDragOver={handleDragOver}
+                        onDragOver={(e) => handleDragOver(e, category.id)}
                         onDragLeave={handleDragLeave}
                         onDrop={(e) => handleDrop(e, category.id)}
-                        className={`border-2 border-dashed rounded-lg p-8 text-center transition-all ${
-                          isDragging === 'active'
+                        onClick={() => triggerFileInput(category.id)}
+                        className={`border-2 border-dashed rounded-lg p-8 text-center transition-all cursor-pointer ${
+                          isDraggingCategory === category.id
                             ? 'border-secondary bg-secondary/10'
-                            : 'border-primary-foreground/20 hover:border-secondary/50'
+                            : 'border-primary-foreground/20 hover:border-secondary/50 hover:bg-primary-foreground/5'
                         }`}
                       >
+                        <input
+                          ref={(el) => {
+                            if (el) setFileInputRefs(prev => ({ ...prev, [category.id]: el }));
+                          }}
+                          type="file"
+                          multiple
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          onChange={(e) => handleFileInput(e, category.id)}
+                          disabled={isUploading}
+                          className="hidden"
+                        />
                         <Upload className="w-10 h-10 text-primary-foreground/50 mx-auto mb-3" />
                         <p className="text-primary-foreground font-semibold mb-1">
                           Drag documents here

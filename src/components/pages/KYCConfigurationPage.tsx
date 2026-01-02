@@ -76,8 +76,7 @@ export default function KYCConfigurationPage() {
     customerType: '',
     documentCategory: '',
     documentType: '',
-    isMandatory: false,
-    description: ''
+    isMandatory: false
   });
 
   useEffect(() => {
@@ -116,8 +115,7 @@ export default function KYCConfigurationPage() {
         customerType: formData.customerType,
         documentCategory: formData.documentCategory,
         documentType: formData.documentType,
-        isMandatory: formData.isMandatory,
-        description: formData.description
+        isMandatory: formData.isMandatory
       };
 
       await BaseCrudService.create('kycdocumentconfiguration', newConfig);
@@ -127,8 +125,7 @@ export default function KYCConfigurationPage() {
         customerType: '',
         documentCategory: '',
         documentType: '',
-        isMandatory: false,
-        description: ''
+        isMandatory: false
       });
       setIsAdding(false);
       await loadData();
@@ -294,19 +291,6 @@ export default function KYCConfigurationPage() {
                     </select>
                   </div>
 
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-semibold text-primary-foreground mb-2">
-                      Description
-                    </label>
-                    <textarea
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      placeholder="Optional description or notes"
-                      className="w-full px-4 py-2 rounded-lg bg-primary-foreground/10 border border-primary-foreground/20 text-primary-foreground placeholder-primary-foreground/50"
-                      rows={3}
-                    />
-                  </div>
-
                   <div className="md:col-span-2 flex items-center gap-3">
                     <input
                       type="checkbox"
@@ -403,9 +387,6 @@ export default function KYCConfigurationPage() {
                           <p className="text-sm text-primary-foreground/70 mb-2">
                             Document: <strong>{getDocumentTypeName(config.documentType)}</strong>
                           </p>
-                          {config.description && (
-                            <p className="text-sm text-primary-foreground/60">{config.description}</p>
-                          )}
                         </div>
                         <Button
                           onClick={() => handleDeleteConfiguration(config._id)}
