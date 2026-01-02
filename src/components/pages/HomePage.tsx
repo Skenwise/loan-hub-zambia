@@ -132,15 +132,28 @@ export default function HomePage() {
       // Check if user is accessing from a specific role context
       const path = window.location.pathname;
       if (path === '/') {
-        // Redirect to customer portal by default for authenticated users
-        navigate('/customer-portal');
+        // Check the stored role from sessionStorage or localStorage
+        const selectedRole = sessionStorage.getItem('selectedRole') || localStorage.getItem('userRole');
+        
+        if (selectedRole === 'admin') {
+          navigate('/admin/dashboard');
+        } else {
+          // Default to customer portal for customers or if no role is set
+          navigate('/customer-portal');
+        }
       }
     }
   }, [isAuthenticated, member, navigate]);
 
   const handleGetStarted = () => {
     if (isAuthenticated) {
-      navigate('/customer-portal');
+      // Redirect to appropriate dashboard based on stored role
+      const selectedRole = sessionStorage.getItem('selectedRole') || localStorage.getItem('userRole');
+      if (selectedRole === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/customer-portal');
+      }
     } else {
       setShowRoleDialog(true);
     }
@@ -148,8 +161,9 @@ export default function HomePage() {
 
   const handleRoleSelect = (role: 'admin' | 'customer') => {
     setShowRoleDialog(false);
-    // Store the selected role in sessionStorage for use after login
+    // Store the selected role in both sessionStorage and localStorage for persistence
     sessionStorage.setItem('selectedRole', role);
+    localStorage.setItem('userRole', role);
     // Redirect to appropriate dashboard after login
     if (role === 'customer') {
       sessionStorage.setItem('redirectAfterLogin', '/customer-portal');

@@ -20,12 +20,17 @@ export default function Header() {
   const { currency, setCurrency } = useCurrencyStore();
 
   useEffect(() => {
-    // Determine user role based on current path
+    // Determine user role based on current path or stored preference
     const path = window.location.pathname;
+    const storedRole = sessionStorage.getItem('selectedRole') || localStorage.getItem('userRole');
+    
     if (path.startsWith('/customer-portal')) {
       setUserRole('customer');
     } else if (path.startsWith('/admin')) {
       setUserRole('admin');
+    } else if (isAuthenticated && storedRole) {
+      // Use stored role if available
+      setUserRole(storedRole as 'admin' | 'customer');
     } else if (isAuthenticated && !path.startsWith('/')) {
       // If authenticated but on a public page, default to customer
       setUserRole('customer');
@@ -33,6 +38,9 @@ export default function Header() {
   }, [isAuthenticated]);
 
   const handleLogout = async () => {
+    // Clear stored role on logout
+    sessionStorage.removeItem('selectedRole');
+    localStorage.removeItem('userRole');
     await actions.logout();
     navigate('/');
   };
@@ -43,8 +51,9 @@ export default function Header() {
 
   const handleRoleSelect = (role: 'admin' | 'customer') => {
     setShowRoleDialog(false);
-    // Store the selected role in sessionStorage for use after login
+    // Store the selected role in both sessionStorage and localStorage for persistence
     sessionStorage.setItem('selectedRole', role);
+    localStorage.setItem('userRole', role);
     // Redirect to appropriate dashboard after login
     if (role === 'customer') {
       sessionStorage.setItem('redirectAfterLogin', '/customer-portal');
