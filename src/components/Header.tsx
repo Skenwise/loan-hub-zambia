@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMember } from '@/integrations';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,18 @@ export default function Header() {
   const { member, isAuthenticated, isLoading, actions } = useMember();
   const navigate = useNavigate();
   const [showRoleDialog, setShowRoleDialog] = useState(false);
+  const [userRole, setUserRole] = useState<'admin' | 'customer' | null>(null);
   const { currency, setCurrency } = useCurrencyStore();
+
+  useEffect(() => {
+    // Determine user role based on current path
+    const path = window.location.pathname;
+    if (path.startsWith('/customer-portal')) {
+      setUserRole('customer');
+    } else if (path.startsWith('/admin')) {
+      setUserRole('admin');
+    }
+  }, []);
 
   const handleLogout = async () => {
     await actions.logout();
@@ -70,7 +81,7 @@ export default function Header() {
                 </Link>
               </>
             )}
-            {isAuthenticated && (
+            {isAuthenticated && userRole === 'admin' && (
               <>
                 <Link to="/admin/dashboard" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
                   Dashboard
@@ -83,6 +94,19 @@ export default function Header() {
                 </Link>
                 <Link to="/admin/reports" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
                   Reports
+                </Link>
+              </>
+            )}
+            {isAuthenticated && userRole === 'customer' && (
+              <>
+                <Link to="/customer-portal" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
+                  Dashboard
+                </Link>
+                <Link to="/customer-portal/loans" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
+                  My Loans
+                </Link>
+                <Link to="/customer-portal/apply" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
+                  Apply
                 </Link>
               </>
             )}
@@ -128,14 +152,24 @@ export default function Header() {
                     <User className="w-4 h-4 mr-2" />
                     Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/admin/dashboard')} className="cursor-pointer">
-                    <LayoutDashboard className="w-4 h-4 mr-2" />
-                    Dashboard
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/admin/settings/currency')} className="cursor-pointer">
-                    <Settings className="w-4 h-4 mr-2" />
-                    Currency Settings
-                  </DropdownMenuItem>
+                  {userRole === 'admin' && (
+                    <DropdownMenuItem onClick={() => navigate('/admin/dashboard')} className="cursor-pointer">
+                      <LayoutDashboard className="w-4 h-4 mr-2" />
+                      Admin Dashboard
+                    </DropdownMenuItem>
+                  )}
+                  {userRole === 'customer' && (
+                    <DropdownMenuItem onClick={() => navigate('/customer-portal')} className="cursor-pointer">
+                      <LayoutDashboard className="w-4 h-4 mr-2" />
+                      My Dashboard
+                    </DropdownMenuItem>
+                  )}
+                  {userRole === 'admin' && (
+                    <DropdownMenuItem onClick={() => navigate('/admin/settings/currency')} className="cursor-pointer">
+                      <Settings className="w-4 h-4 mr-2" />
+                      Currency Settings
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive">
                     <LogOut className="w-4 h-4 mr-2" />
                     Logout
