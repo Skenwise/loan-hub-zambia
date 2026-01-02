@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, CheckCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, ChevronRight } from 'lucide-react';
 
 type ApplicationStep = 'customer-selection' | 'loan-details' | 'review' | 'confirmation';
 
@@ -103,49 +103,76 @@ export default function LoanApplicationPage() {
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-6">Select Customer</h2>
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Customer *</label>
-              <Select value={selectedCustomerId} onValueChange={setSelectedCustomerId}>
-                <option value="">Choose a customer...</option>
-                {customers.map(customer => (
-                  <option key={customer._id} value={customer._id || ''}>
-                    {customer.firstName} {customer.lastName} - {customer.nationalIdNumber}
-                  </option>
-                ))}
-              </Select>
-            </div>
-
-            {selectedCustomer && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h3 className="font-semibold text-gray-900 mb-2">Customer Details</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-gray-600">Email</p>
-                    <p className="font-medium">{selectedCustomer.emailAddress}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Phone</p>
-                    <p className="font-medium">{selectedCustomer.phoneNumber}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Credit Score</p>
-                    <p className="font-medium">{selectedCustomer.creditScore || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">KYC Status</p>
-                    <p className="font-medium">{selectedCustomer.kycVerificationStatus}</p>
+            {customers.length === 0 ? (
+              <div className="text-center py-8">
+                <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 mb-4">No customers found</p>
+                <p className="text-sm text-gray-500">Please add customers first in the Customer Management section</p>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Customer *</label>
+                  <div className="space-y-2 max-h-96 overflow-y-auto border border-gray-200 rounded-lg">
+                    {customers.map(customer => (
+                      <button
+                        key={customer._id}
+                        onClick={() => setSelectedCustomerId(customer._id || '')}
+                        className={`w-full text-left p-4 border-b last:border-b-0 transition-colors ${
+                          selectedCustomerId === customer._id
+                            ? 'bg-blue-50 border-l-4 border-l-blue-500'
+                            : 'hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-semibold text-gray-900">
+                              {customer.firstName} {customer.lastName}
+                            </p>
+                            <p className="text-sm text-gray-600">{customer.nationalIdNumber}</p>
+                          </div>
+                          {selectedCustomerId === customer._id && (
+                            <ChevronRight className="w-5 h-5 text-blue-500" />
+                          )}
+                        </div>
+                      </button>
+                    ))}
                   </div>
                 </div>
-              </div>
-            )}
 
-            <Button
-              onClick={() => selectedCustomerId && setCurrentStep('loan-details')}
-              disabled={!selectedCustomerId}
-              className="w-full bg-primary hover:bg-primary/90 text-white"
-            >
-              Continue
-            </Button>
+                {selectedCustomer && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h3 className="font-semibold text-gray-900 mb-2">Customer Details</h3>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-gray-600">Email</p>
+                        <p className="font-medium">{selectedCustomer.emailAddress}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600">Phone</p>
+                        <p className="font-medium">{selectedCustomer.phoneNumber}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600">Credit Score</p>
+                        <p className="font-medium">{selectedCustomer.creditScore || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600">KYC Status</p>
+                        <p className="font-medium">{selectedCustomer.kycVerificationStatus}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <Button
+                  onClick={() => selectedCustomerId && setCurrentStep('loan-details')}
+                  disabled={!selectedCustomerId}
+                  className="w-full bg-primary hover:bg-primary/90 text-white"
+                >
+                  Continue
+                </Button>
+              </>
+            )}
           </div>
         </Card>
       )}

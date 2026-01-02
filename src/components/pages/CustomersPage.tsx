@@ -9,8 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Edit, User, Mail, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Plus, Search, Edit, User, Mail, CheckCircle2, AlertCircle, Send } from 'lucide-react';
 import { motion } from 'framer-motion';
+import SendCustomerInvitationModal from '@/components/SendCustomerInvitationModal';
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<CustomerProfiles[]>([]);
@@ -19,6 +20,8 @@ export default function CustomersPage() {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<CustomerProfiles | null>(null);
+  const [invitationModalOpen, setInvitationModalOpen] = useState(false);
+  const [selectedCustomerForInvite, setSelectedCustomerForInvite] = useState<CustomerProfiles | null>(null);
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -134,6 +137,11 @@ export default function CustomersPage() {
       creditScore: customer.creditScore || 0
     });
     setIsDialogOpen(true);
+  };
+
+  const handleSendInvitation = (customer: CustomerProfiles) => {
+    setSelectedCustomerForInvite(customer);
+    setInvitationModalOpen(true);
   };
 
   if (loading) {
@@ -352,14 +360,26 @@ export default function CustomersPage() {
                           </span>
                         </td>
                         <td className="py-3 px-4">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleEdit(customer)}
-                            className="text-secondary hover:text-secondary/80"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleEdit(customer)}
+                              className="text-secondary hover:text-secondary/80"
+                              title="Edit customer"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleSendInvitation(customer)}
+                              className="text-buttonbackground hover:text-buttonbackground/80"
+                              title="Send portal invitation"
+                            >
+                              <Send className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -370,6 +390,16 @@ export default function CustomersPage() {
           </CardContent>
         </Card>
       </main>
+
+      <SendCustomerInvitationModal
+        isOpen={invitationModalOpen}
+        onClose={() => {
+          setInvitationModalOpen(false);
+          setSelectedCustomerForInvite(null);
+        }}
+        customer={selectedCustomerForInvite}
+        onSuccess={() => loadCustomers()}
+      />
 
       <Footer />
     </div>
