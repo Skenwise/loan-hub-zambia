@@ -1,6 +1,9 @@
 /**
  * KYC Upload Page
- * Customers upload KYC documents (ID, proof of address, etc.)
+ * Customers upload KYC documents organized by type:
+ * - Proof of Identity (National ID, Passport)
+ * - Proof of Address (Utility Bill, Bank Statement)
+ * - Proof of Income (Pay Slips, Bank Statements)
  */
 
 import { useState, useEffect } from 'react';
@@ -13,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Upload, FileText, CheckCircle2, AlertCircle, Clock, Download, Trash2 } from 'lucide-react';
+import { Upload, FileText, CheckCircle2, AlertCircle, Clock, Download, Trash2, User, Home, DollarSign } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
@@ -22,11 +25,40 @@ export default function KYCUploadPage() {
   const [customer, setCustomer] = useState<CustomerProfiles | null>(null);
   const [documents, setDocuments] = useState<LoanDocuments[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDragging, setIsDragging] = useState(false);
+  const [isDragging, setIsDragging] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [activeDocumentType, setActiveDocumentType] = useState<string | null>(null);
+
+  // Document type definitions
+  const documentTypes = [
+    {
+      id: 'PROOF_OF_IDENTITY',
+      title: 'Proof of Identity',
+      description: 'Upload a clear copy of your national ID, passport, or driver\'s license',
+      icon: User,
+      examples: ['National ID', 'Passport', 'Driver\'s License'],
+      color: 'bg-blue-500/10 border-blue-500/20'
+    },
+    {
+      id: 'PROOF_OF_ADDRESS',
+      title: 'Proof of Address',
+      description: 'Upload a recent utility bill, bank statement, or rental agreement',
+      icon: Home,
+      examples: ['Utility Bill', 'Bank Statement', 'Rental Agreement'],
+      color: 'bg-green-500/10 border-green-500/20'
+    },
+    {
+      id: 'PROOF_OF_INCOME',
+      title: 'Proof of Income',
+      description: 'Upload recent pay slips, tax returns, or business statements',
+      icon: DollarSign,
+      examples: ['Pay Slip', 'Tax Return', 'Bank Statement'],
+      color: 'bg-purple-500/10 border-purple-500/20'
+    }
+  ];
 
   useEffect(() => {
     loadCustomerData();
@@ -57,28 +89,28 @@ export default function KYCUploadPage() {
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    setIsDragging(true);
+    setIsDragging(activeDocumentType);
   };
 
   const handleDragLeave = () => {
-    setIsDragging(false);
+    setIsDragging(null);
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = (e: React.DragEvent, documentType: string) => {
     e.preventDefault();
-    setIsDragging(false);
+    setIsDragging(null);
     const files = e.dataTransfer.files;
-    handleFiles(files);
+    handleFiles(files, documentType);
   };
 
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>, documentType: string) => {
     const files = e.currentTarget.files;
     if (files) {
-      handleFiles(files);
+      handleFiles(files, documentType);
     }
   };
 
-  const handleFiles = async (files: FileList) => {
+  const handleFiles = async (files: FileList, documentType: string) => {
     if (!customer) return;
 
     try {
@@ -109,7 +141,7 @@ export default function KYCUploadPage() {
           customer._id,
           file.name,
           mockUrl,
-          getDocumentType(file.name)
+          documentType
         );
       }
 
@@ -131,11 +163,12 @@ export default function KYCUploadPage() {
     return validTypes.includes(file.type) && file.size <= maxSize;
   };
 
-  const getDocumentType = (fileName: string): string => {
-    if (fileName.toLowerCase().includes('id')) return 'ID_DOCUMENT';
-    if (fileName.toLowerCase().includes('address')) return 'PROOF_OF_ADDRESS';
-    if (fileName.toLowerCase().includes('income')) return 'INCOME_PROOF';
-    return 'OTHER_DOCUMENT';
+  const getDocumentsForType = (documentType: string): LoanDocuments[] => {
+    return documents.filter(doc => doc.documentType === documentType);
+  };
+
+  const getDocumentTypeConfig = (typeId: string) => {
+    return documentTypes.find(dt => dt.id === typeId);
   };
 
   const getStatusColor = (status: string) => {
@@ -277,87 +310,177 @@ export default function KYCUploadPage() {
             animate={{ opacity: 1, y: 0 }}
             className="mb-8"
           >
-            <Card className="bg-primary-foreground/5 border-primary-foreground/10">
-              <CardHeader>
-                <CardTitle className="text-primary-foreground">Upload Documents</CardTitle>
-                <CardDescription className="text-primary-foreground/50">
-                  Upload clear copies of your identity documents (PDF or image, max 5MB each)
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {/* Drag and Drop Area */}
-                <div
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  className={`border-2 border-dashed rounded-lg p-12 text-center transition-all ${
-                    isDragging
-                      ? 'border-secondary bg-secondary/10'
-                      : 'border-primary-foreground/20 hover:border-secondary/50'
-                  }`}
-                >
-                  <Upload className="w-12 h-12 text-primary-foreground/50 mx-auto mb-4" />
-                  <p className="text-primary-foreground font-semibold mb-2">
-                    Drag and drop your documents here
-                  </p>
-                  <p className="text-primary-foreground/70 text-sm mb-4">
-                    or click below to select files
-                  </p>
-                  <label>
-                    <input
-                      type="file"
-                      multiple
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={handleFileInput}
-                      disabled={isUploading}
-                      className="hidden"
-                    />
-                    <Button
-                      type="button"
-                      disabled={isUploading}
-                      className="bg-secondary text-primary hover:bg-secondary/90"
-                      onClick={(e) => {
-                        const input = e.currentTarget.parentElement?.querySelector('input');
-                        input?.click();
-                      }}
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      Select Files
-                    </Button>
-                  </label>
-                </div>
+            <h2 className="text-2xl font-heading font-bold text-primary-foreground mb-6">
+              Upload Your Documents
+            </h2>
+            <p className="text-primary-foreground/70 mb-8">
+              Please upload the required documents for each category below. All documents must be clear, legible, and in PDF or image format (max 5MB each).
+            </p>
 
-                {/* Upload Progress */}
-                {isUploading && uploadProgress > 0 && (
+            {/* Document Type Sections */}
+            <div className="space-y-8">
+              {documentTypes.map((docType) => {
+                const typeDocuments = getDocumentsForType(docType.id);
+                const IconComponent = docType.icon;
+
+                return (
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
+                    key={docType.id}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mt-6"
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-primary-foreground/70">Uploading...</span>
-                      <span className="text-sm font-semibold text-secondary">{uploadProgress}%</span>
-                    </div>
-                    <div className="w-full bg-primary-foreground/10 rounded-full h-2">
-                      <div
-                        className="bg-secondary h-2 rounded-full transition-all"
-                        style={{ width: `${uploadProgress}%` }}
-                      />
-                    </div>
-                  </motion.div>
-                )}
+                    <Card className={`border ${docType.color}`}>
+                      <CardHeader>
+                        <div className="flex items-start gap-4">
+                          <div className="w-12 h-12 rounded-lg bg-primary-foreground/10 flex items-center justify-center flex-shrink-0">
+                            <IconComponent className="w-6 h-6 text-primary-foreground" />
+                          </div>
+                          <div className="flex-1">
+                            <CardTitle className="text-primary-foreground flex items-center gap-2">
+                              {docType.title}
+                              {typeDocuments.length > 0 && (
+                                <Badge className="bg-green-500/20 text-green-600 border-green-500/30">
+                                  {typeDocuments.length} uploaded
+                                </Badge>
+                              )}
+                            </CardTitle>
+                            <CardDescription className="text-primary-foreground/60 mt-2">
+                              {docType.description}
+                            </CardDescription>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {docType.examples.map((example, idx) => (
+                                <Badge key={idx} variant="outline" className="border-primary-foreground/20 text-primary-foreground/70">
+                                  {example}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </CardHeader>
 
-                {/* Accepted File Types */}
-                <div className="mt-6 p-4 rounded-lg bg-primary-foreground/5 border border-primary-foreground/10">
-                  <p className="text-sm text-primary-foreground/70 mb-2">
-                    <strong>Accepted formats:</strong> PDF, JPG, PNG
-                  </p>
-                  <p className="text-sm text-primary-foreground/70">
-                    <strong>Maximum file size:</strong> 5MB per file
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+                      <CardContent>
+                        {/* Drag and Drop Area */}
+                        <div
+                          onDragOver={handleDragOver}
+                          onDragLeave={handleDragLeave}
+                          onDrop={(e) => handleDrop(e, docType.id)}
+                          className={`border-2 border-dashed rounded-lg p-8 text-center transition-all ${
+                            isDragging === docType.id
+                              ? 'border-secondary bg-secondary/10'
+                              : 'border-primary-foreground/20 hover:border-secondary/50'
+                          }`}
+                        >
+                          <Upload className="w-10 h-10 text-primary-foreground/50 mx-auto mb-3" />
+                          <p className="text-primary-foreground font-semibold mb-1">
+                            Drag and drop your {docType.title.toLowerCase()} here
+                          </p>
+                          <p className="text-primary-foreground/70 text-sm mb-4">
+                            or click below to select files
+                          </p>
+                          <label>
+                            <input
+                              type="file"
+                              multiple
+                              accept=".pdf,.jpg,.jpeg,.png"
+                              onChange={(e) => handleFileInput(e, docType.id)}
+                              disabled={isUploading}
+                              className="hidden"
+                            />
+                            <Button
+                              type="button"
+                              disabled={isUploading}
+                              className="bg-secondary text-primary hover:bg-secondary/90"
+                              onClick={(e) => {
+                                const input = e.currentTarget.parentElement?.querySelector('input');
+                                input?.click();
+                              }}
+                            >
+                              <Upload className="w-4 h-4 mr-2" />
+                              Select Files
+                            </Button>
+                          </label>
+                        </div>
+
+                        {/* Upload Progress */}
+                        {isUploading && uploadProgress > 0 && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="mt-6"
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm text-primary-foreground/70">Uploading...</span>
+                              <span className="text-sm font-semibold text-secondary">{uploadProgress}%</span>
+                            </div>
+                            <div className="w-full bg-primary-foreground/10 rounded-full h-2">
+                              <div
+                                className="bg-secondary h-2 rounded-full transition-all"
+                                style={{ width: `${uploadProgress}%` }}
+                              />
+                            </div>
+                          </motion.div>
+                        )}
+
+                        {/* Uploaded Documents for this Type */}
+                        {typeDocuments.length > 0 && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="mt-6 space-y-3"
+                          >
+                            <h4 className="font-semibold text-primary-foreground text-sm">Uploaded Files:</h4>
+                            {typeDocuments.map((doc, index) => (
+                              <motion.div
+                                key={doc._id}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.05 }}
+                                className="flex items-center justify-between p-3 rounded-lg bg-primary-foreground/5 border border-primary-foreground/10"
+                              >
+                                <div className="flex items-center gap-3 flex-1">
+                                  <FileText className="w-5 h-5 text-secondary flex-shrink-0" />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-primary-foreground truncate">
+                                      {doc.documentName}
+                                    </p>
+                                    <p className="text-xs text-primary-foreground/60">
+                                      {new Date(doc.uploadDate || '').toLocaleDateString()}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex gap-2 flex-shrink-0">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10"
+                                  >
+                                    <Download className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              </motion.div>
+                            ))}
+                          </motion.div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* File Requirements Info */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-8 p-4 rounded-lg bg-primary-foreground/5 border border-primary-foreground/10"
+            >
+              <p className="text-sm text-primary-foreground/70 mb-2">
+                <strong>Accepted formats:</strong> PDF, JPG, PNG
+              </p>
+              <p className="text-sm text-primary-foreground/70">
+                <strong>Maximum file size:</strong> 5MB per file
+              </p>
+            </motion.div>
           </motion.div>
         )}
 
@@ -367,50 +490,49 @@ export default function KYCUploadPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <h2 className="text-2xl font-heading font-bold text-primary-foreground mb-4">
-              Your Documents
+            <h2 className="text-2xl font-heading font-bold text-primary-foreground mb-6">
+              Document Summary
             </h2>
-            <div className="space-y-4">
-              {documents.map((doc, index) => (
-                <motion.div
-                  key={doc._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Card className="bg-primary-foreground/5 border-primary-foreground/10">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start gap-4 flex-1">
-                          <div className="w-12 h-12 rounded-lg bg-secondary/20 flex items-center justify-center flex-shrink-0">
-                            <FileText className="w-6 h-6 text-secondary" />
+            <div className="grid md:grid-cols-3 gap-6">
+              {documentTypes.map((docType) => {
+                const typeDocuments = getDocumentsForType(docType.id);
+                const IconComponent = docType.icon;
+
+                return (
+                  <motion.div
+                    key={docType.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <Card className={`border ${docType.color} h-full`}>
+                      <CardContent className="p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-10 h-10 rounded-lg bg-primary-foreground/10 flex items-center justify-center">
+                            <IconComponent className="w-5 h-5 text-primary-foreground" />
                           </div>
-                          <div className="flex-1">
-                            <h3 className="font-heading font-bold text-primary-foreground mb-1">
-                              {doc.documentName}
-                            </h3>
-                            <p className="text-sm text-primary-foreground/70 mb-3">
-                              Uploaded on {new Date(doc.uploadDate || '').toLocaleDateString()}
-                            </p>
-                            <Badge className={getStatusColor(customer.kycVerificationStatus)}>
-                              {customer.kycVerificationStatus}
-                            </Badge>
+                          <h3 className="font-heading font-bold text-primary-foreground">
+                            {docType.title}
+                          </h3>
+                        </div>
+                        <div className="text-3xl font-bold text-secondary mb-2">
+                          {typeDocuments.length}
+                        </div>
+                        <p className="text-sm text-primary-foreground/70">
+                          {typeDocuments.length === 0 ? 'No documents uploaded' : `document${typeDocuments.length !== 1 ? 's' : ''} uploaded`}
+                        </p>
+                        {typeDocuments.length > 0 && (
+                          <div className="mt-4 pt-4 border-t border-primary-foreground/10">
+                            <div className="flex items-center gap-2 text-green-600">
+                              <CheckCircle2 className="w-4 h-4" />
+                              <span className="text-xs font-semibold">Ready for review</span>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10"
-                          >
-                            <Download className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
+                        )}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
             </div>
           </motion.div>
         )}
