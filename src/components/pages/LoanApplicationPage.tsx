@@ -234,7 +234,7 @@ export default function LoanApplicationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-primary text-primary-foreground font-paragraph">
+    <div className="min-h-screen bg-primary text-primary-foreground font-paragraph pb-20">
       <div className="max-w-6xl mx-auto px-6 lg:px-12 py-12">
         {/* Header */}
         <div className="mb-12">
