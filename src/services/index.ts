@@ -20,6 +20,7 @@ export { CollateralService } from './CollateralService';
 export { KYCService } from './KYCService';
 export { EmailService } from './EmailService';
 export { InitializationService } from './InitializationService';
+export { DisbursementService } from './DisbursementService';
 
 // Collection IDs
 export const CollectionIds = {
