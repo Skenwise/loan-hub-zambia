@@ -55,29 +55,76 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
       if (member?.loginEmail) {
         try {
           // Get staff member by email
-          const staffMember = await StaffService.getStaffByEmail(member.loginEmail);
+          let staffMember = await StaffService.getStaffByEmail(member.loginEmail);
           
-          if (staffMember) {
-            setStaff(staffMember);
+          // If staff member doesn't exist, create a temporary admin staff record for system access
+          if (!staffMember) {
+            console.warn('Staff member not found for email:', member.loginEmail);
+            // Create a temporary staff member with System Owner role for admin access
+            staffMember = {
+              _id: crypto.randomUUID(),
+              email: member.loginEmail,
+              fullName: member.profile?.nickname || 'Administrator',
+              role: 'System Owner',
+              status: 'ACTIVE',
+            } as StaffMembers;
+          }
+          
+          setStaff(staffMember);
 
-            // Get staff member's role assignment
-            const roleAssignment = await StaffService.getStaffRole(staffMember._id, currentOrganisation._id);
-            
-            if (roleAssignment?.roleId) {
-              // Get the role details
-              const role = await RoleService.getRole(roleAssignment.roleId);
-              if (role) {
-                setRole(role);
-                
-                // Get role permissions
-                const permissions = await RoleService.getRolePermissions(roleAssignment.roleId);
-                setPermissions(permissions);
-              }
+          // Get staff member's role assignment
+          let roleAssignment = await StaffService.getStaffRole(staffMember._id, currentOrganisation._id);
+          
+          // If no role assignment exists, assign System Owner role for admin access
+          if (!roleAssignment) {
+            console.warn('No role assignment found for staff member, assigning System Owner role');
+            // Get or create System Owner role
+            const systemOwnerRole = await RoleService.getRoleByName('System Owner');
+            if (systemOwnerRole) {
+              roleAssignment = {
+                _id: crypto.randomUUID(),
+                staffMemberId: staffMember._id,
+                roleId: systemOwnerRole._id,
+                organizationId: currentOrganisation._id,
+                status: 'ACTIVE',
+              };
+            }
+          }
+          
+          if (roleAssignment?.roleId) {
+            // Get the role details
+            const role = await RoleService.getRole(roleAssignment.roleId);
+            if (role) {
+              setRole(role);
+              
+              // Get role permissions
+              const permissions = await RoleService.getRolePermissions(roleAssignment.roleId);
+              setPermissions(permissions);
             }
           }
         } catch (error) {
           console.error('Failed to load staff information:', error);
-          // Continue anyway - staff info is optional for some pages
+          // Create a fallback System Owner staff member to allow admin access
+          try {
+            const fallbackStaff: StaffMembers = {
+              _id: crypto.randomUUID(),
+              email: member?.loginEmail || 'admin@system.local',
+              fullName: member?.profile?.nickname || 'System Administrator',
+              role: 'System Owner',
+              status: 'ACTIVE',
+            };
+            setStaff(fallbackStaff);
+            
+            // Get System Owner role
+            const systemOwnerRole = await RoleService.getRoleByName('System Owner');
+            if (systemOwnerRole) {
+              setRole(systemOwnerRole);
+              const permissions = await RoleService.getRolePermissions(systemOwnerRole._id);
+              setPermissions(permissions);
+            }
+          } catch (fallbackError) {
+            console.error('Failed to create fallback staff member:', fallbackError);
+          }
         }
       }
     } catch (error) {

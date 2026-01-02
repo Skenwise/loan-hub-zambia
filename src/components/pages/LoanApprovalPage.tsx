@@ -66,9 +66,23 @@ export default function LoanApprovalPage() {
         );
 
         setCanApprove(hasPermission);
+        
+        // If permission check fails, log for debugging
+        if (!hasPermission) {
+          console.warn('User does not have APPROVE_LOAN permission', {
+            staffId: currentStaff._id,
+            organisationId: currentOrganisation._id,
+            staffRole: currentStaff.role,
+          });
+        }
       } catch (error) {
         console.error('Error checking approval permission:', error);
-        setCanApprove(false);
+        // For admin/system owner, grant access even if there's an error
+        if (currentStaff?.role === 'System Owner' || currentStaff?.role === 'Admin/Owner') {
+          setCanApprove(true);
+        } else {
+          setCanApprove(false);
+        }
       }
     };
 

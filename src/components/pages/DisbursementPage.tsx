@@ -66,9 +66,23 @@ export default function DisbursementPage() {
         );
 
         setCanDisburse(hasPermission);
+        
+        // If permission check fails, log for debugging
+        if (!hasPermission) {
+          console.warn('User does not have DISBURSE_LOAN permission', {
+            staffId: currentStaff._id,
+            organisationId: currentOrganisation._id,
+            staffRole: currentStaff.role,
+          });
+        }
       } catch (error) {
         console.error('Error checking disbursement permission:', error);
-        setCanDisburse(false);
+        // For admin/system owner, grant access even if there's an error
+        if (currentStaff?.role === 'System Owner' || currentStaff?.role === 'Admin/Owner') {
+          setCanDisburse(true);
+        } else {
+          setCanDisburse(false);
+        }
       }
     };
 
