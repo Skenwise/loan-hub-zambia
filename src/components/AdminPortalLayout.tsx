@@ -54,7 +54,7 @@ export default function AdminPortalLayout() {
             <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center font-bold text-primary">
               LD
             </div>
-            {sidebarOpen && <span className="font-bold text-lg">LoanDisk</span>}
+            {sidebarOpen && <span className="font-bold text-lg">Lendly</span>}
           </div>
         </div>
 

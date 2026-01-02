@@ -142,7 +142,7 @@ export class SubscriptionService {
       const plans = [
         {
           planName: 'Starter',
-          pricePerMonth: 99,
+          pricePerMonth: 59,
           features: 'basic_reporting,customer_management,loan_management',
           usageLimits: 'max_customers:100,max_loans:50',
           planDescription: 'Perfect for small lending institutions',
@@ -150,7 +150,7 @@ export class SubscriptionService {
         },
         {
           planName: 'Professional',
-          pricePerMonth: 299,
+          pricePerMonth: 199,
           features: 'advanced_reporting,customer_management,loan_management,ifrs9_compliance,boz_provisions',
           usageLimits: 'max_customers:1000,max_loans:500',
           planDescription: 'For growing lending institutions',
@@ -158,7 +158,7 @@ export class SubscriptionService {
         },
         {
           planName: 'Enterprise',
-          pricePerMonth: 999,
+          pricePerMonth: 299,
           features: 'advanced_reporting,customer_management,loan_management,ifrs9_compliance,boz_provisions,api_access,custom_integrations',
           usageLimits: 'max_customers:unlimited,max_loans:unlimited',
           planDescription: 'For large-scale lending operations',

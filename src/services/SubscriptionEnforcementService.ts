@@ -298,7 +298,7 @@ export class SubscriptionEnforcementService {
     return {
       STARTER: {
         name: 'Starter',
-        price: 99,
+        price: 59,
         features: [
           'Basic loan management',
           'Up to 100 loans',
@@ -309,7 +309,7 @@ export class SubscriptionEnforcementService {
       },
       PROFESSIONAL: {
         name: 'Professional',
-        price: 299,
+        price: 199,
         features: [
           'Advanced analytics',
           'Up to 1000 loans',
@@ -321,7 +321,7 @@ export class SubscriptionEnforcementService {
       },
       ENTERPRISE: {
         name: 'Enterprise',
-        price: 999,
+        price: 299,
         features: [
           'All features',
           'Unlimited loans',
