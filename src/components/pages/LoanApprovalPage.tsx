@@ -58,6 +58,12 @@ export default function LoanApprovalPage() {
         return;
       }
 
+      // First check if user is admin/owner - grant full access
+      if (currentStaff?.role === 'System Owner' || currentStaff?.role === 'Admin/Owner') {
+        setCanApprove(true);
+        return;
+      }
+
       try {
         const hasPermission = await AuthorizationService.hasPermission(
           currentStaff._id,

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BaseCrudService } from '@/integrations';
-import { Organizations, SubscriptionPlans, OrganisationSetup } from '@/entities';
+import { useMember } from '@/integrations';
+import { Organizations, SubscriptionPlans, OrganisationSetup, StaffMembers, Roles } from '@/entities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -8,12 +9,14 @@ import { useOrganisationStore } from '@/store/organisationStore';
 import { useCurrencyStore, CURRENCY_RATES } from '@/store/currencyStore';
 import { useNavigate } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { StaffService, RoleService } from '@/services';
 
 type SetupStep = 'organisation-info' | 'subscription-plan' | 'confirmation';
 
 export default function OrganisationSetupPage() {
   const navigate = useNavigate();
-  const { setOrganisation, setSubscriptionPlan } = useOrganisationStore();
+  const { member } = useMember();
+  const { setOrganisation, setSubscriptionPlan, setStaff, setRole, setPermissions } = useOrganisationStore();
   const { currency, setCurrency, formatPrice } = useCurrencyStore();
 
   const [currentStep, setCurrentStep] = useState<SetupStep>('organisation-info');
@@ -96,6 +99,43 @@ export default function OrganisationSetupPage() {
 
       // Store organisation in state
       setOrganisation(newOrganisation);
+
+      // Create staff member for the current user (admin/owner)
+      if (member?.loginEmail) {
+        const staffId = crypto.randomUUID();
+        const staffMember: StaffMembers = {
+          _id: staffId,
+          fullName: member.profile?.nickname || member.loginEmail,
+          email: member.loginEmail,
+          role: 'Admin/Owner',
+          status: 'active',
+          employeeId: `EMP-${staffId.substring(0, 8).toUpperCase()}`,
+          dateHired: new Date(),
+        };
+
+        await BaseCrudService.create('staffmembers', staffMember);
+
+        // Get the Admin/Owner role
+        const adminRole = await RoleService.getRoleByName('Admin/Owner');
+        
+        if (adminRole) {
+          // Assign role to staff member
+          await StaffService.assignRole(
+            staffId,
+            adminRole._id,
+            organisationId,
+            member.loginEmail
+          );
+
+          // Set staff and role in store
+          setStaff(staffMember);
+          setRole(adminRole);
+          
+          // Get and set permissions
+          const rolePermissions = await RoleService.getRolePermissions(adminRole._id);
+          setPermissions(rolePermissions);
+        }
+      }
 
       // Move to next step
       setCurrentStep('confirmation');
