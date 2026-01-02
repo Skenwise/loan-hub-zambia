@@ -14,7 +14,7 @@ import Footer from '@/components/Footer';
 import PaymentModal from '@/components/PaymentModal';
 import { useCurrencyStore } from '@/store/currencyStore';
 import { useOrganisationStore } from '@/store/organisationStore';
-import { TrendingUp, DollarSign, Calendar, FileText, Download, ArrowRight, CheckCircle2, AlertCircle, Clock, Shield, Bell, Mail, Phone, MessageSquare, Send, MapPin } from 'lucide-react';
+import { TrendingUp, Banknote, Calendar, FileText, Download, ArrowRight, CheckCircle2, AlertCircle, Clock, Shield, Bell, Mail, Phone, MessageSquare, Send, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
@@ -263,7 +263,7 @@ export default function CustomerPortalPage() {
                         <p className="text-3xl font-bold text-primary-foreground">{formatPrice(loans.reduce((sum, l) => sum + (l.outstandingBalance || 0), 0))}</p>
                       </div>
                       <div className="w-10 h-10 rounded-lg bg-secondary/30 flex items-center justify-center">
-                        <DollarSign className="w-5 h-5 text-secondary" />
+                        <Banknote className="w-5 h-5 text-secondary" />
                       </div>
                     </div>
                   </Card>
@@ -389,7 +389,7 @@ export default function CustomerPortalPage() {
                                     setPaymentModalOpen(true);
                                   }}
                                 >
-                                  <DollarSign className="w-4 h-4 mr-2" />
+                                  <Banknote className="w-4 h-4 mr-2" />
                                   Make Payment
                                 </Button>
                               )}
@@ -417,7 +417,7 @@ export default function CustomerPortalPage() {
                   <Card className="p-8 bg-gradient-to-br from-secondary/30 to-secondary/10 border-secondary/50 hover:border-secondary/70 transition-all shadow-lg">
                     <div className="flex items-start justify-between mb-4">
                       <div className="w-12 h-12 rounded-lg bg-secondary/40 flex items-center justify-center">
-                        <DollarSign className="w-6 h-6 text-secondary" />
+                        <Banknote className="w-6 h-6 text-secondary" />
                       </div>
                     </div>
                     <h3 className="font-heading text-xl font-bold text-primary-foreground mb-2">Make a Payment</h3>
@@ -435,7 +435,7 @@ export default function CustomerPortalPage() {
                       }}
                       disabled={!loans.some(l => l.loanStatus === 'disbursed')}
                     >
-                      <DollarSign className="w-4 h-4 mr-2" />
+                      <Banknote className="w-4 h-4 mr-2" />
                       Pay Now
                     </Button>
                   </Card>
