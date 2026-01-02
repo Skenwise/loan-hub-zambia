@@ -11,7 +11,7 @@ export interface CurrencyRate {
 }
 
 export const CURRENCY_RATES: Record<Currency, CurrencyRate> = {
-  USD: { code: 'USD', symbol: ', name: 'US Dollar', rate: 1 },
+  USD: { code: 'USD', symbol: '$', name: 'US Dollar', rate: 1 },
   ZMW: { code: 'ZMW', symbol: 'K', name: 'Zambian Kwacha', rate: 20.5 }, // Example rate
   GBP: { code: 'GBP', symbol: '£', name: 'British Pound', rate: 0.79 },
   EUR: { code: 'EUR', symbol: '€', name: 'Euro', rate: 0.92 },
