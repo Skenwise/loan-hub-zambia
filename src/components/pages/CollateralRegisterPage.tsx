@@ -43,16 +43,15 @@ export default function CollateralRegisterPage() {
 
   useEffect(() => {
     const loadData = async () => {
-      if (!currentOrganisation?._id) return;
-
       try {
         setIsLoading(true);
-        // Load loans
-        const loanList = await LoanService.getOrganisationLoans(currentOrganisation._id);
+        // Load loans - use a default org for demo
+        const demoOrgId = 'demo-org-001';
+        const loanList = await LoanService.getOrganisationLoans(demoOrgId);
         setLoans(loanList);
 
         // Load collaterals
-        const collateralList = await CollateralService.getOrganisationCollateralRegister(currentOrganisation._id);
+        const collateralList = await CollateralService.getOrganisationCollateralRegister(demoOrgId);
         setCollaterals(collateralList);
       } catch (error) {
         console.error('Error loading collateral data:', error);
@@ -63,19 +62,19 @@ export default function CollateralRegisterPage() {
     };
 
     loadData();
-  }, [currentOrganisation]);
+  }, []);
 
   const onSubmit = async (data: CollateralFormData) => {
-    if (!currentOrganisation?._id) return;
-
     try {
       setIsSubmitting(true);
       setErrorMessage('');
       setSuccessMessage('');
 
+      const demoOrgId = 'demo-org-001';
+
       const collateral = await CollateralService.createCollateral({
         loanId: data.loanId,
-        organisationId: currentOrganisation._id,
+        organisationId: demoOrgId,
         collateralType: data.collateralType,
         collateralDescription: data.collateralDescription,
         collateralValue: data.collateralValue,
@@ -89,7 +88,7 @@ export default function CollateralRegisterPage() {
       reset();
       
       // Reload collaterals
-      const updatedList = await CollateralService.getOrganisationCollateralRegister(currentOrganisation._id);
+      const updatedList = await CollateralService.getOrganisationCollateralRegister(demoOrgId);
       setCollaterals(updatedList);
     } catch (error) {
       console.error('Error registering collateral:', error);

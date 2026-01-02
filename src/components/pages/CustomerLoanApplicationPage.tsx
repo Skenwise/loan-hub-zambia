@@ -30,7 +30,7 @@ interface LoanApplicationForm {
 export default function CustomerLoanApplicationPage() {
   const { member } = useMember();
   const { currentOrganisation } = useOrganisationStore();
-  const { isStaff } = useRoleStore();
+  const { userRole, setUserRole } = useRoleStore();
   const { register, handleSubmit, watch, formState: { errors }, reset } = useForm<LoanApplicationForm>();
   
   const [loanProducts, setLoanProducts] = useState<LoanProducts[]>([]);
@@ -40,6 +40,7 @@ export default function CustomerLoanApplicationPage() {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [monthlyPayment, setMonthlyPayment] = useState(0);
+  const [showRoleSelector, setShowRoleSelector] = useState(!userRole);
 
   const selectedProductId = watch('loanProductId');
   const principalAmount = watch('principalAmount');
@@ -47,23 +48,18 @@ export default function CustomerLoanApplicationPage() {
 
   useEffect(() => {
     const loadData = async () => {
-      if (!currentOrganisation?._id) return;
-
       try {
         setIsLoading(true);
 
-        // Check if user has permission to create loan applications
-        if (!isStaff()) {
-          setErrorMessage('Only admin staff can create loan applications. Customers can view their loans in the customer portal.');
-          return;
-        }
+        // Use a default org for demo
+        const demoOrgId = 'demo-org-001';
 
         // Get loan products
-        const products = await LoanService.getOrganisationLoanProducts(currentOrganisation._id);
+        const products = await LoanService.getOrganisationLoanProducts(demoOrgId);
         setLoanProducts(products);
 
         // Get customers for selection
-        const customerList = await CustomerService.getOrganisationCustomers(currentOrganisation._id);
+        const customerList = await CustomerService.getOrganisationCustomers(demoOrgId);
         setCustomers(customerList);
       } catch (error) {
         console.error('Error loading data:', error);
@@ -74,7 +70,7 @@ export default function CustomerLoanApplicationPage() {
     };
 
     loadData();
-  }, [currentOrganisation, isStaff]);
+  }, []);
 
   // Calculate monthly payment when inputs change
   useEffect(() => {
@@ -91,13 +87,18 @@ export default function CustomerLoanApplicationPage() {
     }
   }, [principalAmount, loanTermMonths, selectedProductId, loanProducts]);
 
-  const onSubmit = async (data: LoanApplicationForm) => {
-    if (!currentOrganisation?._id) return;
+  const handleSetRole = (role: 'STAFF') => {
+    setUserRole(role);
+    setShowRoleSelector(false);
+  };
 
+  const onSubmit = async (data: LoanApplicationForm) => {
     try {
       setIsSubmitting(true);
       setErrorMessage('');
       setSuccessMessage('');
+
+      const demoOrgId = 'demo-org-001';
 
       const product = loanProducts.find(p => p._id === data.loanProductId);
       if (!product) {
@@ -123,7 +124,7 @@ export default function CustomerLoanApplicationPage() {
         nextPaymentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         interestRate: product.interestRate,
         loanTermMonths: data.loanTermMonths,
-        organisationId: currentOrganisation._id,
+        organisationId: demoOrgId,
       };
 
       const createdLoan = await LoanService.createLoan(loan);
@@ -154,7 +155,35 @@ export default function CustomerLoanApplicationPage() {
     );
   }
 
-  if (!isStaff()) {
+  if (showRoleSelector) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 p-6">
+        <div className="max-w-2xl mx-auto">
+          <Card className="bg-primary-foreground/5 border-primary-foreground/10">
+            <CardHeader>
+              <CardTitle className="text-primary-foreground">Select Your Role</CardTitle>
+              <CardDescription className="text-primary-foreground/50">
+                Choose a role to access this page
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button
+                onClick={() => handleSetRole('STAFF')}
+                className="w-full bg-secondary text-primary hover:bg-secondary/90 h-12"
+              >
+                Admin Staff
+              </Button>
+              <p className="text-sm text-primary-foreground/70 text-center">
+                Only admin staff can create loan applications
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (userRole !== 'STAFF') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 p-6">
         <div className="max-w-2xl mx-auto">
@@ -167,10 +196,13 @@ export default function CustomerLoanApplicationPage() {
             </CardHeader>
             <CardContent>
               <p className="text-primary-foreground/70 mb-4">
-                {errorMessage || 'Only admin staff can create loan applications. Customers can view and manage their loans in the customer portal.'}
+                Only admin staff can create loan applications. Customers can view and manage their loans in the customer portal.
               </p>
-              <Button className="bg-secondary text-primary hover:bg-secondary/90">
-                Go to Customer Portal
+              <Button
+                onClick={() => setShowRoleSelector(true)}
+                variant="outline"
+              >
+                Change Role
               </Button>
             </CardContent>
           </Card>

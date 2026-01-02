@@ -21,27 +21,25 @@ import { motion } from 'framer-motion';
 export default function OrganisationAdminSettingsPage() {
   const { member } = useMember();
   const { currentOrganisation } = useOrganisationStore();
-  const { isOrganisationAdmin } = useRoleStore();
+  const { userRole, setUserRole } = useRoleStore();
   
   const [staff, setStaff] = useState<StaffMembers[]>([]);
   const [loanProducts, setLoanProducts] = useState<LoanProducts[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('staff');
+  const [showRoleSelector, setShowRoleSelector] = useState(!userRole);
 
   useEffect(() => {
     const loadData = async () => {
-      if (!isOrganisationAdmin() || !currentOrganisation?._id) {
-        return;
-      }
-
       try {
         setIsLoading(true);
-        // Load staff members
-        const staffMembers = await StaffService.getOrganisationStaff(currentOrganisation._id);
+        // Load staff members - use a default org for demo
+        const demoOrgId = 'demo-org-001';
+        const staffMembers = await StaffService.getOrganisationStaff(demoOrgId);
         setStaff(staffMembers);
 
         // Load loan products
-        const products = await LoanService.getOrganisationLoanProducts(currentOrganisation._id);
+        const products = await LoanService.getOrganisationLoanProducts(demoOrgId);
         setLoanProducts(products);
       } catch (error) {
         console.error('Error loading organisation settings:', error);
@@ -51,9 +49,42 @@ export default function OrganisationAdminSettingsPage() {
     };
 
     loadData();
-  }, [isOrganisationAdmin, currentOrganisation]);
+  }, []);
 
-  if (!isOrganisationAdmin()) {
+  const handleSetRole = (role: 'ORGANISATION_ADMIN') => {
+    setUserRole(role);
+    setShowRoleSelector(false);
+  };
+
+  if (showRoleSelector) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 p-6">
+        <div className="max-w-2xl mx-auto">
+          <Card className="bg-primary-foreground/5 border-primary-foreground/10">
+            <CardHeader>
+              <CardTitle className="text-primary-foreground">Select Your Role</CardTitle>
+              <CardDescription className="text-primary-foreground/50">
+                Choose a role to access this page
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button
+                onClick={() => handleSetRole('ORGANISATION_ADMIN')}
+                className="w-full bg-secondary text-primary hover:bg-secondary/90 h-12"
+              >
+                Organization Admin
+              </Button>
+              <p className="text-sm text-primary-foreground/70 text-center">
+                This page is for Organization Admins only
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (userRole !== 'ORGANISATION_ADMIN') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 p-6">
         <div className="max-w-4xl mx-auto">
@@ -65,9 +96,15 @@ export default function OrganisationAdminSettingsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-primary-foreground/70">
+              <p className="text-primary-foreground/70 mb-4">
                 You do not have permission to access organization admin settings.
               </p>
+              <Button
+                onClick={() => setShowRoleSelector(true)}
+                variant="outline"
+              >
+                Change Role
+              </Button>
             </CardContent>
           </Card>
         </div>

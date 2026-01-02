@@ -21,27 +21,25 @@ import { motion } from 'framer-motion';
 export default function BranchManagerSettingsPage() {
   const { member } = useMember();
   const { currentOrganisation } = useOrganisationStore();
-  const { isBranchManager, branchId } = useRoleStore();
+  const { userRole, setUserRole } = useRoleStore();
   
   const [staff, setStaff] = useState<StaffMembers[]>([]);
   const [customers, setCustomers] = useState<CustomerProfiles[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('staff');
+  const [showRoleSelector, setShowRoleSelector] = useState(!userRole);
 
   useEffect(() => {
     const loadData = async () => {
-      if (!isBranchManager() || !currentOrganisation?._id) {
-        return;
-      }
-
       try {
         setIsLoading(true);
-        // Load branch staff
-        const staffMembers = await StaffService.getOrganisationStaff(currentOrganisation._id);
+        // Load branch staff - use a default org for demo
+        const demoOrgId = 'demo-org-001';
+        const staffMembers = await StaffService.getOrganisationStaff(demoOrgId);
         setStaff(staffMembers);
 
         // Load branch customers
-        const customerList = await CustomerService.getOrganisationCustomers(currentOrganisation._id);
+        const customerList = await CustomerService.getOrganisationCustomers(demoOrgId);
         setCustomers(customerList);
       } catch (error) {
         console.error('Error loading branch settings:', error);
@@ -51,9 +49,42 @@ export default function BranchManagerSettingsPage() {
     };
 
     loadData();
-  }, [isBranchManager, currentOrganisation]);
+  }, []);
 
-  if (!isBranchManager()) {
+  const handleSetRole = (role: 'BRANCH_MANAGER') => {
+    setUserRole(role);
+    setShowRoleSelector(false);
+  };
+
+  if (showRoleSelector) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 p-6">
+        <div className="max-w-2xl mx-auto">
+          <Card className="bg-primary-foreground/5 border-primary-foreground/10">
+            <CardHeader>
+              <CardTitle className="text-primary-foreground">Select Your Role</CardTitle>
+              <CardDescription className="text-primary-foreground/50">
+                Choose a role to access this page
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button
+                onClick={() => handleSetRole('BRANCH_MANAGER')}
+                className="w-full bg-secondary text-primary hover:bg-secondary/90 h-12"
+              >
+                Branch Manager
+              </Button>
+              <p className="text-sm text-primary-foreground/70 text-center">
+                This page is for Branch Managers only
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (userRole !== 'BRANCH_MANAGER') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 p-6">
         <div className="max-w-4xl mx-auto">
@@ -65,9 +96,15 @@ export default function BranchManagerSettingsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-primary-foreground/70">
+              <p className="text-primary-foreground/70 mb-4">
                 You do not have permission to access branch manager settings.
               </p>
+              <Button
+                onClick={() => setShowRoleSelector(true)}
+                variant="outline"
+              >
+                Change Role
+              </Button>
             </CardContent>
           </Card>
         </div>
