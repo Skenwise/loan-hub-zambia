@@ -137,6 +137,81 @@ export interface ECLResults {
 
 
 /**
+ * Collection ID: kycdocumentconfiguration
+ * Interface for KYCDocumentConfiguration
+ */
+export interface KYCDocumentConfiguration {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  loanProductId?: string;
+  /** @wixFieldType text */
+  customerType?: string;
+  /** @wixFieldType text */
+  documentCategory?: string;
+  /** @wixFieldType text */
+  documentType?: string;
+  /** @wixFieldType boolean */
+  isMandatory?: boolean;
+}
+
+
+/**
+ * Collection ID: kycdocumentsubmissions
+ * Interface for KYCDocumentSubmissions
+ */
+export interface KYCDocumentSubmissions {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  documentType?: string;
+  /** @wixFieldType url */
+  documentFile?: string;
+  /** @wixFieldType text */
+  customerId?: string;
+  /** @wixFieldType text */
+  loanId?: string;
+  /** @wixFieldType text */
+  uploadedBy?: string;
+  /** @wixFieldType datetime */
+  uploadDate?: Date | string;
+  /** @wixFieldType text */
+  verificationStatus?: string;
+  /** @wixFieldType text */
+  verifiedBy?: string;
+  /** @wixFieldType datetime */
+  verificationDate?: Date | string;
+  /** @wixFieldType text */
+  verificationComments?: string;
+}
+
+
+/**
+ * Collection ID: kycstatustracking
+ * Interface for KYCStatusTracking
+ */
+export interface KYCStatusTracking {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  customerId?: string;
+  /** @wixFieldType text */
+  loanApplicationId?: string;
+  /** @wixFieldType text */
+  kycStatus?: string;
+  /** @wixFieldType text */
+  lastUpdatedBy?: string;
+  /** @wixFieldType datetime */
+  lastUpdatedAt?: Date | string;
+  /** @wixFieldType text */
+  rejectionReason?: string;
+}
+
+
+/**
  * Collection ID: kycverificationhistory
  * Interface for KYCVerificationHistory
  */
@@ -455,4 +530,81 @@ export interface SubscriptionPlans {
   planDescription?: string;
   /** @wixFieldType boolean */
   isActive?: boolean;
+}
+
+
+/**
+ * Collection ID: kycdocumentconfiguration
+ * Interface for KYC Document Configuration
+ */
+export interface KYCDocumentConfiguration {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  loanProductId?: string;
+  /** @wixFieldType text */
+  customerType?: string;
+  /** @wixFieldType text */
+  documentCategory?: string;
+  /** @wixFieldType text */
+  documentType?: string;
+  /** @wixFieldType boolean */
+  isMandatory?: boolean;
+  /** @wixFieldType text */
+  description?: string;
+}
+
+
+/**
+ * Collection ID: kycdocumentsubmissions
+ * Interface for KYC Document Submissions
+ */
+export interface KYCDocumentSubmissions {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  documentType?: string;
+  /** @wixFieldType url */
+  documentFile?: string;
+  /** @wixFieldType text */
+  customerId?: string;
+  /** @wixFieldType text */
+  loanId?: string;
+  /** @wixFieldType text */
+  uploadedBy?: string;
+  /** @wixFieldType datetime */
+  uploadDate?: Date | string;
+  /** @wixFieldType text */
+  verificationStatus?: string;
+  /** @wixFieldType text */
+  verifiedBy?: string;
+  /** @wixFieldType datetime */
+  verificationDate?: Date | string;
+  /** @wixFieldType text */
+  verificationComments?: string;
+}
+
+
+/**
+ * Collection ID: kycstatustracking
+ * Interface for KYC Status Tracking
+ */
+export interface KYCStatusTracking {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  customerId?: string;
+  /** @wixFieldType text */
+  loanApplicationId?: string;
+  /** @wixFieldType text */
+  kycStatus?: string;
+  /** @wixFieldType text */
+  lastUpdatedBy?: string;
+  /** @wixFieldType datetime */
+  lastUpdatedAt?: Date | string;
+  /** @wixFieldType text */
+  rejectionReason?: string;
 }

@@ -31,6 +31,7 @@ import OrganisationAdminSettingsPage from '@/components/pages/OrganisationAdminS
 import BranchManagerSettingsPage from '@/components/pages/BranchManagerSettingsPage';
 import CollateralRegisterPage from '@/components/pages/CollateralRegisterPage';
 import KYCUploadPage from '@/components/pages/KYCUploadPage';
+import KYCConfigurationPage from '@/components/pages/KYCConfigurationPage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -186,6 +187,14 @@ const router = createBrowserRouter([
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to access branch settings">
             <BranchManagerSettingsPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "settings/kyc-configuration",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to access KYC configuration">
+            <KYCConfigurationPage />
           </MemberProtectedRoute>
         ),
       },

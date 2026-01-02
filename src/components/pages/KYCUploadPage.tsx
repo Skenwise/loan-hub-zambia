@@ -1,62 +1,131 @@
 /**
- * KYC Upload Page
- * Customers upload KYC documents organized by type:
- * - Proof of Identity (National ID, Passport)
- * - Proof of Address (Utility Bill, Bank Statement)
- * - Proof of Income (Pay Slips, Bank Statements)
+ * KYC Upload Page - Enhanced
+ * Comprehensive KYC document management with multiple categories:
+ * - Core/Mandatory KYC Documents
+ * - Income & Affordability Documents
+ * - Guarantor Documents
+ * - Collateral-Related Documents
+ * - Compliance & Declarations
+ * - Optional/Enhanced Due Diligence
  */
 
 import { useState, useEffect } from 'react';
 import { useMember } from '@/integrations';
-import { BaseCrudService, KYCService, EmailService } from '@/services';
-import { CustomerProfiles, LoanDocuments } from '@/entities';
+import { BaseCrudService } from '@/services';
+import { CustomerProfiles, KYCDocumentSubmissions, KYCStatusTracking, KYCDocumentConfiguration } from '@/entities';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Upload, FileText, CheckCircle2, AlertCircle, Clock, Download, Trash2, User, Home, DollarSign } from 'lucide-react';
+import { Upload, FileText, CheckCircle2, AlertCircle, Clock, Download, Trash2, CreditCard, Home, DollarSign, Users, Lock, FileCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+
+interface DocumentCategory {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+  color: string;
+  documents: {
+    id: string;
+    name: string;
+    description: string;
+    required?: boolean;
+  }[];
+}
 
 export default function KYCUploadPage() {
   const { member } = useMember();
   const [customer, setCustomer] = useState<CustomerProfiles | null>(null);
-  const [documents, setDocuments] = useState<LoanDocuments[]>([]);
+  const [documents, setDocuments] = useState<KYCDocumentSubmissions[]>([]);
+  const [kycStatus, setKycStatus] = useState<KYCStatusTracking | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDragging, setIsDragging] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [activeDocumentType, setActiveDocumentType] = useState<string | null>(null);
 
-  // Document type definitions
-  const documentTypes = [
+  // Document categories with detailed structure
+  const documentCategories: DocumentCategory[] = [
     {
-      id: 'PROOF_OF_IDENTITY',
-      title: 'Proof of Identity',
-      description: 'Upload a clear copy of your national ID, passport, or driver\'s license',
-      icon: User,
-      examples: ['National ID', 'Passport', 'Driver\'s License'],
-      color: 'bg-blue-500/10 border-blue-500/20'
+      id: 'CORE_MANDATORY',
+      title: 'Core/Mandatory KYC Documents',
+      description: 'Essential identity and residence verification documents',
+      icon: CreditCard,
+      color: 'bg-blue-500/10 border-blue-500/20',
+      documents: [
+        { id: 'IDENTITY_VERIFICATION', name: 'Identity Verification', description: 'National ID, Passport, or Driver\'s License', required: true },
+        { id: 'PROOF_OF_RESIDENCE', name: 'Proof of Residence', description: 'Utility Bill, Bank Statement, or Rental Agreement', required: true },
+        { id: 'CUSTOMER_PHOTOGRAPH', name: 'Customer Photograph', description: 'Recent passport-sized photograph', required: true }
+      ]
     },
     {
-      id: 'PROOF_OF_ADDRESS',
-      title: 'Proof of Address',
-      description: 'Upload a recent utility bill, bank statement, or rental agreement',
-      icon: Home,
-      examples: ['Utility Bill', 'Bank Statement', 'Rental Agreement'],
-      color: 'bg-green-500/10 border-green-500/20'
-    },
-    {
-      id: 'PROOF_OF_INCOME',
-      title: 'Proof of Income',
-      description: 'Upload recent pay slips, tax returns, or business statements',
+      id: 'INCOME_AFFORDABILITY',
+      title: 'Income & Affordability Documents',
+      description: 'Documents to verify income and repayment capacity',
       icon: DollarSign,
-      examples: ['Pay Slip', 'Tax Return', 'Bank Statement'],
-      color: 'bg-purple-500/10 border-purple-500/20'
+      color: 'bg-green-500/10 border-green-500/20',
+      documents: [
+        { id: 'EMPLOYMENT_LETTER', name: 'Employment Letter', description: 'Letter from employer confirming employment', required: false },
+        { id: 'PAY_SLIP', name: 'Pay Slip', description: 'Recent salary slip (last 3 months)', required: false },
+        { id: 'TAX_RETURN', name: 'Tax Return', description: 'Income tax return or assessment', required: false },
+        { id: 'BUSINESS_STATEMENT', name: 'Business Statement', description: 'For self-employed: business registration and financials', required: false },
+        { id: 'BANK_STATEMENT', name: 'Bank Statement', description: 'Last 6 months bank statement', required: false }
+      ]
+    },
+    {
+      id: 'GUARANTOR',
+      title: 'Guarantor Documents',
+      description: 'Documents for loan guarantors (if required)',
+      icon: Users,
+      color: 'bg-purple-500/10 border-purple-500/20',
+      documents: [
+        { id: 'GUARANTOR_ID', name: 'Guarantor Identity', description: 'Guarantor\'s ID or Passport', required: false },
+        { id: 'GUARANTOR_RESIDENCE', name: 'Guarantor Residence Proof', description: 'Guarantor\'s proof of residence', required: false },
+        { id: 'GUARANTOR_INCOME', name: 'Guarantor Income Proof', description: 'Guarantor\'s income verification documents', required: false },
+        { id: 'GUARANTOR_CONSENT', name: 'Guarantor Consent', description: 'Signed guarantee agreement', required: false }
+      ]
+    },
+    {
+      id: 'COLLATERAL',
+      title: 'Collateral-Related Documents',
+      description: 'Documents for secured loans',
+      icon: Lock,
+      color: 'bg-orange-500/10 border-orange-500/20',
+      documents: [
+        { id: 'PROPERTY_DEED', name: 'Property Deed', description: 'Title deed or ownership certificate', required: false },
+        { id: 'PROPERTY_VALUATION', name: 'Property Valuation', description: 'Professional property valuation report', required: false },
+        { id: 'INSURANCE_POLICY', name: 'Insurance Policy', description: 'Property or asset insurance policy', required: false },
+        { id: 'COLLATERAL_PHOTOS', name: 'Collateral Photos', description: 'Photographs of collateral asset', required: false }
+      ]
+    },
+    {
+      id: 'COMPLIANCE',
+      title: 'Compliance & Declarations',
+      description: 'Regulatory and compliance documents',
+      icon: FileCheck,
+      color: 'bg-red-500/10 border-red-500/20',
+      documents: [
+        { id: 'KYC_DECLARATION', name: 'KYC Declaration', description: 'Signed KYC declaration form', required: true },
+        { id: 'ANTI_MONEY_LAUNDERING', name: 'Anti-Money Laundering Declaration', description: 'AML compliance declaration', required: true },
+        { id: 'PEP_DECLARATION', name: 'PEP Declaration', description: 'Politically Exposed Person declaration', required: false }
+      ]
+    },
+    {
+      id: 'OPTIONAL_ENHANCED',
+      title: 'Optional/Enhanced Due Diligence',
+      description: 'Additional documents for enhanced verification',
+      icon: FileText,
+      color: 'bg-gray-500/10 border-gray-500/20',
+      documents: [
+        { id: 'CREDIT_REPORT', name: 'Credit Report', description: 'Credit bureau report', required: false },
+        { id: 'REFERENCE_LETTER', name: 'Reference Letter', description: 'Professional or personal reference', required: false },
+        { id: 'ADDITIONAL_DOCS', name: 'Additional Documents', description: 'Any other supporting documents', required: false }
+      ]
     }
   ];
 
@@ -75,9 +144,16 @@ export default function KYCUploadPage() {
 
       if (currentCustomer) {
         setCustomer(currentCustomer);
+        
         // Get KYC documents
-        const docs = await KYCService.getKYCDocuments(currentCustomer._id);
-        setDocuments(docs);
+        const { items: docs } = await BaseCrudService.getAll<KYCDocumentSubmissions>('kycdocumentsubmissions');
+        const customerDocs = docs?.filter(d => d.customerId === currentCustomer._id) || [];
+        setDocuments(customerDocs);
+
+        // Get KYC status
+        const { items: statuses } = await BaseCrudService.getAll<KYCStatusTracking>('kycstatustracking');
+        const customerStatus = statuses?.find(s => s.customerId === currentCustomer._id);
+        setKycStatus(customerStatus || null);
       }
     } catch (error) {
       console.error('Error loading customer data:', error);
@@ -89,28 +165,28 @@ export default function KYCUploadPage() {
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    setIsDragging(activeDocumentType);
+    setIsDragging('active');
   };
 
   const handleDragLeave = () => {
     setIsDragging(null);
   };
 
-  const handleDrop = (e: React.DragEvent, documentType: string) => {
+  const handleDrop = (e: React.DragEvent, categoryId: string) => {
     e.preventDefault();
     setIsDragging(null);
     const files = e.dataTransfer.files;
-    handleFiles(files, documentType);
+    handleFiles(files, categoryId);
   };
 
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>, documentType: string) => {
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>, categoryId: string) => {
     const files = e.currentTarget.files;
     if (files) {
-      handleFiles(files, documentType);
+      handleFiles(files, categoryId);
     }
   };
 
-  const handleFiles = async (files: FileList, documentType: string) => {
+  const handleFiles = async (files: FileList, categoryId: string) => {
     if (!customer) return;
 
     try {
@@ -121,14 +197,12 @@ export default function KYCUploadPage() {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         
-        // Validate file
         if (!isValidFile(file)) {
           setErrorMessage('Invalid file type or size. Please upload PDF or image files under 5MB.');
           continue;
         }
 
-        // Simulate file upload (in production, upload to cloud storage)
-        const mockUrl = `https://static.wixstatic.com/media/12d367_kyc_${Date.now()}.pdf?id=kyc-${customer._id}-${i}`;
+        const mockUrl = `https://static.wixstatic.com/media/12d367_kyc_${Date.now()}_${i}.pdf?id=kyc-${customer._id}-${categoryId}-${i}`;
         
         // Simulate progress
         for (let progress = 0; progress <= 100; progress += 10) {
@@ -137,12 +211,17 @@ export default function KYCUploadPage() {
         }
 
         // Save document record
-        await KYCService.uploadKYCDocument(
-          customer._id,
-          file.name,
-          mockUrl,
-          documentType
-        );
+        const newDocument: KYCDocumentSubmissions = {
+          _id: crypto.randomUUID(),
+          customerId: customer._id,
+          documentType: categoryId,
+          documentFile: mockUrl,
+          uploadedBy: member?.loginEmail || 'unknown',
+          uploadDate: new Date().toISOString(),
+          verificationStatus: 'PENDING'
+        };
+
+        await BaseCrudService.create('kycdocumentsubmissions', newDocument);
       }
 
       setSuccessMessage('Documents uploaded successfully!');
@@ -163,37 +242,51 @@ export default function KYCUploadPage() {
     return validTypes.includes(file.type) && file.size <= maxSize;
   };
 
-  const getDocumentsForType = (documentType: string): LoanDocuments[] => {
-    return documents.filter(doc => doc.documentType === documentType);
+  const getDocumentsForCategory = (categoryId: string): KYCDocumentSubmissions[] => {
+    return documents.filter(doc => doc.documentType === categoryId);
   };
 
-  const getDocumentTypeConfig = (typeId: string) => {
-    return documentTypes.find(dt => dt.id === typeId);
-  };
-
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status?: string) => {
     switch (status) {
       case 'APPROVED':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-500/20 text-green-600 border-green-500/30';
       case 'REJECTED':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-500/20 text-red-600 border-red-500/30';
       case 'PENDING':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-500/20 text-yellow-600 border-yellow-500/30';
+      case 'UNDER_REVIEW':
+        return 'bg-blue-500/20 text-blue-600 border-blue-500/30';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-500/20 text-gray-600 border-gray-500/30';
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status?: string) => {
     switch (status) {
       case 'APPROVED':
-        return <CheckCircle2 className="w-5 h-5 text-green-600" />;
+        return <CheckCircle2 className="w-4 h-4" />;
       case 'REJECTED':
-        return <AlertCircle className="w-5 h-5 text-red-600" />;
+        return <AlertCircle className="w-4 h-4" />;
       case 'PENDING':
-        return <Clock className="w-5 h-5 text-yellow-600" />;
+      case 'UNDER_REVIEW':
+        return <Clock className="w-4 h-4" />;
       default:
         return null;
+    }
+  };
+
+  const getKYCStatusColor = (status?: string) => {
+    switch (status) {
+      case 'APPROVED':
+        return 'bg-green-500/10 border-green-500/20';
+      case 'REJECTED':
+        return 'bg-red-500/10 border-red-500/20';
+      case 'UNDER_REVIEW':
+        return 'bg-blue-500/10 border-blue-500/20';
+      case 'SUBMITTED':
+        return 'bg-yellow-500/10 border-yellow-500/20';
+      default:
+        return 'bg-gray-500/10 border-gray-500/20';
     }
   };
 
@@ -216,7 +309,7 @@ export default function KYCUploadPage() {
     return (
       <div className="min-h-screen bg-primary text-primary-foreground font-paragraph">
         <Header />
-        <main className="max-w-4xl mx-auto px-6 lg:px-12 py-12">
+        <main className="max-w-6xl mx-auto px-6 lg:px-12 py-12">
           <Alert className="bg-red-500/10 border-red-500/20">
             <AlertCircle className="h-4 w-4 text-red-600" />
             <AlertDescription className="text-red-600">
@@ -233,7 +326,7 @@ export default function KYCUploadPage() {
     <div className="min-h-screen bg-primary text-primary-foreground font-paragraph">
       <Header />
 
-      <main className="max-w-4xl mx-auto px-6 lg:px-12 py-12">
+      <main className="max-w-6xl mx-auto px-6 lg:px-12 py-12">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -244,43 +337,37 @@ export default function KYCUploadPage() {
             KYC Verification
           </h1>
           <p className="text-primary-foreground/70">
-            Upload your identity documents to complete KYC verification and unlock full access.
+            Complete your Know Your Customer (KYC) verification by uploading the required documents below.
           </p>
         </motion.div>
 
-        {/* Status Alert */}
-        {customer.kycVerificationStatus === 'APPROVED' && (
+        {/* KYC Status Overview */}
+        {kycStatus && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-4 rounded-lg bg-green-500/10 border border-green-500/20 flex items-start gap-3"
+            className={`mb-8 p-6 rounded-lg border ${getKYCStatusColor(kycStatus.kycStatus)} flex items-start gap-4`}
           >
-            <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="font-semibold text-green-600">KYC Verification Complete</p>
-              <p className="text-sm text-primary-foreground/70 mt-1">
-                Your identity has been verified. You can now apply for loans.
+            <div className="flex-shrink-0 mt-1">
+              {kycStatus.kycStatus === 'APPROVED' && <CheckCircle2 className="w-6 h-6 text-green-500" />}
+              {kycStatus.kycStatus === 'REJECTED' && <AlertCircle className="w-6 h-6 text-red-500" />}
+              {(kycStatus.kycStatus === 'UNDER_REVIEW' || kycStatus.kycStatus === 'SUBMITTED') && <Clock className="w-6 h-6 text-yellow-500" />}
+            </div>
+            <div className="flex-1">
+              <h3 className="font-heading font-bold text-primary-foreground mb-1">
+                KYC Status: {kycStatus.kycStatus?.replace(/_/g, ' ')}
+              </h3>
+              <p className="text-sm text-primary-foreground/70">
+                {kycStatus.kycStatus === 'APPROVED' && 'Your KYC verification is complete. You can now apply for loans.'}
+                {kycStatus.kycStatus === 'REJECTED' && `Reason: ${kycStatus.rejectionReason || 'Please contact support for details.'}`}
+                {kycStatus.kycStatus === 'UNDER_REVIEW' && 'Your documents are being reviewed. This may take 2-3 business days.'}
+                {kycStatus.kycStatus === 'SUBMITTED' && 'Your documents have been submitted and are pending review.'}
               </p>
             </div>
           </motion.div>
         )}
 
-        {customer.kycVerificationStatus === 'REJECTED' && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/20 flex items-start gap-3"
-          >
-            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="font-semibold text-red-600">KYC Verification Rejected</p>
-              <p className="text-sm text-primary-foreground/70 mt-1">
-                Your documents were not approved. Please contact support for more information.
-              </p>
-            </div>
-          </motion.div>
-        )}
-
+        {/* Messages */}
         {successMessage && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -303,276 +390,243 @@ export default function KYCUploadPage() {
           </motion.div>
         )}
 
-        {/* Upload Section */}
-        {customer.kycVerificationStatus !== 'APPROVED' && (
+        {/* Document Categories */}
+        {kycStatus?.kycStatus !== 'APPROVED' && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
+            className="space-y-8"
           >
-            <h2 className="text-2xl font-heading font-bold text-primary-foreground mb-6">
-              Upload Your Documents
-            </h2>
-            <p className="text-primary-foreground/70 mb-8">
-              Please upload the required documents for each category below. All documents must be clear, legible, and in PDF or image format (max 5MB each).
-            </p>
+            {documentCategories.map((category, categoryIndex) => {
+              const categoryDocs = getDocumentsForCategory(category.id);
+              const IconComponent = category.icon;
 
-            {/* Document Type Sections */}
-            <div className="space-y-8">
-              {documentTypes.map((docType) => {
-                const typeDocuments = getDocumentsForType(docType.id);
-                const IconComponent = docType.icon;
-
-                return (
-                  <motion.div
-                    key={docType.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                  >
-                    <Card className={`border ${docType.color}`}>
-                      <CardHeader>
-                        <div className="flex items-start gap-4">
+              return (
+                <motion.div
+                  key={category.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: categoryIndex * 0.1 }}
+                >
+                  <Card className={`border ${category.color}`}>
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-4 flex-1">
                           <div className="w-12 h-12 rounded-lg bg-primary-foreground/10 flex items-center justify-center flex-shrink-0">
                             <IconComponent className="w-6 h-6 text-primary-foreground" />
                           </div>
                           <div className="flex-1">
                             <CardTitle className="text-primary-foreground flex items-center gap-2">
-                              {docType.title}
-                              {typeDocuments.length > 0 && (
+                              {category.title}
+                              {categoryDocs.length > 0 && (
                                 <Badge className="bg-green-500/20 text-green-600 border-green-500/30">
-                                  {typeDocuments.length} uploaded
+                                  {categoryDocs.length}/{category.documents.length}
                                 </Badge>
                               )}
                             </CardTitle>
                             <CardDescription className="text-primary-foreground/60 mt-2">
-                              {docType.description}
+                              {category.description}
                             </CardDescription>
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              {docType.examples.map((example, idx) => (
-                                <Badge key={idx} variant="outline" className="border-primary-foreground/20 text-primary-foreground/70">
-                                  {example}
-                                </Badge>
-                              ))}
-                            </div>
                           </div>
                         </div>
-                      </CardHeader>
+                      </div>
+                    </CardHeader>
 
-                      <CardContent>
-                        {/* Drag and Drop Area */}
-                        <div
-                          onDragOver={handleDragOver}
-                          onDragLeave={handleDragLeave}
-                          onDrop={(e) => handleDrop(e, docType.id)}
-                          className={`border-2 border-dashed rounded-lg p-8 text-center transition-all ${
-                            isDragging === docType.id
-                              ? 'border-secondary bg-secondary/10'
-                              : 'border-primary-foreground/20 hover:border-secondary/50'
-                          }`}
-                        >
-                          <Upload className="w-10 h-10 text-primary-foreground/50 mx-auto mb-3" />
-                          <p className="text-primary-foreground font-semibold mb-1">
-                            Drag and drop your {docType.title.toLowerCase()} here
-                          </p>
-                          <p className="text-primary-foreground/70 text-sm mb-4">
-                            or click below to select files
-                          </p>
-                          <label>
-                            <input
-                              type="file"
-                              multiple
-                              accept=".pdf,.jpg,.jpeg,.png"
-                              onChange={(e) => handleFileInput(e, docType.id)}
-                              disabled={isUploading}
-                              className="hidden"
-                            />
-                            <Button
-                              type="button"
-                              disabled={isUploading}
-                              className="bg-secondary text-primary hover:bg-secondary/90"
-                              onClick={(e) => {
-                                const input = e.currentTarget.parentElement?.querySelector('input');
-                                input?.click();
-                              }}
+                    <CardContent className="space-y-6">
+                      {/* Document List */}
+                      <div className="space-y-3">
+                        {category.documents.map((doc) => {
+                          const uploadedDoc = categoryDocs.find(d => d.documentType === doc.id);
+                          return (
+                            <div
+                              key={doc.id}
+                              className="p-4 rounded-lg bg-primary-foreground/5 border border-primary-foreground/10 flex items-start justify-between"
                             >
-                              <Upload className="w-4 h-4 mr-2" />
-                              Select Files
-                            </Button>
-                          </label>
-                        </div>
-
-                        {/* Upload Progress */}
-                        {isUploading && uploadProgress > 0 && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="mt-6"
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm text-primary-foreground/70">Uploading...</span>
-                              <span className="text-sm font-semibold text-secondary">{uploadProgress}%</span>
-                            </div>
-                            <div className="w-full bg-primary-foreground/10 rounded-full h-2">
-                              <div
-                                className="bg-secondary h-2 rounded-full transition-all"
-                                style={{ width: `${uploadProgress}%` }}
-                              />
-                            </div>
-                          </motion.div>
-                        )}
-
-                        {/* Uploaded Documents for this Type */}
-                        {typeDocuments.length > 0 && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="mt-6 space-y-3"
-                          >
-                            <h4 className="font-semibold text-primary-foreground text-sm">Uploaded Files:</h4>
-                            {typeDocuments.map((doc, index) => (
-                              <motion.div
-                                key={doc._id}
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.05 }}
-                                className="flex items-center justify-between p-3 rounded-lg bg-primary-foreground/5 border border-primary-foreground/10"
-                              >
-                                <div className="flex items-center gap-3 flex-1">
-                                  <FileText className="w-5 h-5 text-secondary flex-shrink-0" />
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-primary-foreground truncate">
-                                      {doc.documentName}
-                                    </p>
-                                    <p className="text-xs text-primary-foreground/60">
-                                      {new Date(doc.uploadDate || '').toLocaleDateString()}
-                                    </p>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h4 className="font-semibold text-primary-foreground">{doc.name}</h4>
+                                  {doc.required && (
+                                    <Badge className="bg-red-500/20 text-red-600 border-red-500/30 text-xs">
+                                      Required
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className="text-sm text-primary-foreground/60 mb-2">{doc.description}</p>
+                                {uploadedDoc && (
+                                  <div className="flex items-center gap-2">
+                                    <Badge className={`${getStatusColor(uploadedDoc.verificationStatus)} border`}>
+                                      {getStatusIcon(uploadedDoc.verificationStatus)}
+                                      <span className="ml-1">{uploadedDoc.verificationStatus?.replace(/_/g, ' ')}</span>
+                                    </Badge>
+                                    {uploadedDoc.verificationComments && (
+                                      <span className="text-xs text-primary-foreground/60">
+                                        {uploadedDoc.verificationComments}
+                                      </span>
+                                    )}
                                   </div>
-                                </div>
-                                <div className="flex gap-2 flex-shrink-0">
+                                )}
+                              </div>
+                              {uploadedDoc ? (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10"
+                                >
+                                  <Download className="w-4 h-4" />
+                                </Button>
+                              ) : (
+                                <label>
+                                  <input
+                                    type="file"
+                                    accept=".pdf,.jpg,.jpeg,.png"
+                                    onChange={(e) => handleFileInput(e, doc.id)}
+                                    disabled={isUploading}
+                                    className="hidden"
+                                  />
                                   <Button
-                                    variant="ghost"
+                                    type="button"
+                                    variant="outline"
                                     size="sm"
-                                    className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10"
+                                    disabled={isUploading}
+                                    className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10"
+                                    onClick={(e) => {
+                                      const input = e.currentTarget.parentElement?.querySelector('input');
+                                      input?.click();
+                                    }}
                                   >
-                                    <Download className="w-4 h-4" />
+                                    <Upload className="w-4 h-4" />
                                   </Button>
-                                </div>
-                              </motion.div>
-                            ))}
-                          </motion.div>
-                        )}
+                                </label>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Drag and Drop Area */}
+                      <div
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={(e) => handleDrop(e, category.id)}
+                        className={`border-2 border-dashed rounded-lg p-8 text-center transition-all ${
+                          isDragging === 'active'
+                            ? 'border-secondary bg-secondary/10'
+                            : 'border-primary-foreground/20 hover:border-secondary/50'
+                        }`}
+                      >
+                        <Upload className="w-10 h-10 text-primary-foreground/50 mx-auto mb-3" />
+                        <p className="text-primary-foreground font-semibold mb-1">
+                          Drag documents here
+                        </p>
+                        <p className="text-primary-foreground/70 text-sm">
+                          or click to browse
+                        </p>
+                      </div>
+
+                      {/* Upload Progress */}
+                      {isUploading && uploadProgress > 0 && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm text-primary-foreground/70">Uploading...</span>
+                            <span className="text-sm font-semibold text-secondary">{uploadProgress}%</span>
+                          </div>
+                          <div className="w-full bg-primary-foreground/10 rounded-full h-2">
+                            <div
+                              className="bg-secondary h-2 rounded-full transition-all"
+                              style={{ width: `${uploadProgress}%` }}
+                            />
+                          </div>
+                        </motion.div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        )}
+
+        {/* Document Summary */}
+        {documents.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-12"
+          >
+            <h2 className="text-2xl font-heading font-bold text-primary-foreground mb-6">
+              Upload Summary
+            </h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {documentCategories.map((category) => {
+                const categoryDocs = getDocumentsForCategory(category.id);
+                const IconComponent = category.icon;
+
+                return (
+                  <motion.div
+                    key={category.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <Card className={`border ${category.color} h-full`}>
+                      <CardContent className="p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-10 h-10 rounded-lg bg-primary-foreground/10 flex items-center justify-center">
+                            <IconComponent className="w-5 h-5 text-primary-foreground" />
+                          </div>
+                          <h3 className="font-heading font-bold text-primary-foreground text-sm">
+                            {category.title}
+                          </h3>
+                        </div>
+                        <div className="text-3xl font-bold text-secondary mb-2">
+                          {categoryDocs.length}
+                        </div>
+                        <p className="text-sm text-primary-foreground/70 mb-4">
+                          of {category.documents.length} documents
+                        </p>
+                        <div className="w-full bg-primary-foreground/10 rounded-full h-2">
+                          <div
+                            className="bg-secondary h-2 rounded-full transition-all"
+                            style={{ width: `${(categoryDocs.length / category.documents.length) * 100}%` }}
+                          />
+                        </div>
                       </CardContent>
                     </Card>
                   </motion.div>
                 );
               })}
             </div>
+          </motion.div>
+        )}
 
-            {/* File Requirements Info */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-8 p-4 rounded-lg bg-primary-foreground/5 border border-primary-foreground/10"
-            >
+        {/* File Requirements */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-12 p-6 rounded-lg bg-primary-foreground/5 border border-primary-foreground/10"
+        >
+          <h3 className="font-heading font-bold text-primary-foreground mb-4">File Requirements</h3>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
               <p className="text-sm text-primary-foreground/70 mb-2">
                 <strong>Accepted formats:</strong> PDF, JPG, PNG
               </p>
               <p className="text-sm text-primary-foreground/70">
                 <strong>Maximum file size:</strong> 5MB per file
               </p>
-            </motion.div>
-          </motion.div>
-        )}
-
-        {/* Uploaded Documents */}
-        {documents.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <h2 className="text-2xl font-heading font-bold text-primary-foreground mb-6">
-              Document Summary
-            </h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              {documentTypes.map((docType) => {
-                const typeDocuments = getDocumentsForType(docType.id);
-                const IconComponent = docType.icon;
-
-                return (
-                  <motion.div
-                    key={docType.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                  >
-                    <Card className={`border ${docType.color} h-full`}>
-                      <CardContent className="p-6">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="w-10 h-10 rounded-lg bg-primary-foreground/10 flex items-center justify-center">
-                            <IconComponent className="w-5 h-5 text-primary-foreground" />
-                          </div>
-                          <h3 className="font-heading font-bold text-primary-foreground">
-                            {docType.title}
-                          </h3>
-                        </div>
-                        <div className="text-3xl font-bold text-secondary mb-2">
-                          {typeDocuments.length}
-                        </div>
-                        <p className="text-sm text-primary-foreground/70">
-                          {typeDocuments.length === 0 ? 'No documents uploaded' : `document${typeDocuments.length !== 1 ? 's' : ''} uploaded`}
-                        </p>
-                        {typeDocuments.length > 0 && (
-                          <div className="mt-4 pt-4 border-t border-primary-foreground/10">
-                            <div className="flex items-center gap-2 text-green-600">
-                              <CheckCircle2 className="w-4 h-4" />
-                              <span className="text-xs font-semibold">Ready for review</span>
-                            </div>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                );
-              })}
             </div>
-          </motion.div>
-        )}
-
-        {/* Empty State */}
-        {documents.length === 0 && customer.kycVerificationStatus !== 'APPROVED' && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center py-12"
-          >
-            <FileText className="w-16 h-16 text-primary-foreground/30 mx-auto mb-4" />
-            <h3 className="text-xl font-heading font-bold text-primary-foreground mb-2">
-              No Documents Uploaded
-            </h3>
-            <p className="text-primary-foreground/70 mb-6">
-              Upload your identity documents to get started with KYC verification.
-            </p>
-          </motion.div>
-        )}
-
-        {/* Next Steps */}
-        {customer.kycVerificationStatus === 'APPROVED' && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-8"
-          >
-            <Card className="bg-secondary/10 border-secondary/30">
-              <CardHeader>
-                <CardTitle className="text-primary-foreground">What's Next?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-primary-foreground/70 mb-4">
-                  Your KYC verification is complete. Contact your administrator to apply for loans.
-                </p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
+            <div>
+              <p className="text-sm text-primary-foreground/70 mb-2">
+                <strong>Document quality:</strong> Clear, legible, and in color
+              </p>
+              <p className="text-sm text-primary-foreground/70">
+                <strong>Processing time:</strong> 2-3 business days
+              </p>
+            </div>
+          </div>
+        </motion.div>
       </main>
 
       <Footer />
