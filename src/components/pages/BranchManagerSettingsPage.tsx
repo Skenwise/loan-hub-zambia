@@ -5,22 +5,18 @@
 
 import { useState, useEffect } from 'react';
 import { useMember } from '@/integrations';
-import { useOrganisationStore } from '@/store/organisationStore';
 import { useRoleStore } from '@/store/roleStore';
 import { StaffService, CustomerService } from '@/services';
 import { StaffMembers, CustomerProfiles } from '@/entities';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { AlertCircle, Users, Settings, UserCheck, BarChart3 } from 'lucide-react';
+import { AlertCircle, Users, BarChart3, Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function BranchManagerSettingsPage() {
   const { member } = useMember();
-  const { currentOrganisation } = useOrganisationStore();
   const { userRole, setUserRole } = useRoleStore();
   
   const [staff, setStaff] = useState<StaffMembers[]>([]);
@@ -36,11 +32,11 @@ export default function BranchManagerSettingsPage() {
         // Load branch staff - use a default org for demo
         const demoOrgId = 'demo-org-001';
         const staffMembers = await StaffService.getOrganisationStaff(demoOrgId);
-        setStaff(staffMembers);
+        setStaff(staffMembers || []);
 
         // Load branch customers
         const customerList = await CustomerService.getOrganisationCustomers(demoOrgId);
-        setCustomers(customerList);
+        setCustomers(customerList || []);
       } catch (error) {
         console.error('Error loading branch settings:', error);
       } finally {
@@ -60,25 +56,30 @@ export default function BranchManagerSettingsPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 p-6">
         <div className="max-w-2xl mx-auto">
-          <Card className="bg-primary-foreground/5 border-primary-foreground/10">
-            <CardHeader>
-              <CardTitle className="text-primary-foreground">Select Your Role</CardTitle>
-              <CardDescription className="text-primary-foreground/50">
-                Choose a role to access this page
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Button
-                onClick={() => handleSetRole('BRANCH_MANAGER')}
-                className="w-full bg-secondary text-primary hover:bg-secondary/90 h-12"
-              >
-                Branch Manager
-              </Button>
-              <p className="text-sm text-primary-foreground/70 text-center">
-                This page is for Branch Managers only
-              </p>
-            </CardContent>
-          </Card>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card className="bg-primary-foreground/5 border-primary-foreground/10">
+              <CardHeader>
+                <CardTitle className="text-primary-foreground">Select Your Role</CardTitle>
+                <CardDescription className="text-primary-foreground/50">
+                  Choose a role to access this page
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button
+                  onClick={() => handleSetRole('BRANCH_MANAGER')}
+                  className="w-full bg-secondary text-primary hover:bg-secondary/90 h-12 font-semibold"
+                >
+                  Branch Manager
+                </Button>
+                <p className="text-sm text-primary-foreground/70 text-center">
+                  This page is for Branch Managers only. Manage branch operations and staff.
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </div>
     );
@@ -88,34 +89,32 @@ export default function BranchManagerSettingsPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 p-6">
         <div className="max-w-4xl mx-auto">
-          <Card className="bg-red-500/10 border-red-500/20">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-red-600">
-                <AlertCircle className="w-5 h-5" />
-                Access Denied
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-primary-foreground/70 mb-4">
-                You do not have permission to access branch manager settings.
-              </p>
-              <Button
-                onClick={() => setShowRoleSelector(true)}
-                variant="outline"
-              >
-                Change Role
-              </Button>
-            </CardContent>
-          </Card>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card className="bg-red-500/10 border-red-500/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-red-600">
+                  <AlertCircle className="w-5 h-5" />
+                  Access Denied
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-primary-foreground/70 mb-4">
+                  You do not have permission to access branch manager settings.
+                </p>
+                <Button
+                  onClick={() => setShowRoleSelector(true)}
+                  variant="outline"
+                  className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10"
+                >
+                  Change Role
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpinner />
       </div>
     );
   }
@@ -130,10 +129,10 @@ export default function BranchManagerSettingsPage() {
           className="mb-8"
         >
           <h1 className="text-4xl font-heading font-bold text-primary-foreground mb-2">
-            Branch Management
+            Branch Manager Settings
           </h1>
           <p className="text-primary-foreground/70">
-            Manage branch operations and staff
+            Manage branch staff, customers, and performance metrics
           </p>
         </motion.div>
 
@@ -143,62 +142,66 @@ export default function BranchManagerSettingsPage() {
           animate={{ opacity: 1, y: 0 }}
         >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 bg-primary-foreground/10 border border-primary-foreground/20">
-              <TabsTrigger value="staff" className="flex items-center gap-2">
-                <Users className="w-4 h-4" />
+            <TabsList className="bg-primary-foreground/10 border-primary-foreground/20">
+              <TabsTrigger value="staff" className="data-[state=active]:bg-secondary data-[state=active]:text-primary">
+                <Users className="w-4 h-4 mr-2" />
                 Staff
               </TabsTrigger>
-              <TabsTrigger value="customers" className="flex items-center gap-2">
-                <UserCheck className="w-4 h-4" />
+              <TabsTrigger value="customers" className="data-[state=active]:bg-secondary data-[state=active]:text-primary">
+                <Users className="w-4 h-4 mr-2" />
                 Customers
               </TabsTrigger>
-              <TabsTrigger value="performance" className="flex items-center gap-2">
-                <BarChart3 className="w-4 h-4" />
-                Performance
-              </TabsTrigger>
-              <TabsTrigger value="settings" className="flex items-center gap-2">
-                <Settings className="w-4 h-4" />
-                Settings
+              <TabsTrigger value="metrics" className="data-[state=active]:bg-secondary data-[state=active]:text-primary">
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Metrics
               </TabsTrigger>
             </TabsList>
 
             {/* Staff Tab */}
-            <TabsContent value="staff" className="mt-6">
-              <div className="space-y-4">
-                <div className="flex justify-end">
-                  <Button className="bg-secondary text-primary hover:bg-secondary/90">
-                    Add Staff Member
-                  </Button>
+            <TabsContent value="staff" className="space-y-4">
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <LoadingSpinner />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              ) : staff.length === 0 ? (
+                <Card className="bg-primary-foreground/5 border-primary-foreground/10">
+                  <CardContent className="pt-6">
+                    <p className="text-center text-primary-foreground/70">
+                      No staff members found in this branch.
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
                   {staff.map((member) => (
                     <motion.div
                       key={member._id}
-                      initial={{ opacity: 0, y: 10 }}
+                      initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                     >
-                      <Card className="bg-primary-foreground/5 border-primary-foreground/10">
-                        <CardHeader>
-                          <CardTitle className="text-lg text-primary-foreground">{member.fullName}</CardTitle>
-                          <CardDescription className="text-primary-foreground/50">
-                            {member.role} • {member.department}
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                          <div>
-                            <p className="text-sm text-primary-foreground/70">Email</p>
-                            <p className="text-primary-foreground text-sm">{member.email}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-primary-foreground/70">Phone</p>
-                            <p className="text-primary-foreground text-sm">{member.phoneNumber}</p>
-                          </div>
-                          <div className="pt-4 flex gap-2">
-                            <Button size="sm" variant="outline" className="flex-1">
-                              Edit
-                            </Button>
-                            <Button size="sm" variant="outline" className="flex-1">
-                              View Performance
+                      <Card className="bg-primary-foreground/5 border-primary-foreground/10 hover:border-secondary/50 transition">
+                        <CardContent className="pt-6">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <h3 className="text-lg font-semibold text-primary-foreground">{member.fullName}</h3>
+                              <p className="text-sm text-primary-foreground/70 mt-1">{member.email}</p>
+                              <div className="grid grid-cols-3 gap-4 mt-4">
+                                <div>
+                                  <p className="text-xs text-primary-foreground/70">Role</p>
+                                  <p className="text-primary-foreground font-medium">{member.role}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-primary-foreground/70">Status</p>
+                                  <p className="text-primary-foreground font-medium">{member.status}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-primary-foreground/70">Phone</p>
+                                  <p className="text-primary-foreground font-medium">{member.phoneNumber}</p>
+                                </div>
+                              </div>
+                            </div>
+                            <Button className="bg-secondary text-primary hover:bg-secondary/90">
+                              Manage
                             </Button>
                           </div>
                         </CardContent>
@@ -206,139 +209,142 @@ export default function BranchManagerSettingsPage() {
                     </motion.div>
                   ))}
                 </div>
-              </div>
+              )}
             </TabsContent>
 
             {/* Customers Tab */}
-            <TabsContent value="customers" className="mt-6">
-              <div className="space-y-4">
-                <div className="flex justify-end">
-                  <Button className="bg-secondary text-primary hover:bg-secondary/90">
-                    Register Customer
-                  </Button>
+            <TabsContent value="customers" className="space-y-4">
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <LoadingSpinner />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              ) : customers.length === 0 ? (
+                <Card className="bg-primary-foreground/5 border-primary-foreground/10">
+                  <CardContent className="pt-6">
+                    <p className="text-center text-primary-foreground/70">
+                      No customers found in this branch.
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {customers.map((customer) => (
                     <motion.div
                       key={customer._id}
-                      initial={{ opacity: 0, y: 10 }}
+                      initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                     >
-                      <Card className="bg-primary-foreground/5 border-primary-foreground/10">
+                      <Card className="bg-primary-foreground/5 border-primary-foreground/10 hover:border-secondary/50 transition">
                         <CardHeader>
                           <CardTitle className="text-lg text-primary-foreground">
                             {customer.firstName} {customer.lastName}
                           </CardTitle>
                           <CardDescription className="text-primary-foreground/50">
-                            KYC: {customer.kycVerificationStatus}
+                            {customer.emailAddress}
                           </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                          <div>
-                            <p className="text-sm text-primary-foreground/70">Email</p>
-                            <p className="text-primary-foreground text-sm">{customer.emailAddress}</p>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-xs text-primary-foreground/70">KYC Status</p>
+                              <p className="text-primary-foreground font-medium">{customer.kycVerificationStatus}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-primary-foreground/70">Credit Score</p>
+                              <p className="text-primary-foreground font-medium">{customer.creditScore || 'N/A'}</p>
+                            </div>
                           </div>
                           <div>
-                            <p className="text-sm text-primary-foreground/70">Credit Score</p>
-                            <p className="text-primary-foreground text-sm">{customer.creditScore || 'N/A'}</p>
+                            <p className="text-xs text-primary-foreground/70">Phone</p>
+                            <p className="text-primary-foreground font-medium">{customer.phoneNumber}</p>
                           </div>
-                          <div className="pt-4 flex gap-2">
-                            <Button size="sm" variant="outline" className="flex-1">
-                              View Profile
-                            </Button>
-                            <Button size="sm" variant="outline" className="flex-1">
-                              View Loans
-                            </Button>
-                          </div>
+                          <Button className="w-full bg-secondary text-primary hover:bg-secondary/90 mt-4">
+                            View Profile
+                          </Button>
                         </CardContent>
                       </Card>
                     </motion.div>
                   ))}
                 </div>
-              </div>
+              )}
             </TabsContent>
 
-            {/* Performance Tab */}
-            <TabsContent value="performance" className="mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card className="bg-primary-foreground/5 border-primary-foreground/10">
-                  <CardHeader>
-                    <CardTitle className="text-primary-foreground">Branch Performance</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <p className="text-sm text-primary-foreground/70">Total Loans Disbursed</p>
-                      <p className="text-3xl font-bold text-secondary">0</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-primary-foreground/70">Total Portfolio Value</p>
-                      <p className="text-3xl font-bold text-secondary">ZMW 0</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-primary-foreground/70">Default Rate</p>
-                      <p className="text-3xl font-bold text-secondary">0%</p>
-                    </div>
-                  </CardContent>
-                </Card>
+            {/* Metrics Tab */}
+            <TabsContent value="metrics" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <Card className="bg-primary-foreground/5 border-primary-foreground/10">
+                    <CardHeader>
+                      <CardTitle className="text-sm text-primary-foreground/70">Total Staff</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-4xl font-bold text-secondary">{staff.length}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
 
-                <Card className="bg-primary-foreground/5 border-primary-foreground/10">
-                  <CardHeader>
-                    <CardTitle className="text-primary-foreground">Staff Performance</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <p className="text-sm text-primary-foreground/70">Active Staff Members</p>
-                      <p className="text-3xl font-bold text-secondary">{staff.length}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-primary-foreground/70">Registered Customers</p>
-                      <p className="text-3xl font-bold text-secondary">{customers.length}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-primary-foreground/70">Avg. Loans per Staff</p>
-                      <p className="text-3xl font-bold text-secondary">0</p>
-                    </div>
-                  </CardContent>
-                </Card>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <Card className="bg-primary-foreground/5 border-primary-foreground/10">
+                    <CardHeader>
+                      <CardTitle className="text-sm text-primary-foreground/70">Total Customers</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-4xl font-bold text-secondary">{customers.length}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <Card className="bg-primary-foreground/5 border-primary-foreground/10">
+                    <CardHeader>
+                      <CardTitle className="text-sm text-primary-foreground/70">KYC Verified</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-4xl font-bold text-secondary">
+                        {customers.filter(c => c.kycVerificationStatus === 'APPROVED').length}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               </div>
-            </TabsContent>
 
-            {/* Settings Tab */}
-            <TabsContent value="settings" className="mt-6">
               <Card className="bg-primary-foreground/5 border-primary-foreground/10">
                 <CardHeader>
-                  <CardTitle className="text-primary-foreground">Branch Settings</CardTitle>
+                  <CardTitle className="text-primary-foreground">Branch Performance</CardTitle>
                   <CardDescription className="text-primary-foreground/50">
-                    Configure branch-level settings
+                    Key performance indicators for this branch
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label className="text-primary-foreground">Branch Name</Label>
-                    <Input 
-                      defaultValue="Main Branch"
-                      className="bg-primary-foreground/5 border-primary-foreground/20 text-primary-foreground"
-                    />
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-primary-foreground/5 border border-primary-foreground/10">
+                      <span className="text-primary-foreground">Active Loans</span>
+                      <span className="text-lg font-semibold text-secondary">0</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-primary-foreground/5 border border-primary-foreground/10">
+                      <span className="text-primary-foreground">Total Loan Portfolio</span>
+                      <span className="text-lg font-semibold text-secondary">ZMW 0</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-primary-foreground/5 border border-primary-foreground/10">
+                      <span className="text-primary-foreground">Repayment Rate</span>
+                      <span className="text-lg font-semibold text-secondary">0%</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-primary-foreground/5 border border-primary-foreground/10">
+                      <span className="text-primary-foreground">Default Rate</span>
+                      <span className="text-lg font-semibold text-secondary">0%</span>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-primary-foreground">Branch Manager</Label>
-                    <Input 
-                      defaultValue={member?.profile?.nickname || 'Branch Manager'}
-                      className="bg-primary-foreground/5 border-primary-foreground/20 text-primary-foreground"
-                      disabled
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-primary-foreground">Contact Email</Label>
-                    <Input 
-                      type="email"
-                      defaultValue={member?.loginEmail}
-                      className="bg-primary-foreground/5 border-primary-foreground/20 text-primary-foreground"
-                    />
-                  </div>
-                  <Button className="w-full bg-secondary text-primary hover:bg-secondary/90">
-                    Save Settings
-                  </Button>
                 </CardContent>
               </Card>
             </TabsContent>

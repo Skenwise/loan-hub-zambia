@@ -1,15 +1,14 @@
 /**
  * Customer Loan Application Page
- * Admin-only loan application creation
- * Customers can only view and manage their existing loans
+ * Create loan applications for customers (Admin Staff Only)
  */
 
 import { useState, useEffect } from 'react';
 import { useMember } from '@/integrations';
-import { useOrganisationStore } from '@/store/organisationStore';
+import { useForm } from 'react-hook-form';
 import { useRoleStore } from '@/store/roleStore';
-import { LoanService, CustomerService, AuthorizationService, Permissions, AuditService } from '@/services';
-import { LoanProducts, Loans } from '@/entities';
+import { LoanService, CustomerService, AuditService } from '@/services';
+import { Loans, LoanProducts, CustomerProfiles } from '@/entities';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,7 +17,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { AlertCircle, CheckCircle2, DollarSign, Calendar, Percent } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useForm } from 'react-hook-form';
 
 interface LoanApplicationForm {
   customerId: string;
@@ -29,12 +27,11 @@ interface LoanApplicationForm {
 
 export default function CustomerLoanApplicationPage() {
   const { member } = useMember();
-  const { currentOrganisation } = useOrganisationStore();
   const { userRole, setUserRole } = useRoleStore();
   const { register, handleSubmit, watch, formState: { errors }, reset } = useForm<LoanApplicationForm>();
   
   const [loanProducts, setLoanProducts] = useState<LoanProducts[]>([]);
-  const [customers, setCustomers] = useState<any[]>([]);
+  const [customers, setCustomers] = useState<CustomerProfiles[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -56,11 +53,11 @@ export default function CustomerLoanApplicationPage() {
 
         // Get loan products
         const products = await LoanService.getOrganisationLoanProducts(demoOrgId);
-        setLoanProducts(products);
+        setLoanProducts(products || []);
 
         // Get customers for selection
         const customerList = await CustomerService.getOrganisationCustomers(demoOrgId);
-        setCustomers(customerList);
+        setCustomers(customerList || []);
       } catch (error) {
         console.error('Error loading data:', error);
         setErrorMessage('Failed to load loan products');
@@ -107,7 +104,7 @@ export default function CustomerLoanApplicationPage() {
       }
 
       // Validate amount
-      if (data.principalAmount < product.minLoanAmount || data.principalAmount > product.maxLoanAmount) {
+      if (data.principalAmount < (product.minLoanAmount || 0) || data.principalAmount > (product.maxLoanAmount || 999999999)) {
         setErrorMessage(`Loan amount must be between ${product.minLoanAmount} and ${product.maxLoanAmount}`);
         return;
       }
@@ -159,25 +156,30 @@ export default function CustomerLoanApplicationPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 p-6">
         <div className="max-w-2xl mx-auto">
-          <Card className="bg-primary-foreground/5 border-primary-foreground/10">
-            <CardHeader>
-              <CardTitle className="text-primary-foreground">Select Your Role</CardTitle>
-              <CardDescription className="text-primary-foreground/50">
-                Choose a role to access this page
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Button
-                onClick={() => handleSetRole('STAFF')}
-                className="w-full bg-secondary text-primary hover:bg-secondary/90 h-12"
-              >
-                Admin Staff
-              </Button>
-              <p className="text-sm text-primary-foreground/70 text-center">
-                Only admin staff can create loan applications
-              </p>
-            </CardContent>
-          </Card>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card className="bg-primary-foreground/5 border-primary-foreground/10">
+              <CardHeader>
+                <CardTitle className="text-primary-foreground">Select Your Role</CardTitle>
+                <CardDescription className="text-primary-foreground/50">
+                  Choose a role to access this page
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button
+                  onClick={() => handleSetRole('STAFF')}
+                  className="w-full bg-secondary text-primary hover:bg-secondary/90 h-12 font-semibold"
+                >
+                  Admin Staff
+                </Button>
+                <p className="text-sm text-primary-foreground/70 text-center">
+                  Only admin staff can create loan applications for customers.
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </div>
     );
@@ -187,25 +189,31 @@ export default function CustomerLoanApplicationPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 p-6">
         <div className="max-w-2xl mx-auto">
-          <Card className="bg-red-500/10 border-red-500/20">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-red-600">
-                <AlertCircle className="w-5 h-5" />
-                Access Restricted
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-primary-foreground/70 mb-4">
-                Only admin staff can create loan applications. Customers can view and manage their loans in the customer portal.
-              </p>
-              <Button
-                onClick={() => setShowRoleSelector(true)}
-                variant="outline"
-              >
-                Change Role
-              </Button>
-            </CardContent>
-          </Card>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card className="bg-red-500/10 border-red-500/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-red-600">
+                  <AlertCircle className="w-5 h-5" />
+                  Access Restricted
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-primary-foreground/70 mb-4">
+                  Only admin staff can create loan applications. Customers can view and manage their loans in the customer portal.
+                </p>
+                <Button
+                  onClick={() => setShowRoleSelector(true)}
+                  variant="outline"
+                  className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10"
+                >
+                  Change Role
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </div>
     );

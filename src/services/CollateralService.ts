@@ -73,6 +73,20 @@ export class CollateralService {
   }
 
   /**
+   * Get all collateral for an organisation
+   */
+  static async getOrganisationCollateralRegister(organisationId: string): Promise<Collateral[]> {
+    try {
+      // Placeholder for actual implementation
+      console.log('Fetching collateral register for organisation:', organisationId);
+      return [];
+    } catch (error) {
+      console.error('Error fetching organisation collateral register:', error);
+      return [];
+    }
+  }
+
+  /**
    * Update collateral
    */
   static async updateCollateral(collateralId: string, data: Partial<Collateral>): Promise<void> {
@@ -99,18 +113,7 @@ export class CollateralService {
     }
   }
 
-  /**
-   * Get collateral register for organisation
-   */
-  static async getOrganisationCollateralRegister(organisationId: string): Promise<Collateral[]> {
-    try {
-      console.log('Fetching collateral register for organisation:', organisationId);
-      return [];
-    } catch (error) {
-      console.error('Error fetching collateral register:', error);
-      return [];
-    }
-  }
+
 
   /**
    * Calculate total collateral value for a loan

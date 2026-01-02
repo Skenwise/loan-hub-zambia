@@ -1,23 +1,22 @@
 /**
  * Collateral Register Page
- * Comprehensive collateral management and tracking
+ * Register and manage loan collateral
  */
 
 import { useState, useEffect } from 'react';
 import { useMember } from '@/integrations';
-import { useOrganisationStore } from '@/store/organisationStore';
-import { CollateralService, LoanService } from '@/services';
+import { useForm } from 'react-hook-form';
+import { LoanService, CollateralService } from '@/services';
 import { Loans } from '@/entities';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { AlertCircle, Plus, Lock, TrendingUp, FileText } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Lock, Home, Truck, Package } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useForm } from 'react-hook-form';
 
 interface CollateralFormData {
   loanId: string;
@@ -30,7 +29,6 @@ interface CollateralFormData {
 
 export default function CollateralRegisterPage() {
   const { member } = useMember();
-  const { currentOrganisation } = useOrganisationStore();
   const { register, handleSubmit, reset, formState: { errors } } = useForm<CollateralFormData>();
   
   const [loans, setLoans] = useState<Loans[]>([]);
@@ -48,11 +46,11 @@ export default function CollateralRegisterPage() {
         // Load loans - use a default org for demo
         const demoOrgId = 'demo-org-001';
         const loanList = await LoanService.getOrganisationLoans(demoOrgId);
-        setLoans(loanList);
+        setLoans(loanList || []);
 
         // Load collaterals
         const collateralList = await CollateralService.getOrganisationCollateralRegister(demoOrgId);
-        setCollaterals(collateralList);
+        setCollaterals(collateralList || []);
       } catch (error) {
         console.error('Error loading collateral data:', error);
         setErrorMessage('Failed to load collateral data');
@@ -89,7 +87,7 @@ export default function CollateralRegisterPage() {
       
       // Reload collaterals
       const updatedList = await CollateralService.getOrganisationCollateralRegister(demoOrgId);
-      setCollaterals(updatedList);
+      setCollaterals(updatedList || []);
     } catch (error) {
       console.error('Error registering collateral:', error);
       setErrorMessage('Failed to register collateral');
@@ -98,13 +96,12 @@ export default function CollateralRegisterPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpinner />
-      </div>
-    );
-  }
+  const collateralTypes = [
+    { value: 'VEHICLE', label: 'Vehicle', icon: Truck },
+    { value: 'PROPERTY', label: 'Property', icon: Home },
+    { value: 'EQUIPMENT', label: 'Equipment', icon: Package },
+    { value: 'LIVESTOCK', label: 'Livestock', icon: Package },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 p-6">
@@ -119,7 +116,7 @@ export default function CollateralRegisterPage() {
             Collateral Register
           </h1>
           <p className="text-primary-foreground/70">
-            Register and manage loan collateral
+            Register and manage loan collateral items
           </p>
         </motion.div>
 
@@ -129,23 +126,41 @@ export default function CollateralRegisterPage() {
           animate={{ opacity: 1, y: 0 }}
         >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-primary-foreground/10 border border-primary-foreground/20">
-              <TabsTrigger value="register" className="flex items-center gap-2">
-                <Plus className="w-4 h-4" />
+            <TabsList className="bg-primary-foreground/10 border-primary-foreground/20">
+              <TabsTrigger value="register" className="data-[state=active]:bg-secondary data-[state=active]:text-primary">
+                <Lock className="w-4 h-4 mr-2" />
                 Register Collateral
               </TabsTrigger>
-              <TabsTrigger value="register-list" className="flex items-center gap-2">
-                <FileText className="w-4 h-4" />
+              <TabsTrigger value="list" className="data-[state=active]:bg-secondary data-[state=active]:text-primary">
+                <Package className="w-4 h-4 mr-2" />
                 Collateral List
-              </TabsTrigger>
-              <TabsTrigger value="analytics" className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4" />
-                Analytics
               </TabsTrigger>
             </TabsList>
 
             {/* Register Tab */}
-            <TabsContent value="register" className="mt-6">
+            <TabsContent value="register" className="space-y-4">
+              {successMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-4 rounded-lg bg-green-500/10 border border-green-500/20 flex items-start gap-3"
+                >
+                  <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-green-600">{successMessage}</p>
+                </motion.div>
+              )}
+
+              {errorMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 flex items-start gap-3"
+                >
+                  <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-red-600">{errorMessage}</p>
+                </motion.div>
+              )}
+
               <Card className="bg-primary-foreground/5 border-primary-foreground/10">
                 <CardHeader>
                   <CardTitle className="text-primary-foreground">Register New Collateral</CardTitle>
@@ -154,31 +169,10 @@ export default function CollateralRegisterPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {successMessage && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="mb-6 p-4 rounded-lg bg-green-500/10 border border-green-500/20 flex items-start gap-3"
-                    >
-                      <div className="text-green-600 font-semibold">{successMessage}</div>
-                    </motion.div>
-                  )}
-
-                  {errorMessage && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/20 flex items-start gap-3"
-                    >
-                      <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                      <p className="text-red-600">{errorMessage}</p>
-                    </motion.div>
-                  )}
-
                   <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     {/* Loan Selection */}
                     <div>
-                      <Label className="text-primary-foreground mb-2 block">Select Loan *</Label>
+                      <Label className="text-primary-foreground mb-2 block">Loan *</Label>
                       <Select {...register('loanId', { required: 'Please select a loan' })}>
                         <SelectTrigger className="bg-primary-foreground/5 border-primary-foreground/20 text-primary-foreground">
                           <SelectValue placeholder="Select a loan" />
@@ -186,7 +180,7 @@ export default function CollateralRegisterPage() {
                         <SelectContent>
                           {loans.map((loan) => (
                             <SelectItem key={loan._id} value={loan._id || ''}>
-                              {loan.loanNumber} - ZMW {loan.principalAmount?.toLocaleString()}
+                              {loan.loanNumber} - {loan.customerId}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -199,16 +193,16 @@ export default function CollateralRegisterPage() {
                     {/* Collateral Type */}
                     <div>
                       <Label className="text-primary-foreground mb-2 block">Collateral Type *</Label>
-                      <Select {...register('collateralType', { required: 'Please select collateral type' })}>
+                      <Select {...register('collateralType', { required: 'Please select a collateral type' })}>
                         <SelectTrigger className="bg-primary-foreground/5 border-primary-foreground/20 text-primary-foreground">
                           <SelectValue placeholder="Select collateral type" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="VEHICLE">Vehicle</SelectItem>
-                          <SelectItem value="PROPERTY">Property</SelectItem>
-                          <SelectItem value="EQUIPMENT">Equipment</SelectItem>
-                          <SelectItem value="LIVESTOCK">Livestock</SelectItem>
-                          <SelectItem value="OTHER">Other</SelectItem>
+                          {collateralTypes.map((type) => (
+                            <SelectItem key={type.value} value={type.value}>
+                              {type.label}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       {errors.collateralType && (
@@ -216,11 +210,11 @@ export default function CollateralRegisterPage() {
                       )}
                     </div>
 
-                    {/* Collateral Description */}
+                    {/* Description */}
                     <div>
                       <Label className="text-primary-foreground mb-2 block">Description *</Label>
                       <Input
-                        placeholder="e.g., Toyota Hilux 2020, Silver"
+                        placeholder="Enter collateral description"
                         className="bg-primary-foreground/5 border-primary-foreground/20 text-primary-foreground placeholder:text-primary-foreground/50"
                         {...register('collateralDescription', { required: 'Description is required' })}
                       />
@@ -236,9 +230,9 @@ export default function CollateralRegisterPage() {
                         type="number"
                         placeholder="Enter collateral value"
                         className="bg-primary-foreground/5 border-primary-foreground/20 text-primary-foreground placeholder:text-primary-foreground/50"
-                        {...register('collateralValue', { 
-                          required: 'Value is required',
-                          min: { value: 0, message: 'Value must be positive' }
+                        {...register('collateralValue', {
+                          required: 'Collateral value is required',
+                          min: { value: 1, message: 'Value must be greater than 0' },
                         })}
                       />
                       {errors.collateralValue && (
@@ -250,7 +244,7 @@ export default function CollateralRegisterPage() {
                     <div>
                       <Label className="text-primary-foreground mb-2 block">Registration Number</Label>
                       <Input
-                        placeholder="e.g., Registration/Serial Number"
+                        placeholder="Enter registration number"
                         className="bg-primary-foreground/5 border-primary-foreground/20 text-primary-foreground placeholder:text-primary-foreground/50"
                         {...register('registrationNumber')}
                       />
@@ -260,7 +254,7 @@ export default function CollateralRegisterPage() {
                     <div>
                       <Label className="text-primary-foreground mb-2 block">Location</Label>
                       <Input
-                        placeholder="e.g., Lusaka, Zambia"
+                        placeholder="Enter collateral location"
                         className="bg-primary-foreground/5 border-primary-foreground/20 text-primary-foreground placeholder:text-primary-foreground/50"
                         {...register('location')}
                       />
@@ -279,111 +273,65 @@ export default function CollateralRegisterPage() {
               </Card>
             </TabsContent>
 
-            {/* Collateral List Tab */}
-            <TabsContent value="register-list" className="mt-6">
-              <div className="space-y-4">
-                <h2 className="text-2xl font-heading font-bold text-primary-foreground mb-4">
-                  Registered Collaterals
-                </h2>
-                {collaterals.length === 0 ? (
-                  <Card className="bg-primary-foreground/5 border-primary-foreground/10">
-                    <CardContent className="pt-6">
-                      <p className="text-primary-foreground/70 text-center">No collaterals registered yet</p>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {collaterals.map((collateral) => (
-                      <motion.div
-                        key={collateral._id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                      >
-                        <Card className="bg-primary-foreground/5 border-primary-foreground/10">
-                          <CardHeader>
-                            <CardTitle className="text-lg text-primary-foreground flex items-center gap-2">
-                              <Lock className="w-5 h-5 text-secondary" />
-                              {collateral.collateralType}
-                            </CardTitle>
-                            <CardDescription className="text-primary-foreground/50">
-                              Status: {collateral.status}
-                            </CardDescription>
-                          </CardHeader>
-                          <CardContent className="space-y-3">
-                            <div>
-                              <p className="text-sm text-primary-foreground/70">Description</p>
-                              <p className="text-primary-foreground">{collateral.collateralDescription}</p>
-                            </div>
-                            <div>
-                              <p className="text-sm text-primary-foreground/70">Value</p>
-                              <p className="text-lg font-semibold text-secondary">
-                                ZMW {collateral.collateralValue?.toLocaleString()}
+            {/* List Tab */}
+            <TabsContent value="list" className="space-y-4">
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <LoadingSpinner />
+                </div>
+              ) : collaterals.length === 0 ? (
+                <Card className="bg-primary-foreground/5 border-primary-foreground/10">
+                  <CardContent className="pt-6">
+                    <p className="text-center text-primary-foreground/70">
+                      No collateral items registered yet.
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {collaterals.map((collateral, index) => (
+                    <motion.div
+                      key={collateral._id || index}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      <Card className="bg-primary-foreground/5 border-primary-foreground/10 hover:border-secondary/50 transition">
+                        <CardContent className="pt-6">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <h3 className="text-lg font-semibold text-primary-foreground">
+                                {collateral.collateralType}
+                              </h3>
+                              <p className="text-sm text-primary-foreground/70 mt-1">
+                                {collateral.collateralDescription}
                               </p>
+                              <div className="grid grid-cols-3 gap-4 mt-4">
+                                <div>
+                                  <p className="text-xs text-primary-foreground/70">Value</p>
+                                  <p className="text-primary-foreground font-medium">
+                                    ZMW {collateral.collateralValue?.toLocaleString()}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-primary-foreground/70">Status</p>
+                                  <p className="text-primary-foreground font-medium">{collateral.status}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-primary-foreground/70">Location</p>
+                                  <p className="text-primary-foreground font-medium">{collateral.location}</p>
+                                </div>
+                              </div>
                             </div>
-                            <div>
-                              <p className="text-sm text-primary-foreground/70">Location</p>
-                              <p className="text-primary-foreground text-sm">{collateral.location}</p>
-                            </div>
-                            <div className="pt-4 flex gap-2">
-                              <Button size="sm" variant="outline" className="flex-1">
-                                View Details
-                              </Button>
-                              <Button size="sm" variant="outline" className="flex-1">
-                                Release
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-
-            {/* Analytics Tab */}
-            <TabsContent value="analytics" className="mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card className="bg-primary-foreground/5 border-primary-foreground/10">
-                  <CardHeader>
-                    <CardTitle className="text-primary-foreground">Collateral Summary</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <p className="text-sm text-primary-foreground/70">Total Collaterals</p>
-                      <p className="text-3xl font-bold text-secondary">{collaterals.length}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-primary-foreground/70">Total Value</p>
-                      <p className="text-3xl font-bold text-secondary">
-                        ZMW {collaterals.reduce((sum, c) => sum + (c.collateralValue || 0), 0).toLocaleString()}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-primary-foreground/70">Active Collaterals</p>
-                      <p className="text-3xl font-bold text-secondary">
-                        {collaterals.filter(c => c.status === 'ACTIVE').length}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-primary-foreground/5 border-primary-foreground/10">
-                  <CardHeader>
-                    <CardTitle className="text-primary-foreground">Collateral by Type</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {['VEHICLE', 'PROPERTY', 'EQUIPMENT', 'LIVESTOCK'].map((type) => (
-                      <div key={type}>
-                        <p className="text-sm text-primary-foreground/70">{type}</p>
-                        <p className="text-lg font-semibold text-primary-foreground">
-                          {collaterals.filter(c => c.collateralType === type).length}
-                        </p>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              </div>
+                            <Button className="bg-secondary text-primary hover:bg-secondary/90">
+                              View
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </motion.div>

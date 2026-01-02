@@ -30,9 +30,13 @@ export default function AdminPortalLayout() {
     { path: '/admin/loans/approve', label: 'Approvals', icon: FileText },
     { path: '/admin/loans/disburse', label: 'Disbursement', icon: FileText },
     { path: '/admin/repayments', label: 'Repayments', icon: FileText },
+    { path: '/admin/collateral-register', label: 'Collateral Register', icon: FileText },
     { path: '/admin/reports', label: 'Reports', icon: BarChart3 },
     { path: '/admin/reports/advanced', label: 'Advanced Reports', icon: BarChart3 },
     { path: '/admin/compliance/ifrs9', label: 'IFRS 9 Compliance', icon: BarChart3 },
+    { path: '/admin/settings/system-owner', label: 'System Settings', icon: Settings },
+    { path: '/admin/settings/organisation-admin', label: 'Org Settings', icon: Settings },
+    { path: '/admin/settings/branch-manager', label: 'Branch Settings', icon: Settings },
   ];
 
   const isActive = (path: string) => location.pathname === path;
