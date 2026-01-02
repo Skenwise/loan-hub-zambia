@@ -9,7 +9,7 @@
  * - Optional/Enhanced Due Diligence
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useMember } from '@/integrations';
 import { BaseCrudService } from '@/services';
 import { CustomerProfiles, KYCDocumentSubmissions, KYCStatusTracking, KYCDocumentConfiguration } from '@/entities';
@@ -48,7 +48,7 @@ export default function KYCUploadPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [fileInputRefs, setFileInputRefs] = useState<{ [key: string]: HTMLInputElement | null }>({});
+  const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
 
   // Document categories with detailed structure
   const documentCategories: DocumentCategory[] = [
@@ -192,7 +192,7 @@ export default function KYCUploadPage() {
   };
 
   const triggerFileInput = (categoryId: string) => {
-    const input = fileInputRefs[categoryId];
+    const input = fileInputRefs.current[categoryId];
     if (input) {
       input.click();
     }
@@ -491,7 +491,7 @@ export default function KYCUploadPage() {
                                 <>
                                   <input
                                     ref={(el) => {
-                                      if (el) setFileInputRefs(prev => ({ ...prev, [docInputKey]: el }));
+                                      if (el) fileInputRefs.current[docInputKey] = el;
                                     }}
                                     type="file"
                                     accept=".pdf,.jpg,.jpeg,.png"
@@ -506,7 +506,7 @@ export default function KYCUploadPage() {
                                     disabled={isUploading}
                                     className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10"
                                     onClick={() => {
-                                      const input = fileInputRefs[docInputKey];
+                                      const input = fileInputRefs.current[docInputKey];
                                       if (input) input.click();
                                     }}
                                   >
@@ -533,7 +533,7 @@ export default function KYCUploadPage() {
                       >
                         <input
                           ref={(el) => {
-                            if (el) setFileInputRefs(prev => ({ ...prev, [category.id]: el }));
+                            if (el) fileInputRefs.current[category.id] = el;
                           }}
                           type="file"
                           multiple
