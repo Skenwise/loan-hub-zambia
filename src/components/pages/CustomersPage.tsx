@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BaseCrudService } from '@/integrations';
+import { BaseCrudService, EmailService } from '@/services';
 import { CustomerProfiles } from '@/entities';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -8,7 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Search, Edit, User } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Search, Edit, User, Mail, CheckCircle2, AlertCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<CustomerProfiles[]>([]);
@@ -60,15 +62,31 @@ export default function CustomersPage() {
     e.preventDefault();
     try {
       if (editingCustomer) {
+        // Update existing customer
         await BaseCrudService.update<CustomerProfiles>('customers', {
           _id: editingCustomer._id,
           ...formData
         });
       } else {
-        await BaseCrudService.create('customers', {
-          _id: crypto.randomUUID(),
-          ...formData
+        // Create new customer
+        const customerId = crypto.randomUUID();
+        const temporaryPassword = generateTemporaryPassword();
+        
+        await BaseCrudService.create<CustomerProfiles>('customers', {
+          _id: customerId,
+          ...formData,
+          kycVerificationStatus: 'PENDING',
+          organisationId: 'demo-org-001',
         });
+
+        // Send invitation email
+        await EmailService.sendCustomerInvite(
+          formData.emailAddress,
+          formData.firstName,
+          temporaryPassword
+        );
+
+        console.log(`✅ Customer created and invitation sent to ${formData.emailAddress}`);
       }
       await loadCustomers();
       setIsDialogOpen(false);
@@ -76,6 +94,15 @@ export default function CustomersPage() {
     } catch (error) {
       console.error('Error saving customer:', error);
     }
+  };
+
+  const generateTemporaryPassword = (): string => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
+    let password = '';
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
   };
 
   const resetForm = () => {

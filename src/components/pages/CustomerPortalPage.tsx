@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useMember } from '@/integrations';
-import { BaseCrudService } from '@/integrations';
-import { Loans, Repayments } from '@/entities';
+import { BaseCrudService } from '@/services';
+import { Loans, Repayments, CustomerProfiles } from '@/entities';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { TrendingUp, DollarSign, Calendar, FileText, Download, ArrowRight, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
+import { TrendingUp, DollarSign, Calendar, FileText, Download, ArrowRight, CheckCircle2, AlertCircle, Clock, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
@@ -17,23 +17,34 @@ interface LoanWithDetails extends Loans {
 
 export default function CustomerPortalPage() {
   const { member } = useMember();
-  const [loans, setLoans] = useState<LoanWithDetails[]>([]);
+  const [customer, setCustomer] = useState<CustomerProfiles | null>(null);
+  const [loans, setLoans] = useState<Loans[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [kycStatus, setKycStatus] = useState<string>('PENDING');
 
   useEffect(() => {
-    loadCustomerLoans();
+    loadCustomerData();
   }, [member]);
 
-  const loadCustomerLoans = async () => {
+  const loadCustomerData = async () => {
     try {
       if (!member?.loginEmail) return;
 
-      // In a real app, you'd filter by customer ID
-      // For now, we'll load all loans and filter by customer
-      const { items } = await BaseCrudService.getAll<Loans>('loans');
-      setLoans(items as LoanWithDetails[]);
+      // Get customer profile
+      const { items: customers } = await BaseCrudService.getAll<CustomerProfiles>('customers');
+      const currentCustomer = customers?.find(c => c.emailAddress === member.loginEmail);
+
+      if (currentCustomer) {
+        setCustomer(currentCustomer);
+        setKycStatus(currentCustomer.kycVerificationStatus || 'PENDING');
+
+        // Get customer's loans
+        const { items: allLoans } = await BaseCrudService.getAll<Loans>('loans');
+        const customerLoans = allLoans?.filter(l => l.customerId === currentCustomer._id) || [];
+        setLoans(customerLoans);
+      }
     } catch (error) {
-      console.error('Failed to load loans:', error);
+      console.error('Failed to load customer data:', error);
     } finally {
       setIsLoading(false);
     }
@@ -307,19 +318,23 @@ export default function CustomerPortalPage() {
             </Button>
           </Card>
 
-          <Card className="p-8 bg-gradient-to-br from-green-500/20 to-transparent border-green-500/30 hover:border-green-500/50 transition-all">
+          <Card className="p-8 bg-gradient-to-br from-brandaccent/20 to-transparent border-brandaccent/30 hover:border-brandaccent/50 transition-all">
             <div className="flex items-start justify-between mb-4">
-              <div className="w-12 h-12 rounded-lg bg-green-500/30 flex items-center justify-center">
-                <CheckCircle2 className="w-6 h-6 text-green-400" />
+              <div className="w-12 h-12 rounded-lg bg-brandaccent/30 flex items-center justify-center">
+                <Shield className="w-6 h-6 text-brandaccent" />
               </div>
             </div>
-            <h3 className="font-heading text-xl font-bold text-primary-foreground mb-2">Payment History</h3>
+            <h3 className="font-heading text-xl font-bold text-primary-foreground mb-2">KYC Verification</h3>
             <p className="text-primary-foreground/70 text-sm mb-4">
-              View your complete payment history and track your repayment progress.
+              {kycStatus === 'APPROVED'
+                ? 'Your identity has been verified. You can apply for loans.'
+                : 'Upload your documents to complete KYC verification.'}
             </p>
-            <Button variant="outline" className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 w-full">
-              View History
-            </Button>
+            <Link to="/customer-portal/kyc">
+              <Button variant="outline" className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 w-full">
+                {kycStatus === 'APPROVED' ? 'View Documents' : 'Upload Documents'}
+              </Button>
+            </Link>
           </Card>
         </motion.div>
       </main>

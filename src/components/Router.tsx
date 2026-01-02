@@ -31,6 +31,7 @@ import SystemOwnerSettingsPage from '@/components/pages/SystemOwnerSettingsPage'
 import OrganisationAdminSettingsPage from '@/components/pages/OrganisationAdminSettingsPage';
 import BranchManagerSettingsPage from '@/components/pages/BranchManagerSettingsPage';
 import CollateralRegisterPage from '@/components/pages/CollateralRegisterPage';
+import KYCUploadPage from '@/components/pages/KYCUploadPage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -97,10 +98,10 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "customer-portal/loans",
+        path: "customer-portal/kyc",
         element: (
-          <MemberProtectedRoute messageToSignIn="Sign in to view your loans">
-            <CustomerLoansPage />
+          <MemberProtectedRoute messageToSignIn="Sign in to upload KYC documents">
+            <KYCUploadPage />
           </MemberProtectedRoute>
         ),
       },
