@@ -1,11 +1,13 @@
 /**
  * Customer Loan Application Page
- * Allows customers to apply for loans
+ * Admin-only loan application creation
+ * Customers can only view and manage their existing loans
  */
 
 import { useState, useEffect } from 'react';
 import { useMember } from '@/integrations';
 import { useOrganisationStore } from '@/store/organisationStore';
+import { useRoleStore } from '@/store/roleStore';
 import { LoanService, CustomerService, AuthorizationService, Permissions, AuditService } from '@/services';
 import { LoanProducts, Loans } from '@/entities';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,6 +21,7 @@ import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 
 interface LoanApplicationForm {
+  customerId: string;
   loanProductId: string;
   principalAmount: number;
   loanTermMonths: number;
@@ -27,14 +30,15 @@ interface LoanApplicationForm {
 export default function CustomerLoanApplicationPage() {
   const { member } = useMember();
   const { currentOrganisation } = useOrganisationStore();
+  const { isStaff } = useRoleStore();
   const { register, handleSubmit, watch, formState: { errors }, reset } = useForm<LoanApplicationForm>();
   
   const [loanProducts, setLoanProducts] = useState<LoanProducts[]>([]);
+  const [customers, setCustomers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [customer, setCustomer] = useState(null);
   const [monthlyPayment, setMonthlyPayment] = useState(0);
 
   const selectedProductId = watch('loanProductId');
@@ -43,30 +47,24 @@ export default function CustomerLoanApplicationPage() {
 
   useEffect(() => {
     const loadData = async () => {
-      if (!currentOrganisation?._id || !member?.loginEmail) return;
+      if (!currentOrganisation?._id) return;
 
       try {
         setIsLoading(true);
 
-        // Get customer
-        const cust = await CustomerService.getCustomerByEmail(member.loginEmail);
-        if (!cust) {
-          setErrorMessage('Customer profile not found. Please complete your profile first.');
+        // Check if user has permission to create loan applications
+        if (!isStaff()) {
+          setErrorMessage('Only admin staff can create loan applications. Customers can view their loans in the customer portal.');
           return;
         }
-
-        // Check KYC status
-        const isVerified = await CustomerService.isKYCVerified(cust._id);
-        if (!isVerified) {
-          setErrorMessage('Your KYC verification is pending. You cannot apply for loans yet.');
-          return;
-        }
-
-        setCustomer(cust);
 
         // Get loan products
         const products = await LoanService.getOrganisationLoanProducts(currentOrganisation._id);
         setLoanProducts(products);
+
+        // Get customers for selection
+        const customerList = await CustomerService.getOrganisationCustomers(currentOrganisation._id);
+        setCustomers(customerList);
       } catch (error) {
         console.error('Error loading data:', error);
         setErrorMessage('Failed to load loan products');
@@ -76,7 +74,7 @@ export default function CustomerLoanApplicationPage() {
     };
 
     loadData();
-  }, [currentOrganisation, member]);
+  }, [currentOrganisation, isStaff]);
 
   // Calculate monthly payment when inputs change
   useEffect(() => {
@@ -94,7 +92,7 @@ export default function CustomerLoanApplicationPage() {
   }, [principalAmount, loanTermMonths, selectedProductId, loanProducts]);
 
   const onSubmit = async (data: LoanApplicationForm) => {
-    if (!customer || !currentOrganisation?._id) return;
+    if (!currentOrganisation?._id) return;
 
     try {
       setIsSubmitting(true);
@@ -116,7 +114,7 @@ export default function CustomerLoanApplicationPage() {
       // Create loan
       const loan: Omit<Loans, '_id' | '_createdDate' | '_updatedDate'> = {
         loanNumber: `LOAN-${Date.now()}`,
-        customerId: customer._id,
+        customerId: data.customerId,
         loanProductId: data.loanProductId,
         disbursementDate: undefined,
         principalAmount: data.principalAmount,
@@ -133,16 +131,16 @@ export default function CustomerLoanApplicationPage() {
       // Log audit trail
       await AuditService.logLoanApplication(
         createdLoan._id,
-        member?.loginEmail || 'CUSTOMER',
-        customer._id
+        member?.loginEmail || 'ADMIN',
+        data.customerId
       );
 
-      setSuccessMessage(`Loan application submitted successfully! Application ID: ${createdLoan.loanNumber}`);
+      setSuccessMessage(`Loan application created successfully! Application ID: ${createdLoan.loanNumber}`);
       reset();
       setMonthlyPayment(0);
     } catch (error) {
       console.error('Error submitting application:', error);
-      setErrorMessage('Failed to submit loan application');
+      setErrorMessage('Failed to create loan application');
     } finally {
       setIsSubmitting(false);
     }
@@ -156,7 +154,7 @@ export default function CustomerLoanApplicationPage() {
     );
   }
 
-  if (!customer) {
+  if (!isStaff()) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 p-6">
         <div className="max-w-2xl mx-auto">
@@ -164,11 +162,16 @@ export default function CustomerLoanApplicationPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-red-600">
                 <AlertCircle className="w-5 h-5" />
-                Cannot Apply for Loan
+                Access Restricted
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-primary-foreground/70">{errorMessage}</p>
+              <p className="text-primary-foreground/70 mb-4">
+                {errorMessage || 'Only admin staff can create loan applications. Customers can view and manage their loans in the customer portal.'}
+              </p>
+              <Button className="bg-secondary text-primary hover:bg-secondary/90">
+                Go to Customer Portal
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -186,10 +189,10 @@ export default function CustomerLoanApplicationPage() {
           className="mb-8"
         >
           <h1 className="text-4xl font-heading font-bold text-primary-foreground mb-2">
-            Apply for a Loan
+            Create Loan Application
           </h1>
           <p className="text-primary-foreground/70">
-            Fill out the form below to apply for a loan. Our team will review your application and get back to you shortly.
+            Create a new loan application for a customer. Only admin staff can perform this action.
           </p>
         </motion.div>
 
@@ -204,7 +207,7 @@ export default function CustomerLoanApplicationPage() {
             <div>
               <p className="font-semibold text-green-600">{successMessage}</p>
               <p className="text-sm text-primary-foreground/70 mt-1">
-                You can track your application status in the "My Loans" section.
+                You can track this application in the loans management section.
               </p>
             </div>
           </motion.div>
@@ -229,13 +232,33 @@ export default function CustomerLoanApplicationPage() {
         >
           <Card className="bg-primary-foreground/5 border-primary-foreground/10 mb-6">
             <CardHeader>
-              <CardTitle className="text-primary-foreground">Loan Details</CardTitle>
+              <CardTitle className="text-primary-foreground">Loan Application Details</CardTitle>
               <CardDescription className="text-primary-foreground/50">
-                Select a loan product and enter the desired amount and term
+                Select a customer and loan product to create an application
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                {/* Customer Selection */}
+                <div>
+                  <Label className="text-primary-foreground mb-2 block">Customer *</Label>
+                  <Select {...register('customerId', { required: 'Please select a customer' })}>
+                    <SelectTrigger className="bg-primary-foreground/5 border-primary-foreground/20 text-primary-foreground">
+                      <SelectValue placeholder="Select a customer" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {customers.map((customer) => (
+                        <SelectItem key={customer._id} value={customer._id || ''}>
+                          {customer.firstName} {customer.lastName} - {customer.emailAddress}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.customerId && (
+                    <p className="text-red-500 text-sm mt-1">{errors.customerId.message}</p>
+                  )}
+                </div>
+
                 {/* Loan Product Selection */}
                 <div>
                   <Label className="text-primary-foreground mb-2 block">Loan Product *</Label>
@@ -322,7 +345,7 @@ export default function CustomerLoanApplicationPage() {
                   disabled={isSubmitting}
                   className="w-full bg-secondary text-primary hover:bg-secondary/90 h-12 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isSubmitting ? 'Submitting...' : 'Submit Application'}
+                  {isSubmitting ? 'Creating Application...' : 'Create Application'}
                 </Button>
               </form>
             </CardContent>

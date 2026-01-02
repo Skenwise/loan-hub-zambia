@@ -27,6 +27,10 @@ import CustomerLoanApplicationPage from '@/components/pages/CustomerLoanApplicat
 import CustomerLoansPage from '@/components/pages/CustomerLoansPage';
 import AdminLoansManagementPage from '@/components/pages/AdminLoansManagementPage';
 import CurrencySettingsPage from '@/components/pages/CurrencySettingsPage';
+import SystemOwnerSettingsPage from '@/components/pages/SystemOwnerSettingsPage';
+import OrganisationAdminSettingsPage from '@/components/pages/OrganisationAdminSettingsPage';
+import BranchManagerSettingsPage from '@/components/pages/BranchManagerSettingsPage';
+import CollateralRegisterPage from '@/components/pages/CollateralRegisterPage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -158,6 +162,38 @@ const router = createBrowserRouter([
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to access currency settings">
             <CurrencySettingsPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "collateral-register",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to access collateral register">
+            <CollateralRegisterPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "settings/system-owner",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to access system settings">
+            <SystemOwnerSettingsPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "settings/organisation-admin",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to access organization settings">
+            <OrganisationAdminSettingsPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "settings/branch-manager",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to access branch settings">
+            <BranchManagerSettingsPage />
           </MemberProtectedRoute>
         ),
       },

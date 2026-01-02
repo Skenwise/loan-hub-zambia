@@ -16,6 +16,7 @@ export { InterestCalculationService } from './InterestCalculationService';
 export { WriteoffService } from './WriteoffService';
 export { AnalyticsService } from './AnalyticsService';
 export { SubscriptionEnforcementService } from './SubscriptionEnforcementService';
+export { CollateralService } from './CollateralService';
 
 // Collection IDs
 export const CollectionIds = {
@@ -75,6 +76,55 @@ export const Permissions = {
 
 // Role definitions
 export const RoleDefinitions = {
+  SYSTEM_OWNER: {
+    name: 'System Owner',
+    permissions: Object.values(Permissions),
+    hierarchyLevel: 0,
+    description: 'Global platform access and management',
+  },
+  ORGANISATION_ADMIN: {
+    name: 'Organisation Admin',
+    permissions: [
+      Permissions.MANAGE_ORGANISATION,
+      Permissions.MANAGE_STAFF,
+      Permissions.MANAGE_ROLES,
+      Permissions.VIEW_AUDIT_TRAIL,
+      Permissions.CREATE_CUSTOMER,
+      Permissions.VIEW_CUSTOMER,
+      Permissions.UPDATE_CUSTOMER,
+      Permissions.VERIFY_KYC,
+      Permissions.CREATE_LOAN_APPLICATION,
+      Permissions.VIEW_LOAN_APPLICATION,
+      Permissions.APPROVE_LOAN,
+      Permissions.REJECT_LOAN,
+      Permissions.VIEW_LOAN_APPROVAL,
+      Permissions.DISBURSE_LOAN,
+      Permissions.RECORD_REPAYMENT,
+      Permissions.VIEW_REPAYMENT,
+      Permissions.MANAGE_PENALTIES,
+      Permissions.VIEW_COMPLIANCE_REPORTS,
+      Permissions.CALCULATE_ECL,
+      Permissions.CALCULATE_BOZ_PROVISIONS,
+      Permissions.VIEW_IFRS9_REPORTS,
+    ],
+    hierarchyLevel: 1,
+    description: 'Organization-level management',
+  },
+  BRANCH_MANAGER: {
+    name: 'Branch Manager',
+    permissions: [
+      Permissions.MANAGE_STAFF,
+      Permissions.CREATE_CUSTOMER,
+      Permissions.VIEW_CUSTOMER,
+      Permissions.UPDATE_CUSTOMER,
+      Permissions.VERIFY_KYC,
+      Permissions.CREATE_LOAN_APPLICATION,
+      Permissions.VIEW_LOAN_APPLICATION,
+      Permissions.VIEW_AUDIT_TRAIL,
+    ],
+    hierarchyLevel: 2,
+    description: 'Branch-level operations management',
+  },
   ADMIN: {
     name: 'Admin/Owner',
     permissions: Object.values(Permissions),
