@@ -30,6 +30,8 @@ export { NotificationService } from './NotificationService';
 export { AdvancedReportingService } from './AdvancedReportingService';
 export { GLIntegrationService } from './GLIntegrationService';
 export { PenaltyWaiverService } from './PenaltyWaiverService';
+export { ReportingService } from './ReportingService';
+export { OrganisationSettingsService } from './OrganisationSettingsService';
 
 // Collection IDs
 export const CollectionIds = {

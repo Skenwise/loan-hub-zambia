@@ -37,6 +37,8 @@ import LoanOfficerDashboardPage from '@/components/pages/LoanOfficerDashboardPag
 import RepaymentManagementPage from '@/components/pages/RepaymentManagementPage';
 import BulkRepaymentPage from '@/components/pages/BulkRepaymentPage';
 import CustomerSelfServiceRepaymentPage from '@/components/pages/CustomerSelfServiceRepaymentPage';
+import ComprehensiveReportsPage from '@/components/pages/ComprehensiveReportsPage';
+import OrganisationSettingsComprehensivePage from '@/components/pages/OrganisationSettingsComprehensivePage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -160,6 +162,14 @@ const router = createBrowserRouter([
         element: <AdvancedReportsPage />,
       },
       {
+        path: "reports/comprehensive",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to access reports">
+            <ComprehensiveReportsPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
         path: "compliance/ifrs9",
         element: <IFRS9CompliancePage />,
       },
@@ -192,6 +202,14 @@ const router = createBrowserRouter([
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to access organization settings">
             <OrganisationAdminSettingsPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "settings/organisation",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to access organization settings">
+            <OrganisationSettingsComprehensivePage />
           </MemberProtectedRoute>
         ),
       },
