@@ -25,6 +25,11 @@ export { RolePermissionsService } from './RolePermissionsService';
 export { ApprovalLimitsService } from './ApprovalLimitsService';
 export { CreditCommitteeService } from './CreditCommitteeService';
 export { RepaymentService } from './RepaymentService';
+export { BulkRepaymentService } from './BulkRepaymentService';
+export { NotificationService } from './NotificationService';
+export { AdvancedReportingService } from './AdvancedReportingService';
+export { GLIntegrationService } from './GLIntegrationService';
+export { PenaltyWaiverService } from './PenaltyWaiverService';
 
 // Collection IDs
 export const CollectionIds = {

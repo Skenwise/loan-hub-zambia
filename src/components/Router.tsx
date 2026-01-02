@@ -35,6 +35,8 @@ import KYCConfigurationPage from '@/components/pages/KYCConfigurationPage';
 import DisbursementReportsPage from '@/components/pages/DisbursementReportsPage';
 import LoanOfficerDashboardPage from '@/components/pages/LoanOfficerDashboardPage';
 import RepaymentManagementPage from '@/components/pages/RepaymentManagementPage';
+import BulkRepaymentPage from '@/components/pages/BulkRepaymentPage';
+import CustomerSelfServiceRepaymentPage from '@/components/pages/CustomerSelfServiceRepaymentPage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -97,6 +99,14 @@ const router = createBrowserRouter([
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to upload KYC documents">
             <KYCUploadPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "customer-portal/repayment",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to make a repayment">
+            <CustomerSelfServiceRepaymentPage />
           </MemberProtectedRoute>
         ),
       },
@@ -222,6 +232,14 @@ const router = createBrowserRouter([
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to access repayment management">
             <RepaymentManagementPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "repayments/bulk",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to access bulk repayment processing">
+            <BulkRepaymentPage />
           </MemberProtectedRoute>
         ),
       },
