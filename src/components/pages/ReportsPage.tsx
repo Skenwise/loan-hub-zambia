@@ -13,7 +13,13 @@ import {
   DollarSign,
   Calculator,
   Shield,
-  BarChart3
+  BarChart3,
+  Users,
+  Briefcase,
+  Clock,
+  TrendingDown,
+  PieChart,
+  Activity
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -116,24 +122,54 @@ export default function ReportsPage() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="bg-primary border border-primary-foreground/10">
+          <TabsList className="bg-primary border border-primary-foreground/10 flex flex-wrap gap-2 h-auto p-2">
             <TabsTrigger value="overview" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
               Overview
+            </TabsTrigger>
+            <TabsTrigger value="borrowers" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+              Borrowers
+            </TabsTrigger>
+            <TabsTrigger value="loans" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+              Loans
+            </TabsTrigger>
+            <TabsTrigger value="arrears" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+              Loan Arrears Aging
+            </TabsTrigger>
+            <TabsTrigger value="collections" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+              Collections
+            </TabsTrigger>
+            <TabsTrigger value="collectors" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+              Collectors (Staff)
+            </TabsTrigger>
+            <TabsTrigger value="deferred-income" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+              Deferred Income
+            </TabsTrigger>
+            <TabsTrigger value="deferred-monthly" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+              Deferred Monthly
+            </TabsTrigger>
+            <TabsTrigger value="disbursements" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+              Disbursements
+            </TabsTrigger>
+            <TabsTrigger value="fees" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+              Fees
+            </TabsTrigger>
+            <TabsTrigger value="loan-officers" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+              Loan Officers
+            </TabsTrigger>
+            <TabsTrigger value="loan-products" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+              Loan Products
+            </TabsTrigger>
+            <TabsTrigger value="outstanding-balance" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+              Outstanding Balance
+            </TabsTrigger>
+            <TabsTrigger value="interest-income" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+              Interest Income
             </TabsTrigger>
             <TabsTrigger value="ifrs9" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
               IFRS 9 ECL
             </TabsTrigger>
             <TabsTrigger value="boz" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
               BoZ Classification
-            </TabsTrigger>
-            <TabsTrigger value="advanced" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
-              Advanced Reports
-            </TabsTrigger>
-            <TabsTrigger value="comprehensive" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
-              Comprehensive
-            </TabsTrigger>
-            <TabsTrigger value="disbursements" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
-              Disbursements
             </TabsTrigger>
             <TabsTrigger value="exports" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
               Data Exports
@@ -274,6 +310,400 @@ export default function ReportsPage() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="borrowers" className="space-y-6">
+            <Card className="bg-primary border-primary-foreground/10">
+              <CardHeader>
+                <CardTitle className="font-heading text-2xl text-secondary flex items-center gap-2">
+                  <Users className="w-6 h-6" />
+                  Borrowers Report
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="font-paragraph text-primary-foreground/70">
+                  Comprehensive borrower information and portfolio analysis
+                </p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Button
+                    onClick={() => downloadCSV(customers, 'borrowers_report')}
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Download className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Borrowers</span>
+                  </Button>
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <BarChart3 className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">View Analytics</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="loans" className="space-y-6">
+            <Card className="bg-primary border-primary-foreground/10">
+              <CardHeader>
+                <CardTitle className="font-heading text-2xl text-secondary flex items-center gap-2">
+                  <Briefcase className="w-6 h-6" />
+                  Loans Report
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="font-paragraph text-primary-foreground/70">
+                  Detailed loan portfolio and status information
+                </p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Button
+                    onClick={() => downloadCSV(loans, 'loans_report')}
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Download className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Loans</span>
+                  </Button>
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <BarChart3 className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">View Analytics</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="arrears" className="space-y-6">
+            <Card className="bg-primary border-primary-foreground/10">
+              <CardHeader>
+                <CardTitle className="font-heading text-2xl text-secondary flex items-center gap-2">
+                  <Clock className="w-6 h-6" />
+                  Loan Arrears Aging Report
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="font-paragraph text-primary-foreground/70">
+                  Aging analysis of overdue loan payments
+                </p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Download className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Arrears</span>
+                  </Button>
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <BarChart3 className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">View Analytics</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="collections" className="space-y-6">
+            <Card className="bg-primary border-primary-foreground/10">
+              <CardHeader>
+                <CardTitle className="font-heading text-2xl text-secondary flex items-center gap-2">
+                  <TrendingUp className="w-6 h-6" />
+                  Collections Report
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="font-paragraph text-primary-foreground/70">
+                  Collections performance and payment tracking
+                </p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Button
+                    onClick={() => downloadCSV(repayments, 'collections_report')}
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Download className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Collections</span>
+                  </Button>
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <BarChart3 className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">View Analytics</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="collectors" className="space-y-6">
+            <Card className="bg-primary border-primary-foreground/10">
+              <CardHeader>
+                <CardTitle className="font-heading text-2xl text-secondary flex items-center gap-2">
+                  <Users className="w-6 h-6" />
+                  Collectors Report (Staff)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="font-paragraph text-primary-foreground/70">
+                  Staff collector performance and collection metrics
+                </p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Download className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Collectors</span>
+                  </Button>
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <BarChart3 className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">View Analytics</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="deferred-income" className="space-y-6">
+            <Card className="bg-primary border-primary-foreground/10">
+              <CardHeader>
+                <CardTitle className="font-heading text-2xl text-secondary flex items-center gap-2">
+                  <DollarSign className="w-6 h-6" />
+                  Deferred Income Report
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="font-paragraph text-primary-foreground/70">
+                  Deferred income tracking and recognition schedule
+                </p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Download className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Deferred</span>
+                  </Button>
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <BarChart3 className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">View Analytics</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="deferred-monthly" className="space-y-6">
+            <Card className="bg-primary border-primary-foreground/10">
+              <CardHeader>
+                <CardTitle className="font-heading text-2xl text-secondary flex items-center gap-2">
+                  <Activity className="w-6 h-6" />
+                  Deferred Income Monthly Report
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="font-paragraph text-primary-foreground/70">
+                  Monthly deferred income analysis and trends
+                </p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Download className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Monthly</span>
+                  </Button>
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <BarChart3 className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">View Analytics</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="disbursements" className="space-y-6">
+            <Card className="bg-primary border-primary-foreground/10">
+              <CardHeader>
+                <CardTitle className="font-heading text-2xl text-secondary flex items-center gap-2">
+                  <DollarSign className="w-6 h-6" />
+                  Disbursement Report
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="font-paragraph text-primary-foreground/70">
+                  Loan disbursement tracking and analysis
+                </p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Button
+                    onClick={() => downloadCSV(loans, 'disbursement_report')}
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Download className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Disbursements</span>
+                  </Button>
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <BarChart3 className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">View Analytics</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="fees" className="space-y-6">
+            <Card className="bg-primary border-primary-foreground/10">
+              <CardHeader>
+                <CardTitle className="font-heading text-2xl text-secondary flex items-center gap-2">
+                  <DollarSign className="w-6 h-6" />
+                  Fees Report
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="font-paragraph text-primary-foreground/70">
+                  Loan fees and charges analysis
+                </p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Download className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Fees</span>
+                  </Button>
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <BarChart3 className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">View Analytics</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="loan-officers" className="space-y-6">
+            <Card className="bg-primary border-primary-foreground/10">
+              <CardHeader>
+                <CardTitle className="font-heading text-2xl text-secondary flex items-center gap-2">
+                  <Users className="w-6 h-6" />
+                  Loan Officer Report
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="font-paragraph text-primary-foreground/70">
+                  Loan officer performance and portfolio metrics
+                </p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Download className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Officers</span>
+                  </Button>
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <BarChart3 className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">View Analytics</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="loan-products" className="space-y-6">
+            <Card className="bg-primary border-primary-foreground/10">
+              <CardHeader>
+                <CardTitle className="font-heading text-2xl text-secondary flex items-center gap-2">
+                  <Briefcase className="w-6 h-6" />
+                  Loan Product Report
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="font-paragraph text-primary-foreground/70">
+                  Loan product performance and portfolio analysis
+                </p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Download className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Products</span>
+                  </Button>
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <BarChart3 className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">View Analytics</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="outstanding-balance" className="space-y-6">
+            <Card className="bg-primary border-primary-foreground/10">
+              <CardHeader>
+                <CardTitle className="font-heading text-2xl text-secondary flex items-center gap-2">
+                  <TrendingDown className="w-6 h-6" />
+                  Month on Month Outstanding Balance Report
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="font-paragraph text-primary-foreground/70">
+                  Outstanding balance trends and month-on-month comparison
+                </p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Download className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Balance</span>
+                  </Button>
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <BarChart3 className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">View Analytics</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="interest-income" className="space-y-6">
+            <Card className="bg-primary border-primary-foreground/10">
+              <CardHeader>
+                <CardTitle className="font-heading text-2xl text-secondary flex items-center gap-2">
+                  <PieChart className="w-6 h-6" />
+                  Month on Month Interest Income Report
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="font-paragraph text-primary-foreground/70">
+                  Interest income trends and month-on-month comparison
+                </p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Download className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Income</span>
+                  </Button>
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <BarChart3 className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">View Analytics</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="ifrs9" className="space-y-6">
