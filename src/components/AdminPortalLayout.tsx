@@ -21,9 +21,6 @@ export default function AdminPortalLayout() {
   const { currentOrganisation } = useOrganisationStore();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [customersOpen, setCustomersOpen] = useState(false);
-  const [repaymentsOpen, setRepaymentsOpen] = useState(false);
-  const [reportsOpen, setReportsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const mainNavItems = [
@@ -107,46 +104,17 @@ export default function AdminPortalLayout() {
                 {/* Customers Folder - appears after Dashboard */}
                 {index === 0 && (
                   <div className="pt-2">
-                    <button
-                      onClick={() => setCustomersOpen(!customersOpen)}
+                    <Link
+                      to="/admin/customers"
                       className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                        isCustomersActive
+                        isActive('/admin/customers')
                           ? 'bg-secondary text-white'
                           : 'text-white hover:bg-primary/80'
                       }`}
                     >
                       <Users size={20} />
-                      {sidebarOpen && (
-                        <>
-                          <span>Customers</span>
-                          <ChevronDown
-                            size={16}
-                            className={`ml-auto transition-transform ${customersOpen ? 'rotate-180' : ''}`}
-                          />
-                        </>
-                      )}
-                    </button>
-                    {customersOpen && (
-                      <div className="ml-4 mt-1 space-y-1">
-                        {customersItems.map((item) => {
-                          const Icon = item.icon;
-                          return (
-                            <Link
-                              key={item.path}
-                              to={item.path}
-                              className={`flex items-center gap-3 px-4 py-2 rounded-lg transition text-sm ${
-                                isActive(item.path)
-                                  ? 'bg-secondary text-white'
-                                  : 'text-white hover:bg-primary/80'
-                              }`}
-                            >
-                              <Icon size={16} />
-                              {sidebarOpen && <span>{item.label}</span>}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    )}
+                      {sidebarOpen && <span>Customers</span>}
+                    </Link>
                   </div>
                 )}
               </div>
@@ -155,90 +123,32 @@ export default function AdminPortalLayout() {
 
           {/* Repayments Folder */}
           <div className="pt-2">
-            <button
-              onClick={() => setRepaymentsOpen(!repaymentsOpen)}
+            <Link
+              to="/admin/repayments"
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                isRepaymentsActive
+                isActive('/admin/repayments')
                   ? 'bg-secondary text-white'
                   : 'text-white hover:bg-primary/80'
               }`}
             >
               <FileText size={20} />
-              {sidebarOpen && (
-                <>
-                  <span>Repayments</span>
-                  <ChevronDown
-                    size={16}
-                    className={`ml-auto transition-transform ${repaymentsOpen ? 'rotate-180' : ''}`}
-                  />
-                </>
-              )}
-            </button>
-            {repaymentsOpen && (
-              <div className="ml-4 mt-1 space-y-1">
-                {repaymentsItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      className={`flex items-center gap-3 px-4 py-2 rounded-lg transition text-sm ${
-                        isActive(item.path)
-                          ? 'bg-secondary text-white'
-                          : 'text-white hover:bg-primary/80'
-                      }`}
-                    >
-                      <Icon size={16} />
-                      {sidebarOpen && <span>{item.label}</span>}
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
+              {sidebarOpen && <span>Repayments</span>}
+            </Link>
           </div>
 
           {/* Reports Folder */}
           <div className="pt-2">
-            <button
-              onClick={() => setReportsOpen(!reportsOpen)}
+            <Link
+              to="/admin/reports"
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                isReportsActive
+                isActive('/admin/reports')
                   ? 'bg-secondary text-white'
                   : 'text-white hover:bg-primary/80'
               }`}
             >
               <BarChart3 size={20} />
-              {sidebarOpen && (
-                <>
-                  <span>Reports</span>
-                  <ChevronDown
-                    size={16}
-                    className={`ml-auto transition-transform ${reportsOpen ? 'rotate-180' : ''}`}
-                  />
-                </>
-              )}
-            </button>
-            {reportsOpen && (
-              <div className="ml-4 mt-1 space-y-1">
-                {reportItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      className={`flex items-center gap-3 px-4 py-2 rounded-lg transition text-sm ${
-                        isActive(item.path)
-                          ? 'bg-secondary text-white'
-                          : 'text-white hover:bg-primary/80'
-                      }`}
-                    >
-                      <Icon size={16} />
-                      {sidebarOpen && <span>{item.label}</span>}
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
+              {sidebarOpen && <span>Reports</span>}
+            </Link>
           </div>
 
           {/* Settings Folder */}
