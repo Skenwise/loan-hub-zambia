@@ -21,12 +21,12 @@ export default function AdminPortalLayout() {
   const { currentOrganisation } = useOrganisationStore();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [reportsOpen, setReportsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const mainNavItems = [
     { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/admin/customers', label: 'Customers', icon: Users },
+    { path: '/admin/customers/bulk-upload', label: 'Bulk Upload Customers', icon: Users },
     { path: '/admin/loans', label: 'Loans', icon: FileText },
     { path: '/admin/loans/apply', label: 'New Application', icon: FileText },
     { path: '/admin/loans/approve', label: 'Approvals', icon: FileText },
@@ -34,15 +34,12 @@ export default function AdminPortalLayout() {
     { path: '/admin/repayments', label: 'Repayments', icon: FileText },
     { path: '/admin/repayments/bulk', label: 'Bulk Repayment', icon: FileText },
     { path: '/admin/collateral-register', label: 'Collateral Register', icon: FileText },
-    { path: '/admin/compliance/ifrs9', label: 'IFRS 9 Compliance', icon: BarChart3 },
-    { path: '/admin/dashboard/loan-officer', label: 'Loan Officer Dashboard', icon: LayoutDashboard },
-  ];
-
-  const reportItems = [
     { path: '/admin/reports', label: 'Reports', icon: BarChart3 },
     { path: '/admin/reports/advanced', label: 'Advanced Reports', icon: BarChart3 },
     { path: '/admin/reports/comprehensive', label: 'Comprehensive Reports', icon: BarChart3 },
     { path: '/admin/reports/disbursements', label: 'Disbursement Reports', icon: BarChart3 },
+    { path: '/admin/compliance/ifrs9', label: 'IFRS 9 Compliance', icon: BarChart3 },
+    { path: '/admin/dashboard/loan-officer', label: 'Loan Officer Dashboard', icon: LayoutDashboard },
   ];
 
   const settingsItems = [
@@ -55,7 +52,6 @@ export default function AdminPortalLayout() {
   ];
 
   const isActive = (path: string) => location.pathname === path;
-  const isReportActive = reportItems.some(item => isActive(item.path));
   const isSettingsActive = settingsItems.some(item => isActive(item.path));
 
   return (
@@ -64,15 +60,15 @@ export default function AdminPortalLayout() {
       <div
         className={`${
           sidebarOpen ? 'w-64' : 'w-20'
-        } bg-primary text-white transition-all duration-300 flex flex-col`}
+        } bg-secondary text-white transition-all duration-300 flex flex-col`}
       >
         {/* Logo */}
-        <div className="p-6 border-b border-primary/20">
+        <div className="p-6 border-b border-secondary/20">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center font-bold text-primary">
+            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center font-bold text-secondary">
               LD
             </div>
-            {sidebarOpen && <span className="font-bold text-lg">LendZm</span>}
+            {sidebarOpen && <span className="font-bold text-lg text-white">LendZm</span>}
           </div>
         </div>
 
@@ -86,8 +82,8 @@ export default function AdminPortalLayout() {
                 to={item.path}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
                   isActive(item.path)
-                    ? 'bg-secondary text-primary'
-                    : 'text-secondary hover:bg-primary/80'
+                    ? 'bg-white text-secondary'
+                    : 'text-white hover:bg-secondary/80'
                 }`}
               >
                 <Icon size={20} />
@@ -96,58 +92,14 @@ export default function AdminPortalLayout() {
             );
           })}
 
-          {/* Reports Folder */}
-          <div className="pt-2">
-            <button
-              onClick={() => setReportsOpen(!reportsOpen)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                isReportActive
-                  ? 'bg-secondary text-primary'
-                  : 'text-secondary hover:bg-primary/80'
-              }`}
-            >
-              <BarChart3 size={20} />
-              {sidebarOpen && (
-                <>
-                  <span>Reports</span>
-                  <ChevronDown
-                    size={16}
-                    className={`ml-auto transition-transform ${reportsOpen ? 'rotate-180' : ''}`}
-                  />
-                </>
-              )}
-            </button>
-            {reportsOpen && (
-              <div className="ml-4 mt-1 space-y-1">
-                {reportItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      className={`flex items-center gap-3 px-4 py-2 rounded-lg transition text-sm ${
-                        isActive(item.path)
-                          ? 'bg-secondary text-primary'
-                          : 'text-secondary hover:bg-primary/80'
-                      }`}
-                    >
-                      <Icon size={16} />
-                      {sidebarOpen && <span>{item.label}</span>}
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
           {/* Settings Folder */}
           <div className="pt-2">
             <button
               onClick={() => setSettingsOpen(!settingsOpen)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
                 isSettingsActive
-                  ? 'bg-secondary text-primary'
-                  : 'text-secondary hover:bg-primary/80'
+                  ? 'bg-white text-secondary'
+                  : 'text-white hover:bg-secondary/80'
               }`}
             >
               <Settings size={20} />
@@ -171,8 +123,8 @@ export default function AdminPortalLayout() {
                       to={item.path}
                       className={`flex items-center gap-3 px-4 py-2 rounded-lg transition text-sm ${
                         isActive(item.path)
-                          ? 'bg-secondary text-primary'
-                          : 'text-secondary hover:bg-primary/80'
+                          ? 'bg-white text-secondary'
+                          : 'text-white hover:bg-secondary/80'
                       }`}
                     >
                       <Icon size={16} />
@@ -186,13 +138,13 @@ export default function AdminPortalLayout() {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-primary/20 space-y-2">
+        <div className="p-4 border-t border-secondary/20 space-y-2">
           <Link
             to="/profile"
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
               isActive('/profile')
-                ? 'bg-secondary text-primary'
-                : 'text-secondary hover:bg-primary/80'
+                ? 'bg-white text-secondary'
+                : 'text-white hover:bg-secondary/80'
             }`}
           >
             <Settings size={20} />
@@ -200,7 +152,7 @@ export default function AdminPortalLayout() {
           </Link>
           <button
             onClick={() => actions.logout()}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-secondary hover:bg-primary/80 transition"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white hover:bg-secondary/80 transition"
           >
             <LogOut size={20} />
             {sidebarOpen && <span>Logout</span>}

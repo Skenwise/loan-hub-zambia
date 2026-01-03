@@ -40,6 +40,7 @@ import CustomerSelfServiceRepaymentPage from '@/components/pages/CustomerSelfSer
 import ComprehensiveReportsPage from '@/components/pages/ComprehensiveReportsPage';
 import OrganisationSettingsComprehensivePage from '@/components/pages/OrganisationSettingsComprehensivePage';
 import CustomerSignupPage from '@/components/pages/CustomerSignupPage';
+import BulkCustomerUploadPage from '@/components/pages/BulkCustomerUploadPage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -137,6 +138,14 @@ const router = createBrowserRouter([
       {
         path: "customers",
         element: <CustomersPage />,
+      },
+      {
+        path: "customers/bulk-upload",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to bulk upload customers">
+            <BulkCustomerUploadPage />
+          </MemberProtectedRoute>
+        ),
       },
       {
         path: "loans",
