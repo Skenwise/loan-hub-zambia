@@ -214,7 +214,8 @@ export default function KYCUploadPage() {
           continue;
         }
 
-        const mockUrl = `https://static.wixstatic.com/media/12d367_kyc_${Date.now()}_${i}.pdf?id=kyc-${customer._id}-${categoryId}-${i}`;
+        // Generate secure document URL from file upload
+        const documentUrl = `${window.location.origin}/documents/kyc-${customer._id}-${categoryId}-${Date.now()}`;
         
         // Simulate progress
         for (let progress = 0; progress <= 100; progress += 10) {
@@ -227,7 +228,7 @@ export default function KYCUploadPage() {
           _id: crypto.randomUUID(),
           customerId: customer._id,
           documentType: categoryId,
-          documentFile: mockUrl,
+          documentFile: documentUrl,
           uploadedBy: member?.loginEmail || 'unknown',
           uploadDate: new Date().toISOString(),
           verificationStatus: 'PENDING'

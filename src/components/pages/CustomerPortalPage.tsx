@@ -86,42 +86,9 @@ export default function CustomerPortalPage() {
   };
 
   const loadNotifications = () => {
-    // Mock notifications - in a real app, these would come from a database
-    const mockNotifications: Notification[] = [
-      {
-        id: '1',
-        title: 'Payment Due',
-        message: 'Your loan payment of $500 is due on December 15, 2024.',
-        type: 'alert',
-        timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-        read: false,
-      },
-      {
-        id: '2',
-        title: 'KYC Verification Approved',
-        message: 'Your KYC verification has been successfully approved.',
-        type: 'success',
-        timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-        read: true,
-      },
-      {
-        id: '3',
-        title: 'Loan Application Update',
-        message: 'Your loan application #LOAN-2024-001 is now under review.',
-        type: 'info',
-        timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-        read: true,
-      },
-      {
-        id: '4',
-        title: 'System Maintenance',
-        message: 'Scheduled maintenance on December 10, 2024 from 2:00 AM to 4:00 AM UTC.',
-        type: 'warning',
-        timestamp: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-        read: true,
-      },
-    ];
-    setNotifications(mockNotifications);
+    // Load notifications from database when available
+    // For now, initialize as empty array
+    setNotifications([]);
   };
 
   const handleContactFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

@@ -6,7 +6,8 @@
 import { BaseCrudService } from './BaseCrudService';
 import { AuditService } from './AuditService';
 import { EmailService } from './EmailService';
-import { CustomerInvitations, CustomerProfiles } from '@/entities';
+import { CustomerProfiles } from '@/entities';
+import { CustomerInvitation } from './CustomerOnboardingService';
 
 export class CustomerInvitationService {
   private static readonly REMINDER_INTERVAL_DAYS = 3;
@@ -15,8 +16,8 @@ export class CustomerInvitationService {
   /**
    * Get invitation by token
    */
-  static async getInvitationByToken(token: string): Promise<CustomerInvitations | null> {
-    const { items: invitations } = await BaseCrudService.getAll<CustomerInvitations>(
+  static async getInvitationByToken(token: string): Promise<CustomerInvitation | null> {
+    const { items: invitations } = await BaseCrudService.getAll<CustomerInvitation>(
       'customerinvitations'
     );
     return invitations?.find((inv) => inv.invitationToken === token) || null;
@@ -25,8 +26,8 @@ export class CustomerInvitationService {
   /**
    * Get invitations for customer
    */
-  static async getCustomerInvitations(customerId: string): Promise<CustomerInvitations[]> {
-    const { items: invitations } = await BaseCrudService.getAll<CustomerInvitations>(
+  static async getCustomerInvitations(customerId: string): Promise<CustomerInvitation[]> {
+    const { items: invitations } = await BaseCrudService.getAll<CustomerInvitation>(
       'customerinvitations'
     );
     return invitations?.filter((inv) => inv.customerId === customerId) || [];
@@ -37,8 +38,8 @@ export class CustomerInvitationService {
    */
   static async getOrganizationPendingInvitations(
     organisationId: string
-  ): Promise<CustomerInvitations[]> {
-    const { items: invitations } = await BaseCrudService.getAll<CustomerInvitations>(
+  ): Promise<CustomerInvitation[]> {
+    const { items: invitations } = await BaseCrudService.getAll<CustomerInvitation>(
       'customerinvitations'
     );
     return (
@@ -51,8 +52,8 @@ export class CustomerInvitationService {
   /**
    * Get invitations needing reminder
    */
-  static async getInvitationsNeedingReminder(): Promise<CustomerInvitations[]> {
-    const { items: invitations } = await BaseCrudService.getAll<CustomerInvitations>(
+  static async getInvitationsNeedingReminder(): Promise<CustomerInvitation[]> {
+    const { items: invitations } = await BaseCrudService.getAll<CustomerInvitation>(
       'customerinvitations'
     );
 
@@ -78,7 +79,7 @@ export class CustomerInvitationService {
     organisationId: string,
     performedBy: string
   ): Promise<void> {
-    const invitation = await BaseCrudService.getById<CustomerInvitations>(
+    const invitation = await BaseCrudService.getById<CustomerInvitation>(
       'customerinvitations',
       invitationId
     );
@@ -107,7 +108,7 @@ export class CustomerInvitationService {
 
     // Update invitation
     const emailSentCount = (invitation.emailSentCount || 0) + 1;
-    await BaseCrudService.update<CustomerInvitations>('customerinvitations', {
+    await BaseCrudService.update<CustomerInvitation>('customerinvitations', {
       _id: invitationId,
       emailSentCount,
       sentDate: new Date(),
@@ -133,7 +134,7 @@ export class CustomerInvitationService {
     performedBy: string,
     reason?: string
   ): Promise<void> {
-    const invitation = await BaseCrudService.getById<CustomerInvitations>(
+    const invitation = await BaseCrudService.getById<CustomerInvitation>(
       'customerinvitations',
       invitationId
     );
@@ -143,7 +144,7 @@ export class CustomerInvitationService {
     }
 
     // Update invitation status
-    await BaseCrudService.update<CustomerInvitations>('customerinvitations', {
+    await BaseCrudService.update<CustomerInvitation>('customerinvitations', {
       _id: invitationId,
       status: 'REVOKED',
       notes: reason || 'Revoked by admin',
@@ -170,7 +171,7 @@ export class CustomerInvitationService {
     expired: number;
     revoked: number;
   }> {
-    const { items: invitations } = await BaseCrudService.getAll<CustomerInvitations>(
+    const { items: invitations } = await BaseCrudService.getAll<CustomerInvitation>(
       'customerinvitations'
     );
 
@@ -203,7 +204,7 @@ export class CustomerInvitationService {
   /**
    * Get invitation expiry status
    */
-  static getInvitationExpiryStatus(invitation: CustomerInvitations): {
+  static getInvitationExpiryStatus(invitation: CustomerInvitation): {
     status: 'valid' | 'expiring-soon' | 'expired';
     daysRemaining: number;
   } {
@@ -261,7 +262,7 @@ export class CustomerInvitationService {
         expiryDate.setDate(expiryDate.getDate() + 7);
 
         const invitationId = crypto.randomUUID();
-        const invitation: CustomerInvitations = {
+        const invitation: CustomerInvitation = {
           _id: invitationId,
           customerId,
           organisationId,
@@ -277,7 +278,7 @@ export class CustomerInvitationService {
           createdBy: performedBy,
         };
 
-        await BaseCrudService.create<CustomerInvitations>('customerinvitations', invitation);
+        await BaseCrudService.create<CustomerInvitation>('customerinvitations', invitation);
 
         if (customer.emailAddress) {
           const signupLink = `${window.location.origin}/customer-signup?token=${invitationToken}`;
