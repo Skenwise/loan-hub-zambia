@@ -21,8 +21,10 @@ export default function AdminPortalLayout() {
   const { currentOrganisation } = useOrganisationStore();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [reportsOpen, setReportsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
-  const navItems = [
+  const mainNavItems = [
     { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/admin/customers', label: 'Customers', icon: Users },
     { path: '/admin/loans', label: 'Loans', icon: FileText },
@@ -32,21 +34,29 @@ export default function AdminPortalLayout() {
     { path: '/admin/repayments', label: 'Repayments', icon: FileText },
     { path: '/admin/repayments/bulk', label: 'Bulk Repayment', icon: FileText },
     { path: '/admin/collateral-register', label: 'Collateral Register', icon: FileText },
+    { path: '/admin/compliance/ifrs9', label: 'IFRS 9 Compliance', icon: BarChart3 },
+    { path: '/admin/dashboard/loan-officer', label: 'Loan Officer Dashboard', icon: LayoutDashboard },
+  ];
+
+  const reportItems = [
     { path: '/admin/reports', label: 'Reports', icon: BarChart3 },
     { path: '/admin/reports/advanced', label: 'Advanced Reports', icon: BarChart3 },
     { path: '/admin/reports/comprehensive', label: 'Comprehensive Reports', icon: BarChart3 },
     { path: '/admin/reports/disbursements', label: 'Disbursement Reports', icon: BarChart3 },
-    { path: '/admin/compliance/ifrs9', label: 'IFRS 9 Compliance', icon: BarChart3 },
+  ];
+
+  const settingsItems = [
     { path: '/admin/settings/organisation', label: 'Organisation Settings', icon: Settings },
     { path: '/admin/settings/organisation-admin', label: 'Org Admin Settings', icon: Settings },
     { path: '/admin/settings/branch-manager', label: 'Branch Settings', icon: Settings },
     { path: '/admin/settings/kyc-configuration', label: 'KYC Configuration', icon: Settings },
     { path: '/admin/settings/currency', label: 'Currency Settings', icon: Settings },
     { path: '/admin/settings/system-owner', label: 'System Settings', icon: Settings },
-    { path: '/admin/dashboard/loan-officer', label: 'Loan Officer Dashboard', icon: LayoutDashboard },
   ];
 
   const isActive = (path: string) => location.pathname === path;
+  const isReportActive = reportItems.some(item => isActive(item.path));
+  const isSettingsActive = settingsItems.some(item => isActive(item.path));
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -68,7 +78,7 @@ export default function AdminPortalLayout() {
 
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-2">
-          {navItems.map((item) => {
+          {mainNavItems.map((item) => {
             const Icon = item.icon;
             return (
               <Link
@@ -77,7 +87,7 @@ export default function AdminPortalLayout() {
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
                   isActive(item.path)
                     ? 'bg-secondary text-primary'
-                    : 'text-white hover:bg-primary/80'
+                    : 'text-secondary hover:bg-primary/80'
                 }`}
               >
                 <Icon size={20} />
@@ -85,6 +95,94 @@ export default function AdminPortalLayout() {
               </Link>
             );
           })}
+
+          {/* Reports Folder */}
+          <div className="pt-2">
+            <button
+              onClick={() => setReportsOpen(!reportsOpen)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+                isReportActive
+                  ? 'bg-secondary text-primary'
+                  : 'text-secondary hover:bg-primary/80'
+              }`}
+            >
+              <BarChart3 size={20} />
+              {sidebarOpen && (
+                <>
+                  <span>Reports</span>
+                  <ChevronDown
+                    size={16}
+                    className={`ml-auto transition-transform ${reportsOpen ? 'rotate-180' : ''}`}
+                  />
+                </>
+              )}
+            </button>
+            {reportsOpen && (
+              <div className="ml-4 mt-1 space-y-1">
+                {reportItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      className={`flex items-center gap-3 px-4 py-2 rounded-lg transition text-sm ${
+                        isActive(item.path)
+                          ? 'bg-secondary text-primary'
+                          : 'text-secondary hover:bg-primary/80'
+                      }`}
+                    >
+                      <Icon size={16} />
+                      {sidebarOpen && <span>{item.label}</span>}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Settings Folder */}
+          <div className="pt-2">
+            <button
+              onClick={() => setSettingsOpen(!settingsOpen)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+                isSettingsActive
+                  ? 'bg-secondary text-primary'
+                  : 'text-secondary hover:bg-primary/80'
+              }`}
+            >
+              <Settings size={20} />
+              {sidebarOpen && (
+                <>
+                  <span>Settings</span>
+                  <ChevronDown
+                    size={16}
+                    className={`ml-auto transition-transform ${settingsOpen ? 'rotate-180' : ''}`}
+                  />
+                </>
+              )}
+            </button>
+            {settingsOpen && (
+              <div className="ml-4 mt-1 space-y-1">
+                {settingsItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      className={`flex items-center gap-3 px-4 py-2 rounded-lg transition text-sm ${
+                        isActive(item.path)
+                          ? 'bg-secondary text-primary'
+                          : 'text-secondary hover:bg-primary/80'
+                      }`}
+                    >
+                      <Icon size={16} />
+                      {sidebarOpen && <span>{item.label}</span>}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </nav>
 
         {/* Footer */}
@@ -94,15 +192,15 @@ export default function AdminPortalLayout() {
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
               isActive('/profile')
                 ? 'bg-secondary text-primary'
-                : 'text-white hover:bg-primary/80'
+                : 'text-secondary hover:bg-primary/80'
             }`}
           >
             <Settings size={20} />
-            {sidebarOpen && <span>Settings</span>}
+            {sidebarOpen && <span>Profile</span>}
           </Link>
           <button
             onClick={() => actions.logout()}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white hover:bg-primary/80 transition"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-secondary hover:bg-primary/80 transition"
           >
             <LogOut size={20} />
             {sidebarOpen && <span>Logout</span>}

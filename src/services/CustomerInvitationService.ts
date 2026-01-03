@@ -108,11 +108,12 @@ export class CustomerInvitationService {
 
     // Update invitation
     const emailSentCount = (invitation.emailSentCount || 0) + 1;
-    await BaseCrudService.update<CustomerInvitation>('customerinvitations', {
-      _id: invitationId,
+    const updatedInvitation = {
+      ...invitation,
       emailSentCount,
       sentDate: new Date(),
-    });
+    };
+    await BaseCrudService.update<CustomerInvitation>('customerinvitations', updatedInvitation);
 
     // Log reminder
     await AuditService.logAction({
@@ -144,11 +145,12 @@ export class CustomerInvitationService {
     }
 
     // Update invitation status
-    await BaseCrudService.update<CustomerInvitation>('customerinvitations', {
-      _id: invitationId,
-      status: 'REVOKED',
+    const updatedInvitation = {
+      ...invitation,
+      status: 'REVOKED' as const,
       notes: reason || 'Revoked by admin',
-    });
+    };
+    await BaseCrudService.update<CustomerInvitation>('customerinvitations', updatedInvitation);
 
     // Log revocation
     await AuditService.logAction({

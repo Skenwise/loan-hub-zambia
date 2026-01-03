@@ -60,8 +60,6 @@ export class CustomerOnboardingService {
       _id: customerId,
       ...customerData,
       organisationId,
-      activationStatus: 'PENDING_ACTIVATION',
-      accountStatus: 'INACTIVE',
       kycVerificationStatus: 'PENDING',
     };
 
@@ -245,9 +243,7 @@ export class CustomerOnboardingService {
     // Update customer status
     await BaseCrudService.update<CustomerProfiles>('customers', {
       _id: customerId,
-      activationStatus: 'ACTIVATED',
-      accountStatus: 'ACTIVE',
-      activatedDate: new Date(),
+      kycVerificationStatus: 'VERIFIED',
     });
 
     // Update invitation status
@@ -387,6 +383,6 @@ export class CustomerOnboardingService {
       return false;
     }
 
-    return customer.organisationId === organisationId && customer.activationStatus === 'ACTIVATED';
+    return customer.organisationId === organisationId && customer.kycVerificationStatus === 'VERIFIED';
   }
 }
