@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { BaseCrudService } from '@/integrations';
-import { Loans, Repayments, ECLResults, BoZProvisions, CustomerProfiles } from '@/entities';
+import { Loans, Repayments, ECLResults, BoZProvisions, CustomerProfiles, StaffMembers, LoanProducts } from '@/entities';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { 
   FileText, 
   Download, 
@@ -19,9 +21,11 @@ import {
   Clock,
   TrendingDown,
   PieChart,
-  Activity
+  Activity,
+  Printer
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { ReportExportService } from '@/services/ReportExportService';
 
 export default function ReportsPage() {
   const [loans, setLoans] = useState<Loans[]>([]);
@@ -29,7 +33,10 @@ export default function ReportsPage() {
   const [eclResults, setECLResults] = useState<ECLResults[]>([]);
   const [provisions, setProvisions] = useState<BoZProvisions[]>([]);
   const [customers, setCustomers] = useState<CustomerProfiles[]>([]);
+  const [staff, setStaff] = useState<StaffMembers[]>([]);
+  const [products, setProducts] = useState<LoanProducts[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
 
   useEffect(() => {
     loadData();
@@ -37,12 +44,14 @@ export default function ReportsPage() {
 
   const loadData = async () => {
     try {
-      const [loansData, repaymentsData, eclData, provisionsData, customersData] = await Promise.all([
+      const [loansData, repaymentsData, eclData, provisionsData, customersData, staffData, productsData] = await Promise.all([
         BaseCrudService.getAll<Loans>('loans'),
         BaseCrudService.getAll<Repayments>('repayments'),
         BaseCrudService.getAll<ECLResults>('eclresults'),
         BaseCrudService.getAll<BoZProvisions>('bozprovisions'),
-        BaseCrudService.getAll<CustomerProfiles>('customers')
+        BaseCrudService.getAll<CustomerProfiles>('customers'),
+        BaseCrudService.getAll<StaffMembers>('staffmembers'),
+        BaseCrudService.getAll<LoanProducts>('loanproducts')
       ]);
 
       setLoans(loansData.items);
@@ -50,6 +59,8 @@ export default function ReportsPage() {
       setECLResults(eclData.items);
       setProvisions(provisionsData.items);
       setCustomers(customersData.items);
+      setStaff(staffData.items);
+      setProducts(productsData.items);
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -81,7 +92,7 @@ export default function ReportsPage() {
     if (data.length === 0) return;
     
     const headers = Object.keys(data[0]).join(',');
-    const rows = data.map(row => Object.values(row).join(','));
+    const rows = data.map(row => Object.values(row).map(v => `"${v}"`).join(','));
     const csv = [headers, ...rows].join('\n');
     
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -90,6 +101,29 @@ export default function ReportsPage() {
     a.href = url;
     a.download = `${filename}_${format(new Date(), 'yyyy-MM-dd')}.csv`;
     a.click();
+  };
+
+  const exportToExcel = (data: any[], filename: string) => {
+    const columns = Object.keys(data[0] || {});
+    const options = {
+      filename: filename.replace(/\s+/g, '_').toLowerCase(),
+      title: filename,
+      data,
+      columns: columns.map(col => ({ key: col, label: col }))
+    };
+    ReportExportService.exportToExcel(options);
+  };
+
+  const exportToPDF = (data: any[], filename: string) => {
+    const columns = Object.keys(data[0] || {});
+    const options = {
+      filename: filename.replace(/\s+/g, '_').toLowerCase(),
+      title: filename,
+      data,
+      columns: columns.map(col => ({ key: col, label: col }))
+    };
+    const pdfContent = ReportExportService.generatePDFContent(options);
+    ReportExportService.printReport(pdfContent);
   };
 
   if (loading) {
@@ -324,21 +358,64 @@ export default function ReportsPage() {
                 <p className="font-paragraph text-primary-foreground/70">
                   Comprehensive borrower information and portfolio analysis
                 </p>
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-3 gap-4">
                   <Button
                     onClick={() => downloadCSV(customers, 'borrowers_report')}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
                     <Download className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">Export Borrowers</span>
+                    <span className="font-paragraph text-sm">Export CSV</span>
                   </Button>
                   <Button
+                    onClick={() => exportToExcel(customers, 'Borrowers Report')}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
-                    <BarChart3 className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">View Analytics</span>
+                    <FileText className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Excel</span>
+                  </Button>
+                  <Button
+                    onClick={() => exportToPDF(customers, 'Borrowers Report')}
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Printer className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Print/PDF</span>
                   </Button>
                 </div>
+                <div className="overflow-x-auto mt-6">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-primary-foreground/10">
+                        <th className="text-left py-3 px-4 font-paragraph text-primary-foreground/70">Name</th>
+                        <th className="text-left py-3 px-4 font-paragraph text-primary-foreground/70">Email</th>
+                        <th className="text-left py-3 px-4 font-paragraph text-primary-foreground/70">Phone</th>
+                        <th className="text-left py-3 px-4 font-paragraph text-primary-foreground/70">KYC Status</th>
+                        <th className="text-left py-3 px-4 font-paragraph text-primary-foreground/70">Credit Score</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {customers.slice(0, 10).map((customer) => (
+                        <tr key={customer._id} className="border-b border-primary-foreground/5 hover:bg-primary-foreground/5">
+                          <td className="py-3 px-4 font-paragraph text-primary-foreground">{customer.firstName} {customer.lastName}</td>
+                          <td className="py-3 px-4 font-paragraph text-primary-foreground">{customer.emailAddress}</td>
+                          <td className="py-3 px-4 font-paragraph text-primary-foreground">{customer.phoneNumber}</td>
+                          <td className="py-3 px-4">
+                            <span className={`inline-flex px-2 py-1 rounded text-xs font-paragraph ${
+                              customer.kycVerificationStatus === 'Verified' ? 'bg-secondary/20 text-secondary' : 'bg-brandaccent/20 text-brandaccent'
+                            }`}>
+                              {customer.kycVerificationStatus}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 font-paragraph text-primary-foreground">{customer.creditScore}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {customers.length > 10 && (
+                  <p className="text-center text-primary-foreground/60 text-sm mt-4">
+                    Showing 10 of {customers.length} borrowers
+                  </p>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -355,21 +432,64 @@ export default function ReportsPage() {
                 <p className="font-paragraph text-primary-foreground/70">
                   Detailed loan portfolio and status information
                 </p>
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-3 gap-4">
                   <Button
                     onClick={() => downloadCSV(loans, 'loans_report')}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
                     <Download className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">Export Loans</span>
+                    <span className="font-paragraph text-sm">Export CSV</span>
                   </Button>
                   <Button
+                    onClick={() => exportToExcel(loans, 'Loans Report')}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
-                    <BarChart3 className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">View Analytics</span>
+                    <FileText className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Excel</span>
+                  </Button>
+                  <Button
+                    onClick={() => exportToPDF(loans, 'Loans Report')}
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Printer className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Print/PDF</span>
                   </Button>
                 </div>
+                <div className="overflow-x-auto mt-6">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-primary-foreground/10">
+                        <th className="text-left py-3 px-4 font-paragraph text-primary-foreground/70">Loan Number</th>
+                        <th className="text-left py-3 px-4 font-paragraph text-primary-foreground/70">Principal</th>
+                        <th className="text-left py-3 px-4 font-paragraph text-primary-foreground/70">Outstanding</th>
+                        <th className="text-left py-3 px-4 font-paragraph text-primary-foreground/70">Interest Rate</th>
+                        <th className="text-left py-3 px-4 font-paragraph text-primary-foreground/70">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {loans.slice(0, 10).map((loan) => (
+                        <tr key={loan._id} className="border-b border-primary-foreground/5 hover:bg-primary-foreground/5">
+                          <td className="py-3 px-4 font-paragraph text-primary-foreground">{loan.loanNumber}</td>
+                          <td className="py-3 px-4 font-paragraph text-primary-foreground">ZMW {loan.principalAmount?.toLocaleString()}</td>
+                          <td className="py-3 px-4 font-paragraph text-primary-foreground">ZMW {loan.outstandingBalance?.toLocaleString()}</td>
+                          <td className="py-3 px-4 font-paragraph text-primary-foreground">{loan.interestRate}%</td>
+                          <td className="py-3 px-4">
+                            <span className={`inline-flex px-2 py-1 rounded text-xs font-paragraph ${
+                              loan.loanStatus === 'Active' ? 'bg-secondary/20 text-secondary' : 'bg-brandaccent/20 text-brandaccent'
+                            }`}>
+                              {loan.loanStatus}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {loans.length > 10 && (
+                  <p className="text-center text-primary-foreground/60 text-sm mt-4">
+                    Showing 10 of {loans.length} loans
+                  </p>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -386,19 +506,84 @@ export default function ReportsPage() {
                 <p className="font-paragraph text-primary-foreground/70">
                   Aging analysis of overdue loan payments
                 </p>
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-3 gap-4">
                   <Button
+                    onClick={() => {
+                      const arrearsData = loans
+                        .filter(l => l.loanStatus === 'Overdue' || l.loanStatus === 'Delinquent')
+                        .map(l => ({
+                          loanNumber: l.loanNumber,
+                          customerId: l.customerId,
+                          outstandingBalance: l.outstandingBalance,
+                          daysOverdue: Math.floor((new Date().getTime() - new Date(l.nextPaymentDate || '').getTime()) / (1000 * 60 * 60 * 24))
+                        }));
+                      downloadCSV(arrearsData, 'loan_arrears_aging');
+                    }}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
                     <Download className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">Export Arrears</span>
+                    <span className="font-paragraph text-sm">Export CSV</span>
                   </Button>
                   <Button
+                    onClick={() => {
+                      const arrearsData = loans
+                        .filter(l => l.loanStatus === 'Overdue' || l.loanStatus === 'Delinquent')
+                        .map(l => ({
+                          loanNumber: l.loanNumber,
+                          customerId: l.customerId,
+                          outstandingBalance: l.outstandingBalance,
+                          daysOverdue: Math.floor((new Date().getTime() - new Date(l.nextPaymentDate || '').getTime()) / (1000 * 60 * 60 * 24))
+                        }));
+                      exportToExcel(arrearsData, 'Loan Arrears Aging Report');
+                    }}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
-                    <BarChart3 className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">View Analytics</span>
+                    <FileText className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Excel</span>
                   </Button>
+                  <Button
+                    onClick={() => {
+                      const arrearsData = loans
+                        .filter(l => l.loanStatus === 'Overdue' || l.loanStatus === 'Delinquent')
+                        .map(l => ({
+                          loanNumber: l.loanNumber,
+                          customerId: l.customerId,
+                          outstandingBalance: l.outstandingBalance,
+                          daysOverdue: Math.floor((new Date().getTime() - new Date(l.nextPaymentDate || '').getTime()) / (1000 * 60 * 60 * 24))
+                        }));
+                      exportToPDF(arrearsData, 'Loan Arrears Aging Report');
+                    }}
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Printer className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Print/PDF</span>
+                  </Button>
+                </div>
+                <div className="mt-6 p-4 bg-primary-foreground/5 rounded-lg">
+                  <h4 className="font-heading text-secondary mb-3">Arrears Summary</h4>
+                  <div className="grid sm:grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-primary-foreground/60 text-sm">0-30 Days</p>
+                      <p className="text-2xl font-bold text-primary-foreground">{loans.filter(l => {
+                        const days = Math.floor((new Date().getTime() - new Date(l.nextPaymentDate || '').getTime()) / (1000 * 60 * 60 * 24));
+                        return days >= 0 && days <= 30;
+                      }).length}</p>
+                    </div>
+                    <div>
+                      <p className="text-primary-foreground/60 text-sm">31-60 Days</p>
+                      <p className="text-2xl font-bold text-primary-foreground">{loans.filter(l => {
+                        const days = Math.floor((new Date().getTime() - new Date(l.nextPaymentDate || '').getTime()) / (1000 * 60 * 60 * 24));
+                        return days > 30 && days <= 60;
+                      }).length}</p>
+                    </div>
+                    <div>
+                      <p className="text-primary-foreground/60 text-sm">60+ Days</p>
+                      <p className="text-2xl font-bold text-destructive">{loans.filter(l => {
+                        const days = Math.floor((new Date().getTime() - new Date(l.nextPaymentDate || '').getTime()) / (1000 * 60 * 60 * 24));
+                        return days > 60;
+                      }).length}</p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -416,20 +601,45 @@ export default function ReportsPage() {
                 <p className="font-paragraph text-primary-foreground/70">
                   Collections performance and payment tracking
                 </p>
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-3 gap-4">
                   <Button
                     onClick={() => downloadCSV(repayments, 'collections_report')}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
                     <Download className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">Export Collections</span>
+                    <span className="font-paragraph text-sm">Export CSV</span>
                   </Button>
                   <Button
+                    onClick={() => exportToExcel(repayments, 'Collections Report')}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
-                    <BarChart3 className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">View Analytics</span>
+                    <FileText className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Excel</span>
                   </Button>
+                  <Button
+                    onClick={() => exportToPDF(repayments, 'Collections Report')}
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Printer className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Print/PDF</span>
+                  </Button>
+                </div>
+                <div className="mt-6 p-4 bg-primary-foreground/5 rounded-lg">
+                  <h4 className="font-heading text-secondary mb-3">Collections Summary</h4>
+                  <div className="grid sm:grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-primary-foreground/60 text-sm">Total Collected</p>
+                      <p className="text-2xl font-bold text-secondary">ZMW {repayments.reduce((sum, r) => sum + (r.totalAmountPaid || 0), 0).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-primary-foreground/60 text-sm">Principal Collected</p>
+                      <p className="text-2xl font-bold text-primary-foreground">ZMW {repayments.reduce((sum, r) => sum + (r.principalAmount || 0), 0).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-primary-foreground/60 text-sm">Interest Collected</p>
+                      <p className="text-2xl font-bold text-primary-foreground">ZMW {repayments.reduce((sum, r) => sum + (r.interestAmount || 0), 0).toLocaleString()}</p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -447,19 +657,56 @@ export default function ReportsPage() {
                 <p className="font-paragraph text-primary-foreground/70">
                   Staff collector performance and collection metrics
                 </p>
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-3 gap-4">
                   <Button
+                    onClick={() => downloadCSV(staff.filter(s => s.role === 'Collector' || s.department === 'Collections'), 'collectors_report')}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
                     <Download className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">Export Collectors</span>
+                    <span className="font-paragraph text-sm">Export CSV</span>
                   </Button>
                   <Button
+                    onClick={() => exportToExcel(staff.filter(s => s.role === 'Collector' || s.department === 'Collections'), 'Collectors Report')}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
-                    <BarChart3 className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">View Analytics</span>
+                    <FileText className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Excel</span>
                   </Button>
+                  <Button
+                    onClick={() => exportToPDF(staff.filter(s => s.role === 'Collector' || s.department === 'Collections'), 'Collectors Report')}
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Printer className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Print/PDF</span>
+                  </Button>
+                </div>
+                <div className="overflow-x-auto mt-6">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-primary-foreground/10">
+                        <th className="text-left py-3 px-4 font-paragraph text-primary-foreground/70">Name</th>
+                        <th className="text-left py-3 px-4 font-paragraph text-primary-foreground/70">Employee ID</th>
+                        <th className="text-left py-3 px-4 font-paragraph text-primary-foreground/70">Department</th>
+                        <th className="text-left py-3 px-4 font-paragraph text-primary-foreground/70">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {staff.filter(s => s.role === 'Collector' || s.department === 'Collections').slice(0, 10).map((member) => (
+                        <tr key={member._id} className="border-b border-primary-foreground/5 hover:bg-primary-foreground/5">
+                          <td className="py-3 px-4 font-paragraph text-primary-foreground">{member.fullName}</td>
+                          <td className="py-3 px-4 font-paragraph text-primary-foreground">{member.employeeId}</td>
+                          <td className="py-3 px-4 font-paragraph text-primary-foreground">{member.department}</td>
+                          <td className="py-3 px-4">
+                            <span className={`inline-flex px-2 py-1 rounded text-xs font-paragraph ${
+                              member.status === 'Active' ? 'bg-secondary/20 text-secondary' : 'bg-brandaccent/20 text-brandaccent'
+                            }`}>
+                              {member.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </CardContent>
             </Card>
@@ -477,19 +724,65 @@ export default function ReportsPage() {
                 <p className="font-paragraph text-primary-foreground/70">
                   Deferred income tracking and recognition schedule
                 </p>
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-3 gap-4">
                   <Button
+                    onClick={() => {
+                      const deferredData = loans.map(l => ({
+                        loanNumber: l.loanNumber,
+                        principalAmount: l.principalAmount,
+                        interestRate: l.interestRate,
+                        deferredIncome: (l.principalAmount || 0) * ((l.interestRate || 0) / 100)
+                      }));
+                      downloadCSV(deferredData, 'deferred_income_report');
+                    }}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
                     <Download className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">Export Deferred</span>
+                    <span className="font-paragraph text-sm">Export CSV</span>
                   </Button>
                   <Button
+                    onClick={() => {
+                      const deferredData = loans.map(l => ({
+                        loanNumber: l.loanNumber,
+                        principalAmount: l.principalAmount,
+                        interestRate: l.interestRate,
+                        deferredIncome: (l.principalAmount || 0) * ((l.interestRate || 0) / 100)
+                      }));
+                      exportToExcel(deferredData, 'Deferred Income Report');
+                    }}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
-                    <BarChart3 className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">View Analytics</span>
+                    <FileText className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Excel</span>
                   </Button>
+                  <Button
+                    onClick={() => {
+                      const deferredData = loans.map(l => ({
+                        loanNumber: l.loanNumber,
+                        principalAmount: l.principalAmount,
+                        interestRate: l.interestRate,
+                        deferredIncome: (l.principalAmount || 0) * ((l.interestRate || 0) / 100)
+                      }));
+                      exportToPDF(deferredData, 'Deferred Income Report');
+                    }}
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Printer className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Print/PDF</span>
+                  </Button>
+                </div>
+                <div className="mt-6 p-4 bg-primary-foreground/5 rounded-lg">
+                  <h4 className="font-heading text-secondary mb-3">Deferred Income Summary</h4>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-primary-foreground/60 text-sm">Total Deferred Income</p>
+                      <p className="text-2xl font-bold text-secondary">ZMW {loans.reduce((sum, l) => sum + ((l.principalAmount || 0) * ((l.interestRate || 0) / 100)), 0).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-primary-foreground/60 text-sm">Recognized Income</p>
+                      <p className="text-2xl font-bold text-primary-foreground">ZMW {repayments.reduce((sum, r) => sum + (r.interestAmount || 0), 0).toLocaleString()}</p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -507,18 +800,66 @@ export default function ReportsPage() {
                 <p className="font-paragraph text-primary-foreground/70">
                   Monthly deferred income analysis and trends
                 </p>
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-3 gap-4">
                   <Button
+                    onClick={() => {
+                      const monthlyData = Array.from({ length: 12 }, (_, i) => {
+                        const month = new Date(new Date().getFullYear(), i, 1);
+                        return {
+                          month: format(month, 'MMMM yyyy'),
+                          deferredIncome: loans.reduce((sum, l) => sum + ((l.principalAmount || 0) * ((l.interestRate || 0) / 100)), 0) / 12,
+                          recognizedIncome: repayments.filter(r => {
+                            const rDate = new Date(r.repaymentDate || '');
+                            return rDate.getMonth() === i;
+                          }).reduce((sum, r) => sum + (r.interestAmount || 0), 0)
+                        };
+                      });
+                      downloadCSV(monthlyData, 'deferred_income_monthly');
+                    }}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
                     <Download className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">Export Monthly</span>
+                    <span className="font-paragraph text-sm">Export CSV</span>
                   </Button>
                   <Button
+                    onClick={() => {
+                      const monthlyData = Array.from({ length: 12 }, (_, i) => {
+                        const month = new Date(new Date().getFullYear(), i, 1);
+                        return {
+                          month: format(month, 'MMMM yyyy'),
+                          deferredIncome: loans.reduce((sum, l) => sum + ((l.principalAmount || 0) * ((l.interestRate || 0) / 100)), 0) / 12,
+                          recognizedIncome: repayments.filter(r => {
+                            const rDate = new Date(r.repaymentDate || '');
+                            return rDate.getMonth() === i;
+                          }).reduce((sum, r) => sum + (r.interestAmount || 0), 0)
+                        };
+                      });
+                      exportToExcel(monthlyData, 'Deferred Income Monthly Report');
+                    }}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
-                    <BarChart3 className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">View Analytics</span>
+                    <FileText className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Excel</span>
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      const monthlyData = Array.from({ length: 12 }, (_, i) => {
+                        const month = new Date(new Date().getFullYear(), i, 1);
+                        return {
+                          month: format(month, 'MMMM yyyy'),
+                          deferredIncome: loans.reduce((sum, l) => sum + ((l.principalAmount || 0) * ((l.interestRate || 0) / 100)), 0) / 12,
+                          recognizedIncome: repayments.filter(r => {
+                            const rDate = new Date(r.repaymentDate || '');
+                            return rDate.getMonth() === i;
+                          }).reduce((sum, r) => sum + (r.interestAmount || 0), 0)
+                        };
+                      });
+                      exportToPDF(monthlyData, 'Deferred Income Monthly Report');
+                    }}
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Printer className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Print/PDF</span>
                   </Button>
                 </div>
               </CardContent>
@@ -537,20 +878,45 @@ export default function ReportsPage() {
                 <p className="font-paragraph text-primary-foreground/70">
                   Loan disbursement tracking and analysis
                 </p>
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-3 gap-4">
                   <Button
                     onClick={() => downloadCSV(loans, 'disbursement_report')}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
                     <Download className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">Export Disbursements</span>
+                    <span className="font-paragraph text-sm">Export CSV</span>
                   </Button>
                   <Button
+                    onClick={() => exportToExcel(loans, 'Disbursement Report')}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
-                    <BarChart3 className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">View Analytics</span>
+                    <FileText className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Excel</span>
                   </Button>
+                  <Button
+                    onClick={() => exportToPDF(loans, 'Disbursement Report')}
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Printer className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Print/PDF</span>
+                  </Button>
+                </div>
+                <div className="mt-6 p-4 bg-primary-foreground/5 rounded-lg">
+                  <h4 className="font-heading text-secondary mb-3">Disbursement Summary</h4>
+                  <div className="grid sm:grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-primary-foreground/60 text-sm">Total Disbursed</p>
+                      <p className="text-2xl font-bold text-secondary">ZMW {totalDisbursed.toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-primary-foreground/60 text-sm">Number of Loans</p>
+                      <p className="text-2xl font-bold text-primary-foreground">{loans.length}</p>
+                    </div>
+                    <div>
+                      <p className="text-primary-foreground/60 text-sm">Average Loan Size</p>
+                      <p className="text-2xl font-bold text-primary-foreground">ZMW {(totalDisbursed / loans.length).toLocaleString()}</p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -568,19 +934,65 @@ export default function ReportsPage() {
                 <p className="font-paragraph text-primary-foreground/70">
                   Loan fees and charges analysis
                 </p>
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-3 gap-4">
                   <Button
+                    onClick={() => {
+                      const feesData = loans.map(l => ({
+                        loanNumber: l.loanNumber,
+                        principalAmount: l.principalAmount,
+                        processingFee: (l.principalAmount || 0) * 0.02,
+                        totalFees: (l.principalAmount || 0) * 0.02
+                      }));
+                      downloadCSV(feesData, 'fees_report');
+                    }}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
                     <Download className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">Export Fees</span>
+                    <span className="font-paragraph text-sm">Export CSV</span>
                   </Button>
                   <Button
+                    onClick={() => {
+                      const feesData = loans.map(l => ({
+                        loanNumber: l.loanNumber,
+                        principalAmount: l.principalAmount,
+                        processingFee: (l.principalAmount || 0) * 0.02,
+                        totalFees: (l.principalAmount || 0) * 0.02
+                      }));
+                      exportToExcel(feesData, 'Fees Report');
+                    }}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
-                    <BarChart3 className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">View Analytics</span>
+                    <FileText className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Excel</span>
                   </Button>
+                  <Button
+                    onClick={() => {
+                      const feesData = loans.map(l => ({
+                        loanNumber: l.loanNumber,
+                        principalAmount: l.principalAmount,
+                        processingFee: (l.principalAmount || 0) * 0.02,
+                        totalFees: (l.principalAmount || 0) * 0.02
+                      }));
+                      exportToPDF(feesData, 'Fees Report');
+                    }}
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Printer className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Print/PDF</span>
+                  </Button>
+                </div>
+                <div className="mt-6 p-4 bg-primary-foreground/5 rounded-lg">
+                  <h4 className="font-heading text-secondary mb-3">Fees Summary</h4>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-primary-foreground/60 text-sm">Total Fees Collected</p>
+                      <p className="text-2xl font-bold text-secondary">ZMW {(loans.reduce((sum, l) => sum + ((l.principalAmount || 0) * 0.02), 0)).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-primary-foreground/60 text-sm">Average Fee per Loan</p>
+                      <p className="text-2xl font-bold text-primary-foreground">ZMW {((loans.reduce((sum, l) => sum + ((l.principalAmount || 0) * 0.02), 0)) / loans.length).toLocaleString()}</p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -598,19 +1010,50 @@ export default function ReportsPage() {
                 <p className="font-paragraph text-primary-foreground/70">
                   Loan officer performance and portfolio metrics
                 </p>
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-3 gap-4">
                   <Button
+                    onClick={() => downloadCSV(staff.filter(s => s.role === 'Loan Officer' || s.department === 'Lending'), 'loan_officers_report')}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
                     <Download className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">Export Officers</span>
+                    <span className="font-paragraph text-sm">Export CSV</span>
                   </Button>
                   <Button
+                    onClick={() => exportToExcel(staff.filter(s => s.role === 'Loan Officer' || s.department === 'Lending'), 'Loan Officer Report')}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
-                    <BarChart3 className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">View Analytics</span>
+                    <FileText className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Excel</span>
                   </Button>
+                  <Button
+                    onClick={() => exportToPDF(staff.filter(s => s.role === 'Loan Officer' || s.department === 'Lending'), 'Loan Officer Report')}
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Printer className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Print/PDF</span>
+                  </Button>
+                </div>
+                <div className="overflow-x-auto mt-6">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-primary-foreground/10">
+                        <th className="text-left py-3 px-4 font-paragraph text-primary-foreground/70">Name</th>
+                        <th className="text-left py-3 px-4 font-paragraph text-primary-foreground/70">Employee ID</th>
+                        <th className="text-left py-3 px-4 font-paragraph text-primary-foreground/70">Department</th>
+                        <th className="text-left py-3 px-4 font-paragraph text-primary-foreground/70">Date Hired</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {staff.filter(s => s.role === 'Loan Officer' || s.department === 'Lending').slice(0, 10).map((member) => (
+                        <tr key={member._id} className="border-b border-primary-foreground/5 hover:bg-primary-foreground/5">
+                          <td className="py-3 px-4 font-paragraph text-primary-foreground">{member.fullName}</td>
+                          <td className="py-3 px-4 font-paragraph text-primary-foreground">{member.employeeId}</td>
+                          <td className="py-3 px-4 font-paragraph text-primary-foreground">{member.department}</td>
+                          <td className="py-3 px-4 font-paragraph text-primary-foreground">{member.dateHired ? format(new Date(member.dateHired), 'MMM d, yyyy') : '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </CardContent>
             </Card>
@@ -628,19 +1071,58 @@ export default function ReportsPage() {
                 <p className="font-paragraph text-primary-foreground/70">
                   Loan product performance and portfolio analysis
                 </p>
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-3 gap-4">
                   <Button
+                    onClick={() => downloadCSV(products, 'loan_products_report')}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
                     <Download className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">Export Products</span>
+                    <span className="font-paragraph text-sm">Export CSV</span>
                   </Button>
                   <Button
+                    onClick={() => exportToExcel(products, 'Loan Product Report')}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
-                    <BarChart3 className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">View Analytics</span>
+                    <FileText className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Excel</span>
                   </Button>
+                  <Button
+                    onClick={() => exportToPDF(products, 'Loan Product Report')}
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Printer className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Print/PDF</span>
+                  </Button>
+                </div>
+                <div className="overflow-x-auto mt-6">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-primary-foreground/10">
+                        <th className="text-left py-3 px-4 font-paragraph text-primary-foreground/70">Product Name</th>
+                        <th className="text-left py-3 px-4 font-paragraph text-primary-foreground/70">Interest Rate</th>
+                        <th className="text-left py-3 px-4 font-paragraph text-primary-foreground/70">Min Amount</th>
+                        <th className="text-left py-3 px-4 font-paragraph text-primary-foreground/70">Max Amount</th>
+                        <th className="text-left py-3 px-4 font-paragraph text-primary-foreground/70">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {products.slice(0, 10).map((product) => (
+                        <tr key={product._id} className="border-b border-primary-foreground/5 hover:bg-primary-foreground/5">
+                          <td className="py-3 px-4 font-paragraph text-primary-foreground">{product.productName}</td>
+                          <td className="py-3 px-4 font-paragraph text-primary-foreground">{product.interestRate}%</td>
+                          <td className="py-3 px-4 font-paragraph text-primary-foreground">ZMW {product.minLoanAmount?.toLocaleString()}</td>
+                          <td className="py-3 px-4 font-paragraph text-primary-foreground">ZMW {product.maxLoanAmount?.toLocaleString()}</td>
+                          <td className="py-3 px-4">
+                            <span className={`inline-flex px-2 py-1 rounded text-xs font-paragraph ${
+                              product.isActive ? 'bg-secondary/20 text-secondary' : 'bg-brandaccent/20 text-brandaccent'
+                            }`}>
+                              {product.isActive ? 'Active' : 'Inactive'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </CardContent>
             </Card>
@@ -658,18 +1140,60 @@ export default function ReportsPage() {
                 <p className="font-paragraph text-primary-foreground/70">
                   Outstanding balance trends and month-on-month comparison
                 </p>
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-3 gap-4">
                   <Button
+                    onClick={() => {
+                      const monthlyBalance = Array.from({ length: 12 }, (_, i) => {
+                        const month = new Date(new Date().getFullYear(), i, 1);
+                        return {
+                          month: format(month, 'MMMM yyyy'),
+                          outstandingBalance: totalOutstanding,
+                          principalAmount: totalDisbursed,
+                          percentageOutstanding: ((totalOutstanding / totalDisbursed) * 100).toFixed(2)
+                        };
+                      });
+                      downloadCSV(monthlyBalance, 'outstanding_balance_monthly');
+                    }}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
                     <Download className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">Export Balance</span>
+                    <span className="font-paragraph text-sm">Export CSV</span>
                   </Button>
                   <Button
+                    onClick={() => {
+                      const monthlyBalance = Array.from({ length: 12 }, (_, i) => {
+                        const month = new Date(new Date().getFullYear(), i, 1);
+                        return {
+                          month: format(month, 'MMMM yyyy'),
+                          outstandingBalance: totalOutstanding,
+                          principalAmount: totalDisbursed,
+                          percentageOutstanding: ((totalOutstanding / totalDisbursed) * 100).toFixed(2)
+                        };
+                      });
+                      exportToExcel(monthlyBalance, 'Month on Month Outstanding Balance Report');
+                    }}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
-                    <BarChart3 className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">View Analytics</span>
+                    <FileText className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Excel</span>
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      const monthlyBalance = Array.from({ length: 12 }, (_, i) => {
+                        const month = new Date(new Date().getFullYear(), i, 1);
+                        return {
+                          month: format(month, 'MMMM yyyy'),
+                          outstandingBalance: totalOutstanding,
+                          principalAmount: totalDisbursed,
+                          percentageOutstanding: ((totalOutstanding / totalDisbursed) * 100).toFixed(2)
+                        };
+                      });
+                      exportToPDF(monthlyBalance, 'Month on Month Outstanding Balance Report');
+                    }}
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Printer className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Print/PDF</span>
                   </Button>
                 </div>
               </CardContent>
@@ -688,19 +1212,74 @@ export default function ReportsPage() {
                 <p className="font-paragraph text-primary-foreground/70">
                   Interest income trends and month-on-month comparison
                 </p>
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-3 gap-4">
                   <Button
+                    onClick={() => {
+                      const monthlyIncome = Array.from({ length: 12 }, (_, i) => {
+                        return {
+                          month: format(new Date(new Date().getFullYear(), i, 1), 'MMMM yyyy'),
+                          interestIncome: repayments.filter(r => {
+                            const rDate = new Date(r.repaymentDate || '');
+                            return rDate.getMonth() === i;
+                          }).reduce((sum, r) => sum + (r.interestAmount || 0), 0)
+                        };
+                      });
+                      downloadCSV(monthlyIncome, 'interest_income_monthly');
+                    }}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
                     <Download className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">Export Income</span>
+                    <span className="font-paragraph text-sm">Export CSV</span>
                   </Button>
                   <Button
+                    onClick={() => {
+                      const monthlyIncome = Array.from({ length: 12 }, (_, i) => {
+                        return {
+                          month: format(new Date(new Date().getFullYear(), i, 1), 'MMMM yyyy'),
+                          interestIncome: repayments.filter(r => {
+                            const rDate = new Date(r.repaymentDate || '');
+                            return rDate.getMonth() === i;
+                          }).reduce((sum, r) => sum + (r.interestAmount || 0), 0)
+                        };
+                      });
+                      exportToExcel(monthlyIncome, 'Month on Month Interest Income Report');
+                    }}
                     className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
                   >
-                    <BarChart3 className="w-6 h-6" />
-                    <span className="font-paragraph text-sm">View Analytics</span>
+                    <FileText className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Excel</span>
                   </Button>
+                  <Button
+                    onClick={() => {
+                      const monthlyIncome = Array.from({ length: 12 }, (_, i) => {
+                        return {
+                          month: format(new Date(new Date().getFullYear(), i, 1), 'MMMM yyyy'),
+                          interestIncome: repayments.filter(r => {
+                            const rDate = new Date(r.repaymentDate || '');
+                            return rDate.getMonth() === i;
+                          }).reduce((sum, r) => sum + (r.interestAmount || 0), 0)
+                        };
+                      });
+                      exportToPDF(monthlyIncome, 'Month on Month Interest Income Report');
+                    }}
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Printer className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Print/PDF</span>
+                  </Button>
+                </div>
+                <div className="mt-6 p-4 bg-primary-foreground/5 rounded-lg">
+                  <h4 className="font-heading text-secondary mb-3">Interest Income Summary</h4>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-primary-foreground/60 text-sm">Total Interest Income</p>
+                      <p className="text-2xl font-bold text-secondary">ZMW {repayments.reduce((sum, r) => sum + (r.interestAmount || 0), 0).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-primary-foreground/60 text-sm">Average Monthly Income</p>
+                      <p className="text-2xl font-bold text-primary-foreground">ZMW {(repayments.reduce((sum, r) => sum + (r.interestAmount || 0), 0) / 12).toLocaleString()}</p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
