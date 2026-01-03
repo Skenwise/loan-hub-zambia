@@ -19,7 +19,11 @@ import {
   ArrowRight,
   Activity,
   Globe,
-  Server
+  Server,
+  Zap,
+  Target,
+  Award,
+  Layers
 } from 'lucide-react';
 import { motion, useScroll, useTransform, useSpring, useInView } from 'framer-motion';
 
@@ -80,6 +84,29 @@ const COMPLIANCE_ITEMS = [
   'Automated provisioning calculations',
   'Comprehensive audit trail and reporting',
   'Data security and privacy controls'
+];
+
+const BENEFITS = [
+  {
+    icon: Zap,
+    title: 'Lightning Fast',
+    description: 'Process loans in minutes, not days. Real-time calculations and instant approvals.'
+  },
+  {
+    icon: Target,
+    title: 'Precision Risk',
+    description: 'Advanced algorithms identify risk patterns with surgical accuracy.'
+  },
+  {
+    icon: Award,
+    title: 'Award-Winning',
+    description: 'Built on industry best practices and regulatory excellence.'
+  },
+  {
+    icon: Layers,
+    title: 'Fully Integrated',
+    description: 'Seamless integration with your existing systems and workflows.'
+  }
 ];
 
 // --- Utility Components ---
@@ -186,8 +213,9 @@ export default function HomePage() {
       <section className="relative w-full min-h-[90vh] flex items-center pt-20 overflow-hidden">
         {/* Background Elements */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 right-0 w-[60vw] h-[60vw] bg-brandaccent/5 rounded-full blur-[120px] translate-x-1/3 -translate-y-1/4" />
-          <div className="absolute bottom-0 left-0 w-[40vw] h-[40vw] bg-secondary/5 rounded-full blur-[100px] -translate-x-1/3 translate-y-1/4" />
+          <div className="absolute top-0 right-0 w-[70vw] h-[70vw] bg-secondary/8 rounded-full blur-[150px] translate-x-1/4 -translate-y-1/3" />
+          <div className="absolute bottom-0 left-0 w-[50vw] h-[50vw] bg-brandaccent/8 rounded-full blur-[130px] -translate-x-1/4 translate-y-1/3" />
+          <div className="absolute top-1/2 left-1/2 w-[30vw] h-[30vw] bg-secondary/5 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2" />
         </div>
 
         <div className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 relative z-10">
@@ -294,7 +322,7 @@ export default function HomePage() {
       </section>
 
       {/* --- TICKER SECTION --- */}
-      <div className="w-full border-y border-primary-foreground/5 bg-primary-foreground/5 py-6 overflow-hidden">
+      <div className="w-full border-y border-primary-foreground/5 bg-gradient-to-r from-primary via-primary-foreground/[0.02] to-primary py-8 overflow-hidden">
         <div className="flex whitespace-nowrap">
           <motion.div 
             className="flex gap-16 items-center px-8"
@@ -303,18 +331,56 @@ export default function HomePage() {
           >
             {[...Array(2)].map((_, i) => (
               <React.Fragment key={i}>
-                <span className="text-2xl font-heading font-bold text-primary-foreground/30 uppercase tracking-widest">Bank of Zambia Compliant</span>
-                <span className="text-2xl font-heading font-bold text-primary-foreground/30 uppercase tracking-widest">IFRS 9 Ready</span>
-                <span className="text-2xl font-heading font-bold text-primary-foreground/30 uppercase tracking-widest">Secure Lending</span>
-                <span className="text-2xl font-heading font-bold text-primary-foreground/30 uppercase tracking-widest">Real-time Analytics</span>
-                <span className="text-2xl font-heading font-bold text-primary-foreground/30 uppercase tracking-widest">Automated Provisioning</span>
+                <span className="text-lg font-heading font-bold text-secondary/80 uppercase tracking-widest">✓ Bank of Zambia Compliant</span>
+                <span className="text-lg font-heading font-bold text-secondary/80 uppercase tracking-widest">✓ IFRS 9 Ready</span>
+                <span className="text-lg font-heading font-bold text-secondary/80 uppercase tracking-widest">✓ Secure Lending</span>
+                <span className="text-lg font-heading font-bold text-secondary/80 uppercase tracking-widest">✓ Real-time Analytics</span>
+                <span className="text-lg font-heading font-bold text-secondary/80 uppercase tracking-widest">✓ Automated Provisioning</span>
               </React.Fragment>
             ))}
           </motion.div>
         </div>
       </div>
 
-      {/* --- FEATURES GRID (Bento Style) --- */}
+      {/* --- BENEFITS SECTION (NEW) --- */}
+      <section className="w-full py-32 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/4 right-0 w-[50vw] h-[50vw] bg-secondary/5 rounded-full blur-[150px] translate-x-1/2" />
+          <div className="absolute bottom-1/4 left-0 w-[40vw] h-[40vw] bg-brandaccent/5 rounded-full blur-[120px] -translate-x-1/2" />
+        </div>
+
+        <div className="max-w-[120rem] mx-auto px-6 lg:px-12 relative z-10">
+          <AnimatedReveal className="mb-20 text-center">
+            <h2 className="font-heading text-5xl lg:text-7xl font-bold mb-6">
+              Why <span className="text-secondary">LendZm</span> Wins
+            </h2>
+            <p className="text-xl text-primary-foreground/70 max-w-2xl mx-auto">
+              Purpose-built for modern lending institutions that demand speed, accuracy, and compliance.
+            </p>
+          </AnimatedReveal>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {BENEFITS.map((benefit, index) => (
+              <AnimatedReveal key={index} delay={index * 0.1} className="group">
+                <div className="h-full p-8 rounded-2xl bg-gradient-to-br from-primary-foreground/[0.08] to-primary-foreground/[0.02] border border-primary-foreground/15 hover:border-secondary/40 transition-all duration-500 flex flex-col relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-secondary/10 rounded-bl-full -translate-y-12 translate-x-12 group-hover:translate-x-6 group-hover:-translate-y-6 transition-transform duration-500" />
+                  
+                  <div className="w-12 h-12 rounded-xl bg-secondary/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 text-secondary">
+                    <benefit.icon className="w-6 h-6" />
+                  </div>
+                  
+                  <h3 className="font-heading text-xl font-bold mb-3 group-hover:text-secondary transition-colors">
+                    {benefit.title}
+                  </h3>
+                  <p className="text-primary-foreground/70 leading-relaxed">
+                    {benefit.description}
+                  </p>
+                </div>
+              </AnimatedReveal>
+            ))}
+          </div>
+        </div>
+      </section>
       <section className="w-full py-32 relative">
         <div className="max-w-[120rem] mx-auto px-6 lg:px-12">
           <AnimatedReveal className="mb-20 max-w-4xl">
