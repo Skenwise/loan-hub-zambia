@@ -126,6 +126,15 @@ export default function ReportsPage() {
             <TabsTrigger value="boz" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
               BoZ Classification
             </TabsTrigger>
+            <TabsTrigger value="advanced" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+              Advanced Reports
+            </TabsTrigger>
+            <TabsTrigger value="comprehensive" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+              Comprehensive
+            </TabsTrigger>
+            <TabsTrigger value="disbursements" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+              Disbursements
+            </TabsTrigger>
             <TabsTrigger value="exports" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
               Data Exports
             </TabsTrigger>
@@ -445,6 +454,93 @@ export default function ReportsPage() {
                     </table>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="advanced" className="space-y-6">
+            <Card className="bg-primary border-primary-foreground/10">
+              <CardHeader>
+                <CardTitle className="font-heading text-2xl text-secondary">
+                  Advanced Reports
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="font-paragraph text-primary-foreground/70">
+                  Advanced reporting features for detailed analysis and custom metrics
+                </p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <BarChart3 className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Portfolio Analysis</span>
+                  </Button>
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <TrendingUp className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Trend Analysis</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="comprehensive" className="space-y-6">
+            <Card className="bg-primary border-primary-foreground/10">
+              <CardHeader>
+                <CardTitle className="font-heading text-2xl text-secondary">
+                  Comprehensive Reports
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="font-paragraph text-primary-foreground/70">
+                  Complete portfolio reports combining all metrics and compliance data
+                </p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <FileText className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Full Portfolio Report</span>
+                  </Button>
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Download className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Export Comprehensive</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="disbursements" className="space-y-6">
+            <Card className="bg-primary border-primary-foreground/10">
+              <CardHeader>
+                <CardTitle className="font-heading text-2xl text-secondary">
+                  Disbursement Reports
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="font-paragraph text-primary-foreground/70">
+                  Detailed disbursement tracking and analysis
+                </p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <DollarSign className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Disbursement Summary</span>
+                  </Button>
+                  <Button
+                    className="bg-secondary text-primary hover:bg-secondary/90 h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <BarChart3 className="w-6 h-6" />
+                    <span className="font-paragraph text-sm">Disbursement Analytics</span>
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
