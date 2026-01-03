@@ -1,550 +1,542 @@
-/**
- * Comprehensive Reports Page
- * Central hub for all operational, financial, and regulatory reports
- */
-
-import { useEffect, useState } from 'react';
-import { useMember } from '@/integrations';
-import { useOrganisationStore } from '@/store/organisationStore';
-import { ReportingService } from '@/services';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import {
-  BarChart3,
-  PieChart,
-  TrendingUp,
-  Users,
-  AlertTriangle,
-  FileText,
-  Download,
-  RefreshCw,
-  Filter,
-  Calendar,
-  ArrowRight,
-  Clock,
-  CheckCircle2,
-} from 'lucide-react';
-import { motion } from 'framer-motion';
+import React, { useState, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Download, Printer, FileText } from 'lucide-react';
+import { ReportExportService } from '@/services/ReportExportService';
+import { BaseCrudService } from '@/integrations';
+import { Loans, Repayments, CustomerProfiles, LoanProducts, Organizations } from '@/entities';
+import DelinquencyAgingReport from '@/components/reports/DelinquencyAgingReport';
+import InterestIncomeReport from '@/components/reports/InterestIncomeReport';
+import WriteOffSummaryReport from '@/components/reports/WriteOffSummaryReport';
+import IFRS9StagingReport from '@/components/reports/IFRS9StagingReport';
+import ECLAnalysisReport from '@/components/reports/ECLAnalysisReport';
+import ComplianceSummaryReport from '@/components/reports/ComplianceSummaryReport';
+import AuditTrailReport from '@/components/reports/AuditTrailReport';
+import RiskAssessmentReport from '@/components/reports/RiskAssessmentReport';
 
-interface ReportCategory {
-  id: string;
-  name: string;
-  description: string;
-  icon: React.ReactNode;
-  reports: Report[];
+interface ReportFilters {
+  startDate: string;
+  endDate: string;
+  branch: string;
+  product: string;
+  status: string;
 }
 
-interface Report {
+interface ReportData {
   id: string;
-  name: string;
-  description: string;
-  type: 'OPERATIONAL' | 'FINANCIAL' | 'RISK' | 'REGULATORY';
-  lastGenerated?: Date;
-  frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
+  [key: string]: any;
 }
 
 export default function ComprehensiveReportsPage() {
-  const { member } = useMember();
-  const { currentOrganisation } = useOrganisationStore();
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
-  const [reportData, setReportData] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState('operational');
+  const [filters, setFilters] = useState<ReportFilters>({
+    startDate: '',
+    endDate: '',
+    branch: '',
+    product: '',
+    status: '',
+  });
 
-  const reportCategories: ReportCategory[] = [
-    {
-      id: 'operational',
-      name: 'Operational Reports',
-      description: 'Loan portfolio, repayments, and collections',
-      icon: <BarChart3 className="w-6 h-6" />,
-      reports: [
-        {
-          id: 'loan-portfolio',
-          name: 'Loan Portfolio Report',
-          description: 'Active, approved, disbursed, closed, and written-off loans',
-          type: 'OPERATIONAL',
-          frequency: 'DAILY',
-        },
-        {
-          id: 'repayment-collections',
-          name: 'Repayment & Collections Report',
-          description: 'Scheduled vs actual repayments, collections by channel',
-          type: 'OPERATIONAL',
-          frequency: 'DAILY',
-        },
-        {
-          id: 'arrears-npl',
-          name: 'Arrears & NPL Report',
-          description: 'Aging analysis, portfolio at risk, NPL summary',
-          type: 'OPERATIONAL',
-          frequency: 'DAILY',
-        },
-      ],
-    },
-    {
-      id: 'customer',
-      name: 'Customer Reports',
-      description: 'Customer-centric loan and compliance data',
-      icon: <Users className="w-6 h-6" />,
-      reports: [
-        {
-          id: 'customer-loans',
-          name: 'Customer Loan Report',
-          description: 'Customer loan history, outstanding balances, repayment history',
-          type: 'OPERATIONAL',
-          frequency: 'MONTHLY',
-        },
-        {
-          id: 'customer-compliance',
-          name: 'Customer Compliance Report',
-          description: 'KYC completion status, expiring IDs, missing documents',
-          type: 'REGULATORY',
-          frequency: 'MONTHLY',
-        },
-      ],
-    },
-    {
-      id: 'risk',
-      name: 'Risk & Credit Reports',
-      description: 'Credit analysis, exposure, and collateral coverage',
-      icon: <AlertTriangle className="w-6 h-6" />,
-      reports: [
-        {
-          id: 'credit-risk',
-          name: 'Credit & Risk Report',
-          description: 'Credit score distribution, approval rates, exposure analysis',
-          type: 'RISK',
-          frequency: 'MONTHLY',
-        },
-        {
-          id: 'large-exposures',
-          name: 'Large Exposures Report',
-          description: 'Customers with exposure >5% of portfolio',
-          type: 'RISK',
-          frequency: 'MONTHLY',
-        },
-      ],
-    },
-    {
-      id: 'financial',
-      name: 'Financial Reports',
-      description: 'Accounting and financial statements',
-      icon: <TrendingUp className="w-6 h-6" />,
-      reports: [
-        {
-          id: 'trial-balance',
-          name: 'Trial Balance',
-          description: 'General ledger account balances',
-          type: 'FINANCIAL',
-          frequency: 'MONTHLY',
-        },
-        {
-          id: 'income-statement',
-          name: 'Income Statement',
-          description: 'Revenue, expenses, and net income',
-          type: 'FINANCIAL',
-          frequency: 'MONTHLY',
-        },
-        {
-          id: 'balance-sheet',
-          name: 'Balance Sheet',
-          description: 'Assets, liabilities, and equity',
-          type: 'FINANCIAL',
-          frequency: 'MONTHLY',
-        },
-      ],
-    },
-    {
-      id: 'ecl',
-      name: 'ECL & Compliance',
-      description: 'IFRS 9 Expected Credit Loss calculations',
-      icon: <PieChart className="w-6 h-6" />,
-      reports: [
-        {
-          id: 'ecl-summary',
-          name: 'ECL Summary Report',
-          description: 'Stage 1, 2, 3 ECL calculations and impairment charges',
-          type: 'REGULATORY',
-          frequency: 'MONTHLY',
-        },
-        {
-          id: 'ecl-movement',
-          name: 'ECL Movement Report',
-          description: 'Month-on-month ECL changes and drivers',
-          type: 'REGULATORY',
-          frequency: 'MONTHLY',
-        },
-      ],
-    },
-  ];
+  const [reportData, setReportData] = useState<ReportData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [activeReport, setActiveReport] = useState('portfolio-summary');
 
-  const handleGenerateReport = async (report: Report) => {
+  // Fetch data for reports
+  const fetchReportData = async (reportType: string) => {
+    setLoading(true);
     try {
-      setIsLoading(true);
-      setSelectedReport(report);
+      let data: ReportData[] = [];
 
-      // Generate appropriate report
-      let data;
-      switch (report.id) {
-        case 'loan-portfolio':
-          data = await ReportingService.generateLoanPortfolioReport(
-            currentOrganisation?._id || ''
-          );
+      switch (reportType) {
+        case 'portfolio-summary':
+          const loans = await BaseCrudService.getAll<Loans>('loans');
+          data = loans.items.map(loan => ({
+            id: loan._id,
+            loanNumber: loan.loanNumber,
+            principalAmount: loan.principalAmount,
+            outstandingBalance: loan.outstandingBalance,
+            interestRate: loan.interestRate,
+            loanStatus: loan.loanStatus,
+            disbursementDate: loan.disbursementDate,
+          }));
           break;
-        case 'repayment-collections':
-          data = await ReportingService.generateRepaymentCollectionsReport(
-            currentOrganisation?._id || '',
-            new Date().toISOString().split('T')[0]
-          );
+
+        case 'repayment-analysis':
+          const repayments = await BaseCrudService.getAll<Repayments>('repayments');
+          data = repayments.items.map(rep => ({
+            id: rep._id,
+            transactionReference: rep.transactionReference,
+            loanId: rep.loanId,
+            repaymentDate: rep.repaymentDate,
+            totalAmountPaid: rep.totalAmountPaid,
+            principalAmount: rep.principalAmount,
+            interestAmount: rep.interestAmount,
+            paymentMethod: rep.paymentMethod,
+          }));
           break;
-        case 'arrears-npl':
-          data = await ReportingService.generateArrearsNPLReport(
-            currentOrganisation?._id || ''
-          );
+
+        case 'customer-performance':
+          const customers = await BaseCrudService.getAll<CustomerProfiles>('customers');
+          data = customers.items.map(cust => ({
+            id: cust._id,
+            firstName: cust.firstName,
+            lastName: cust.lastName,
+            emailAddress: cust.emailAddress,
+            phoneNumber: cust.phoneNumber,
+            kycVerificationStatus: cust.kycVerificationStatus,
+            creditScore: cust.creditScore,
+          }));
           break;
-        case 'credit-risk':
-          data = await ReportingService.generateCreditRiskReport(
-            currentOrganisation?._id || ''
-          );
+
+        case 'product-performance':
+          const products = await BaseCrudService.getAll<LoanProducts>('loanproducts');
+          data = products.items.map(prod => ({
+            id: prod._id,
+            productName: prod.productName,
+            productType: prod.productType,
+            interestRate: prod.interestRate,
+            minLoanAmount: prod.minLoanAmount,
+            maxLoanAmount: prod.maxLoanAmount,
+            loanTermMonths: prod.loanTermMonths,
+            processingFee: prod.processingFee,
+            isActive: prod.isActive,
+          }));
           break;
-        case 'ecl-summary':
-          data = await ReportingService.generateECLReport(
-            currentOrganisation?._id || '',
-            new Date().getFullYear().toString()
-          );
+
+        case 'branch-performance':
+          const orgs = await BaseCrudService.getAll<Organizations>('organisations');
+          data = orgs.items.map(org => ({
+            id: org._id,
+            organizationName: org.organizationName,
+            organizationStatus: org.organizationStatus,
+            subscriptionPlanType: org.subscriptionPlanType,
+            creationDate: org.creationDate,
+            contactEmail: org.contactEmail,
+          }));
           break;
+
         default:
-          data = {};
+          data = [];
       }
 
       setReportData(data);
     } catch (error) {
-      console.error('Error generating report:', error);
+      console.error('Error fetching report data:', error);
+      setReportData([]);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleExportCSV = () => {
-    if (!reportData || !selectedReport) return;
+  // Filter data based on selected filters
+  const filteredData = useMemo(() => {
+    let filtered = [...reportData];
 
-    try {
-      const csv = ReportingService.exportToCSV([reportData], Object.keys(reportData));
-      const element = document.createElement('a');
-      element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv));
-      element.setAttribute('download', `${selectedReport.id}-${Date.now()}.csv`);
-      element.style.display = 'none';
-      document.body.appendChild(element);
-      element.click();
-      document.body.removeChild(element);
-    } catch (error) {
-      console.error('Error exporting CSV:', error);
+    if (filters.startDate) {
+      filtered = filtered.filter(item => {
+        const itemDate = new Date(item.disbursementDate || item.repaymentDate || item.creationDate || '');
+        return itemDate >= new Date(filters.startDate);
+      });
+    }
+
+    if (filters.endDate) {
+      filtered = filtered.filter(item => {
+        const itemDate = new Date(item.disbursementDate || item.repaymentDate || item.creationDate || '');
+        return itemDate <= new Date(filters.endDate);
+      });
+    }
+
+    if (filters.status) {
+      filtered = filtered.filter(item => item.loanStatus === filters.status);
+    }
+
+    return filtered;
+  }, [reportData, filters]);
+
+  const handleExport = (format: 'csv' | 'excel' | 'pdf') => {
+    const reportTitles: Record<string, string> = {
+      'portfolio-summary': 'Loan Portfolio Summary Report',
+      'repayment-analysis': 'Repayment Analysis Report',
+      'customer-performance': 'Customer Performance Report',
+      'product-performance': 'Product Performance Report',
+      'branch-performance': 'Branch Performance Report',
+    };
+
+    const columns = getColumnsForReport(activeReport);
+    const title = reportTitles[activeReport] || 'Report';
+
+    const options = {
+      filename: title.replace(/\s+/g, '_').toLowerCase(),
+      title,
+      data: filteredData,
+      columns,
+    };
+
+    if (format === 'csv') {
+      ReportExportService.exportToCSV(options);
+    } else if (format === 'excel') {
+      ReportExportService.exportToExcel(options);
+    } else if (format === 'pdf') {
+      const pdfContent = ReportExportService.generatePDFContent(options);
+      ReportExportService.printReport(pdfContent);
     }
   };
 
-  const handleExportPDF = () => {
-    if (!selectedReport) return;
-    alert('PDF export feature coming soon. Please use CSV export for now.');
+  const getColumnsForReport = (reportType: string) => {
+    const columnMap: Record<string, Array<{ key: string; label: string }>> = {
+      'portfolio-summary': [
+        { key: 'loanNumber', label: 'Loan Number' },
+        { key: 'principalAmount', label: 'Principal Amount' },
+        { key: 'outstandingBalance', label: 'Outstanding Balance' },
+        { key: 'interestRate', label: 'Interest Rate (%)' },
+        { key: 'loanStatus', label: 'Status' },
+        { key: 'disbursementDate', label: 'Disbursement Date' },
+      ],
+      'repayment-analysis': [
+        { key: 'transactionReference', label: 'Transaction Reference' },
+        { key: 'loanId', label: 'Loan ID' },
+        { key: 'repaymentDate', label: 'Repayment Date' },
+        { key: 'totalAmountPaid', label: 'Total Amount Paid' },
+        { key: 'principalAmount', label: 'Principal Amount' },
+        { key: 'interestAmount', label: 'Interest Amount' },
+        { key: 'paymentMethod', label: 'Payment Method' },
+      ],
+      'customer-performance': [
+        { key: 'firstName', label: 'First Name' },
+        { key: 'lastName', label: 'Last Name' },
+        { key: 'emailAddress', label: 'Email' },
+        { key: 'phoneNumber', label: 'Phone' },
+        { key: 'kycVerificationStatus', label: 'KYC Status' },
+        { key: 'creditScore', label: 'Credit Score' },
+      ],
+      'product-performance': [
+        { key: 'productName', label: 'Product Name' },
+        { key: 'productType', label: 'Type' },
+        { key: 'interestRate', label: 'Interest Rate (%)' },
+        { key: 'minLoanAmount', label: 'Min Amount' },
+        { key: 'maxLoanAmount', label: 'Max Amount' },
+        { key: 'loanTermMonths', label: 'Term (Months)' },
+        { key: 'processingFee', label: 'Processing Fee' },
+      ],
+      'branch-performance': [
+        { key: 'organizationName', label: 'Organization' },
+        { key: 'organizationStatus', label: 'Status' },
+        { key: 'subscriptionPlanType', label: 'Plan Type' },
+        { key: 'creationDate', label: 'Creation Date' },
+        { key: 'contactEmail', label: 'Contact Email' },
+      ],
+    };
+
+    return columnMap[reportType] || [];
+  };
+
+  const renderReportContent = () => {
+    if (loading) {
+      return <div className="text-center py-8">Loading report data...</div>;
+    }
+
+    if (filteredData.length === 0) {
+      return <div className="text-center py-8 text-gray-500">No data available for this report</div>;
+    }
+
+    const columns = getColumnsForReport(activeReport);
+
+    return (
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-slate-100">
+              {columns.map(col => (
+                <TableHead key={col.key} className="font-semibold">
+                  {col.label}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredData.map((item, idx) => (
+              <TableRow key={item.id || idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                {columns.map(col => (
+                  <TableCell key={`${item.id}-${col.key}`} className="text-sm">
+                    {formatCellValue(item[col.key])}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    );
+  };
+
+  const formatCellValue = (value: any): string => {
+    if (value === null || value === undefined) return '-';
+    if (typeof value === 'number') return value.toLocaleString('en-US', { maximumFractionDigits: 2 });
+    if (value instanceof Date) return value.toLocaleDateString();
+    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+    return String(value);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <h1 className="text-4xl font-heading font-bold text-primary-foreground mb-2">
-            Comprehensive Reports
-          </h1>
-          <p className="text-primary-foreground/70">
-            Generate operational, financial, and regulatory reports
-          </p>
-        </motion.div>
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">Comprehensive Reports</h1>
+          <p className="text-slate-600">Access detailed financial and operational reports with advanced filtering and export options</p>
+        </div>
 
-        {/* Tabs */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-5 bg-slate-200 mb-8">
-              {reportCategories.map((category) => (
-                <TabsTrigger
-                  key={category.id}
-                  value={category.id}
-                  className="text-slate-900 text-xs md:text-sm"
-                >
-                  {category.name.split(' ')[0]}
-                </TabsTrigger>
-              ))}
+        {/* Filters Card */}
+        <Card className="mb-6 border-slate-200">
+          <CardHeader>
+            <CardTitle className="text-lg">Report Filters</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div>
+                <Label htmlFor="startDate" className="text-sm font-medium mb-2 block">Start Date</Label>
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={filters.startDate}
+                  onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <Label htmlFor="endDate" className="text-sm font-medium mb-2 block">End Date</Label>
+                <Input
+                  id="endDate"
+                  type="date"
+                  value={filters.endDate}
+                  onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <Label htmlFor="branch" className="text-sm font-medium mb-2 block">Branch</Label>
+                <Select value={filters.branch} onValueChange={(value) => setFilters({ ...filters, branch: value })}>
+                  <SelectTrigger id="branch">
+                    <SelectValue placeholder="All Branches" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Branches</SelectItem>
+                    <SelectItem value="branch1">Branch 1</SelectItem>
+                    <SelectItem value="branch2">Branch 2</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="product" className="text-sm font-medium mb-2 block">Product</Label>
+                <Select value={filters.product} onValueChange={(value) => setFilters({ ...filters, product: value })}>
+                  <SelectTrigger id="product">
+                    <SelectValue placeholder="All Products" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Products</SelectItem>
+                    <SelectItem value="product1">Product 1</SelectItem>
+                    <SelectItem value="product2">Product 2</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="status" className="text-sm font-medium mb-2 block">Status</Label>
+                <Select value={filters.status} onValueChange={(value) => setFilters({ ...filters, status: value })}>
+                  <SelectTrigger id="status">
+                    <SelectValue placeholder="All Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="closed">Closed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Reports Tabs */}
+        <Card className="border-slate-200">
+          <Tabs value={activeReport} onValueChange={(value) => {
+            setActiveReport(value);
+            if (['portfolio-summary', 'repayment-analysis', 'customer-performance', 'product-performance', 'branch-performance'].includes(value)) {
+              fetchReportData(value);
+            }
+          }} className="w-full">
+            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-5 gap-1 p-4 bg-slate-100 rounded-lg">
+              <TabsTrigger value="portfolio-summary" className="text-xs lg:text-sm">Portfolio</TabsTrigger>
+              <TabsTrigger value="repayment-analysis" className="text-xs lg:text-sm">Repayment</TabsTrigger>
+              <TabsTrigger value="customer-performance" className="text-xs lg:text-sm">Customers</TabsTrigger>
+              <TabsTrigger value="product-performance" className="text-xs lg:text-sm">Products</TabsTrigger>
+              <TabsTrigger value="branch-performance" className="text-xs lg:text-sm">Branch</TabsTrigger>
             </TabsList>
 
-            {reportCategories.map((category) => (
-              <TabsContent key={category.id} value={category.id} className="space-y-6">
-                {/* Category Header */}
-                <div className="flex items-start gap-4 p-6 rounded-lg bg-slate-50 border border-slate-300">
-                  <div className="text-blue-600">{category.icon}</div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-slate-900">{category.name}</h2>
-                    <p className="text-slate-600 mt-1">{category.description}</p>
-                  </div>
-                </div>
-
-                {/* Reports Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {category.reports.map((report, idx) => (
-                    <motion.div
-                      key={report.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.05 }}
-                    >
-                      <Card className="bg-slate-50 border-slate-300 hover:border-blue-400 transition-all h-full flex flex-col">
-                        <CardHeader>
-                          <CardTitle className="text-slate-900 text-lg">
-                            {report.name}
-                          </CardTitle>
-                          <CardDescription className="text-slate-600">
-                            {report.description}
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex-1 flex flex-col justify-between">
-                          <div className="space-y-2 mb-4">
-                            <div className="flex items-center gap-2">
-                              <Badge className="bg-blue-100 text-blue-700 border-blue-300 border text-xs">
-                                {report.type}
-                              </Badge>
-                              <Badge className="bg-green-100 text-green-700 border-green-300 border text-xs">
-                                {report.frequency}
-                              </Badge>
-                            </div>
-                            {report.lastGenerated && (
-                              <p className="text-xs text-slate-600">
-                                Last generated: {new Date(report.lastGenerated).toLocaleDateString()}
-                              </p>
-                            )}
-                          </div>
-                          <Button
-                            onClick={() => handleGenerateReport(report)}
-                            disabled={isLoading && selectedReport?.id === report.id}
-                            className="w-full bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
-                          >
-                            {isLoading && selectedReport?.id === report.id ? (
-                              <>
-                                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                                Generating...
-                              </>
-                            ) : (
-                              <>
-                                <FileText className="w-4 h-4 mr-2" />
-                                Generate
-                              </>
-                            )}
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  ))}
-                </div>
-              </TabsContent>
-            ))}
-          </Tabs>
-        </motion.div>
-
-        {/* Report Preview */}
-        {selectedReport && reportData && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-8"
-          >
-            <Card className="bg-slate-50 border-slate-300">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-slate-900">{selectedReport.name}</CardTitle>
-                    <CardDescription className="text-slate-600">
-                      Generated on {new Date().toLocaleString()}
-                    </CardDescription>
-                  </div>
-                  <div className="flex gap-2">
+            {/* Basic Reports with Export */}
+            <div className="p-6">
+              {['portfolio-summary', 'repayment-analysis', 'customer-performance', 'product-performance', 'branch-performance'].includes(activeReport) && (
+                <div className="mb-6">
+                  <div className="flex gap-3 mb-6">
                     <Button
-                      onClick={handleExportCSV}
+                      onClick={() => handleExport('csv')}
                       variant="outline"
-                      className="border-slate-300 text-slate-900 hover:bg-slate-100"
+                      className="flex items-center gap-2"
                     >
-                      <Download className="w-4 h-4 mr-2" />
+                      <Download className="w-4 h-4" />
                       Export CSV
                     </Button>
                     <Button
-                      onClick={() => window.print()}
+                      onClick={() => handleExport('excel')}
                       variant="outline"
-                      className="border-slate-300 text-slate-900 hover:bg-slate-100"
+                      className="flex items-center gap-2"
                     >
-                      <FileText className="w-4 h-4 mr-2" />
-                      Print
+                      <FileText className="w-4 h-4" />
+                      Export Excel
+                    </Button>
+                    <Button
+                      onClick={() => handleExport('pdf')}
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
+                      <Printer className="w-4 h-4" />
+                      Print / PDF
                     </Button>
                   </div>
+                  {renderReportContent()}
                 </div>
-              </CardHeader>
-              <CardContent>
-                <ReportPreview report={selectedReport} data={reportData} />
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
+              )}
+            </div>
+
+            <TabsContent value="portfolio-summary" className="p-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-slate-900">Loan Portfolio Summary Report</h3>
+                <p className="text-sm text-slate-600">Overview of all loans in the portfolio with key metrics</p>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="repayment-analysis" className="p-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-slate-900">Repayment Analysis Report</h3>
+                <p className="text-sm text-slate-600">Detailed analysis of repayment transactions and patterns</p>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="customer-performance" className="p-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-slate-900">Customer Performance Report</h3>
+                <p className="text-sm text-slate-600">Customer profiles and performance metrics</p>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="product-performance" className="p-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-slate-900">Product Performance Report</h3>
+                <p className="text-sm text-slate-600">Analysis of loan products and their performance</p>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="branch-performance" className="p-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-slate-900">Branch Performance Report</h3>
+                <p className="text-sm text-slate-600">Performance metrics for each branch/organization</p>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          {/* Specialized Reports */}
+          <div className="border-t border-slate-200">
+            <Tabs defaultValue="delinquency" className="w-full">
+              <TabsList className="grid w-full grid-cols-4 lg:grid-cols-5 gap-1 p-4 bg-slate-100 rounded-lg">
+                <TabsTrigger value="delinquency" className="text-xs lg:text-sm">Delinquency</TabsTrigger>
+                <TabsTrigger value="interest" className="text-xs lg:text-sm">Interest</TabsTrigger>
+                <TabsTrigger value="writeoff" className="text-xs lg:text-sm">Write-Off</TabsTrigger>
+                <TabsTrigger value="ifrs9" className="text-xs lg:text-sm">IFRS9</TabsTrigger>
+                <TabsTrigger value="ecl" className="text-xs lg:text-sm">ECL</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="delinquency" className="p-6">
+                <DelinquencyAgingReport />
+              </TabsContent>
+
+              <TabsContent value="interest" className="p-6">
+                <InterestIncomeReport />
+              </TabsContent>
+
+              <TabsContent value="writeoff" className="p-6">
+                <WriteOffSummaryReport />
+              </TabsContent>
+
+              <TabsContent value="ifrs9" className="p-6">
+                <IFRS9StagingReport />
+              </TabsContent>
+
+              <TabsContent value="ecl" className="p-6">
+                <ECLAnalysisReport />
+              </TabsContent>
+            </Tabs>
+
+            <Tabs defaultValue="compliance" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 gap-1 p-4 bg-slate-100 rounded-lg">
+                <TabsTrigger value="compliance" className="text-xs lg:text-sm">Compliance</TabsTrigger>
+                <TabsTrigger value="audit" className="text-xs lg:text-sm">Audit Trail</TabsTrigger>
+                <TabsTrigger value="risk" className="text-xs lg:text-sm">Risk Assessment</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="compliance" className="p-6">
+                <ComplianceSummaryReport />
+              </TabsContent>
+
+              <TabsContent value="audit" className="p-6">
+                <AuditTrailReport />
+              </TabsContent>
+
+              <TabsContent value="risk" className="p-6">
+                <RiskAssessmentReport />
+              </TabsContent>
+            </Tabs>
+          </div>
+        </Card>
+
+        {/* Summary Statistics */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+          <Card className="border-slate-200">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-slate-600">Total Records</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-slate-900">{filteredData.length}</div>
+            </CardContent>
+          </Card>
+          <Card className="border-slate-200">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-slate-600">Report Generated</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm text-slate-900">{new Date().toLocaleDateString()}</div>
+            </CardContent>
+          </Card>
+          <Card className="border-slate-200">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-slate-600">Data Source</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm text-slate-900">CMS Database</div>
+            </CardContent>
+          </Card>
+          <Card className="border-slate-200">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-slate-600">Export Formats</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm text-slate-900">CSV, Excel, PDF</div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
-}
-
-// Report Preview Component
-function ReportPreview({ report, data }: { report: Report; data: any }) {
-  switch (report.id) {
-    case 'loan-portfolio':
-      return (
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-4 rounded-lg bg-white border border-slate-300">
-              <p className="text-xs text-slate-600 mb-1">Active Loans</p>
-              <p className="text-2xl font-bold text-slate-900">{data.active?.count || 0}</p>
-              <p className="text-xs text-slate-600 mt-1">
-                ZMW {(data.active?.amount || 0).toLocaleString()}
-              </p>
-            </div>
-            <div className="p-4 rounded-lg bg-white border border-slate-300">
-              <p className="text-xs text-slate-600 mb-1">Closed Loans</p>
-              <p className="text-2xl font-bold text-slate-900">{data.closed?.count || 0}</p>
-              <p className="text-xs text-slate-600 mt-1">
-                ZMW {(data.closed?.amount || 0).toLocaleString()}
-              </p>
-            </div>
-            <div className="p-4 rounded-lg bg-white border border-slate-300">
-              <p className="text-xs text-slate-600 mb-1">Written Off</p>
-              <p className="text-2xl font-bold text-red-600">{data.writtenOff?.count || 0}</p>
-              <p className="text-xs text-slate-600 mt-1">
-                ZMW {(data.writtenOff?.amount || 0).toLocaleString()}
-              </p>
-            </div>
-            <div className="p-4 rounded-lg bg-white border border-slate-300">
-              <p className="text-xs text-slate-600 mb-1">Total Portfolio</p>
-              <p className="text-2xl font-bold text-blue-600">{data.totalLoans || 0}</p>
-              <p className="text-xs text-slate-600 mt-1">
-                ZMW {(data.totalAmount || 0).toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </div>
-      );
-
-    case 'arrears-npl':
-      return (
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-4 rounded-lg bg-blue-50 border border-blue-300">
-              <p className="text-xs text-blue-700 mb-1">1-30 Days</p>
-              <p className="text-2xl font-bold text-blue-900">{data.par1to30?.count || 0}</p>
-              <p className="text-xs text-blue-700 mt-1">
-                ZMW {(data.par1to30?.amount || 0).toLocaleString()}
-              </p>
-            </div>
-            <div className="p-4 rounded-lg bg-yellow-50 border border-yellow-300">
-              <p className="text-xs text-yellow-700 mb-1">31-60 Days</p>
-              <p className="text-2xl font-bold text-yellow-900">{data.par31to60?.count || 0}</p>
-              <p className="text-xs text-yellow-700 mt-1">
-                ZMW {(data.par31to60?.amount || 0).toLocaleString()}
-              </p>
-            </div>
-            <div className="p-4 rounded-lg bg-orange-50 border border-orange-300">
-              <p className="text-xs text-orange-700 mb-1">61-90 Days</p>
-              <p className="text-2xl font-bold text-orange-900">{data.par61to90?.count || 0}</p>
-              <p className="text-xs text-orange-700 mt-1">
-                ZMW {(data.par61to90?.amount || 0).toLocaleString()}
-              </p>
-            </div>
-            <div className="p-4 rounded-lg bg-red-50 border border-red-300">
-              <p className="text-xs text-red-700 mb-1">90+ Days</p>
-              <p className="text-2xl font-bold text-red-900">{data.par90plus?.count || 0}</p>
-              <p className="text-xs text-red-700 mt-1">
-                ZMW {(data.par90plus?.amount || 0).toLocaleString()}
-              </p>
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="p-4 rounded-lg bg-slate-100 border border-slate-300">
-              <p className="text-xs text-slate-600 mb-1">Portfolio at Risk (PAR)</p>
-              <p className="text-3xl font-bold text-slate-900">{data.portfolioAtRisk?.toFixed(2) || 0}%</p>
-            </div>
-            <div className="p-4 rounded-lg bg-slate-100 border border-slate-300">
-              <p className="text-xs text-slate-600 mb-1">NPL Ratio</p>
-              <p className="text-3xl font-bold text-slate-900">{data.nplRatio?.toFixed(2) || 0}%</p>
-            </div>
-            <div className="p-4 rounded-lg bg-slate-100 border border-slate-300">
-              <p className="text-xs text-slate-600 mb-1">Total in Arrears</p>
-              <p className="text-2xl font-bold text-red-600">
-                ZMW {(data.amountInArrears || 0).toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </div>
-      );
-
-    case 'ecl-summary':
-      return (
-        <div className="space-y-6">
-          <div className="grid grid-cols-3 gap-4">
-            <div className="p-4 rounded-lg bg-blue-50 border border-blue-300">
-              <p className="text-xs text-blue-700 mb-1">Stage 1 (Low Risk)</p>
-              <p className="text-2xl font-bold text-blue-900">{data.stage1?.count || 0}</p>
-              <p className="text-xs text-blue-700 mt-1">
-                ECL: ZMW {(data.stage1?.ecl || 0).toLocaleString()}
-              </p>
-            </div>
-            <div className="p-4 rounded-lg bg-yellow-50 border border-yellow-300">
-              <p className="text-xs text-yellow-700 mb-1">Stage 2 (Medium Risk)</p>
-              <p className="text-2xl font-bold text-yellow-900">{data.stage2?.count || 0}</p>
-              <p className="text-xs text-yellow-700 mt-1">
-                ECL: ZMW {(data.stage2?.ecl || 0).toLocaleString()}
-              </p>
-            </div>
-            <div className="p-4 rounded-lg bg-red-50 border border-red-300">
-              <p className="text-xs text-red-700 mb-1">Stage 3 (High Risk)</p>
-              <p className="text-2xl font-bold text-red-900">{data.stage3?.count || 0}</p>
-              <p className="text-xs text-red-700 mt-1">
-                ECL: ZMW {(data.stage3?.ecl || 0).toLocaleString()}
-              </p>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 rounded-lg bg-slate-100 border border-slate-300">
-              <p className="text-xs text-slate-600 mb-1">Total ECL</p>
-              <p className="text-3xl font-bold text-slate-900">
-                ZMW {(data.totalECL || 0).toLocaleString()}
-              </p>
-            </div>
-            <div className="p-4 rounded-lg bg-slate-100 border border-slate-300">
-              <p className="text-xs text-slate-600 mb-1">Impairment Charge</p>
-              <p className="text-3xl font-bold text-slate-900">
-                ZMW {(data.impairmentCharge || 0).toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </div>
-      );
-
-    default:
-      return (
-        <div className="p-4 rounded-lg bg-slate-100 border border-slate-300">
-          <pre className="text-xs text-slate-900 overflow-auto">
-            {JSON.stringify(data, null, 2)}
-          </pre>
-        </div>
-      );
-  }
 }
