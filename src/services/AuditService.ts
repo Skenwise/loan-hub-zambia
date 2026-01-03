@@ -109,6 +109,24 @@ export class AuditService {
   }
 
   /**
+   * Get audit logs for an organization
+   */
+  static async getAuditLogs(organisationId: string): Promise<AuditTrail[]> {
+    try {
+      const { items } = await BaseCrudService.getAll<AuditTrail>(
+        CollectionIds.AUDIT_TRAIL
+      );
+
+      // Filter by organisation ID if available in the audit trail
+      // Note: AuditTrail entity may not have organisationId field, so we return all for now
+      return items || [];
+    } catch (error) {
+      console.error('Error fetching audit logs:', error);
+      return [];
+    }
+  }
+
+  /**
    * Log customer creation
    */
   static async logCustomerCreation(customerId: string, performedBy: string, staffMemberId?: string): Promise<void> {

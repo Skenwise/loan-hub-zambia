@@ -22,7 +22,6 @@ export default function AdminPortalLayout() {
   const { currentOrganisation, currentStaff } = useOrganisationStore();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const mainNavItems = [
     { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -52,20 +51,11 @@ export default function AdminPortalLayout() {
     { path: '/admin/reports/disbursements', label: 'Disbursement Reports', icon: BarChart3 },
   ];
 
-  const settingsItems = [
-    { path: '/admin/settings/organisation', label: 'Organisation Settings', icon: Settings },
-    { path: '/admin/settings/organisation-admin', label: 'Org Admin Settings', icon: Settings },
-    { path: '/admin/settings/branch-manager', label: 'Branch Settings', icon: Settings },
-    { path: '/admin/settings/kyc-configuration', label: 'KYC Configuration', icon: Settings },
-    { path: '/admin/settings/currency', label: 'Currency Settings', icon: Settings },
-    { path: '/admin/settings/system-owner', label: 'System Settings', icon: Settings },
-  ];
-
   const isActive = (path: string) => location.pathname === path;
   const isCustomersActive = customersItems.some(item => isActive(item.path));
   const isRepaymentsActive = repaymentsItems.some(item => isActive(item.path));
   const isReportsActive = reportItems.some(item => isActive(item.path));
-  const isSettingsActive = settingsItems.some(item => isActive(item.path));
+  const isSettingsActive = isActive('/admin/settings');
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -155,8 +145,8 @@ export default function AdminPortalLayout() {
 
           {/* Settings Folder */}
           <div className="pt-2">
-            <button
-              onClick={() => setSettingsOpen(!settingsOpen)}
+            <Link
+              to="/admin/settings"
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
                 isSettingsActive
                   ? 'bg-secondary text-white'
@@ -164,37 +154,8 @@ export default function AdminPortalLayout() {
               }`}
             >
               <Settings size={20} />
-              {sidebarOpen && (
-                <>
-                  <span>Settings</span>
-                  <ChevronDown
-                    size={16}
-                    className={`ml-auto transition-transform ${settingsOpen ? 'rotate-180' : ''}`}
-                  />
-                </>
-              )}
-            </button>
-            {settingsOpen && (
-              <div className="ml-4 mt-1 space-y-1">
-                {settingsItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      className={`flex items-center gap-3 px-4 py-2 rounded-lg transition text-sm ${
-                        isActive(item.path)
-                          ? 'bg-secondary text-white'
-                          : 'text-white hover:bg-primary/80'
-                      }`}
-                    >
-                      <Icon size={16} />
-                      {sidebarOpen && <span>{item.label}</span>}
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
+              {sidebarOpen && <span>Settings</span>}
+            </Link>
           </div>
         </nav>
 

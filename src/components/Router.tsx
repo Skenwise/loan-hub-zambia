@@ -27,7 +27,6 @@ import CustomerPortalPage from '@/components/pages/CustomerPortalPage';
 import CustomerLoansPage from '@/components/pages/CustomerLoansPage';
 import AdminLoansManagementPage from '@/components/pages/AdminLoansManagementPage';
 import CurrencySettingsPage from '@/components/pages/CurrencySettingsPage';
-import SystemOwnerSettingsPage from '@/components/pages/SystemOwnerSettingsPage';
 import OrganisationAdminSettingsPage from '@/components/pages/OrganisationAdminSettingsPage';
 import BranchManagerSettingsPage from '@/components/pages/BranchManagerSettingsPage';
 import CollateralRegisterPage from '@/components/pages/CollateralRegisterPage';
@@ -42,6 +41,7 @@ import ComprehensiveReportsPage from '@/components/pages/ComprehensiveReportsPag
 import OrganisationSettingsComprehensivePage from '@/components/pages/OrganisationSettingsComprehensivePage';
 import CustomerSignupPage from '@/components/pages/CustomerSignupPage';
 import BulkCustomerUploadPage from '@/components/pages/BulkCustomerUploadPage';
+import SettingsPage from '@/components/pages/SettingsPage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -189,6 +189,14 @@ const router = createBrowserRouter([
         element: <IFRS9CompliancePage />,
       },
       {
+        path: "settings",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to access settings">
+            <SettingsPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
         path: "settings/currency",
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to access currency settings">
@@ -201,14 +209,6 @@ const router = createBrowserRouter([
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to access collateral register">
             <CollateralRegisterPage />
-          </MemberProtectedRoute>
-        ),
-      },
-      {
-        path: "settings/system-owner",
-        element: (
-          <MemberProtectedRoute messageToSignIn="Sign in to access system settings">
-            <SystemOwnerSettingsPage />
           </MemberProtectedRoute>
         ),
       },
