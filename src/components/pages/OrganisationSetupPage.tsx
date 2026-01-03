@@ -169,7 +169,7 @@ export default function OrganisationSetupPage() {
         <div className="p-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-primary mb-2">Welcome to Lendly</h1>
+            <h1 className="text-4xl font-bold text-primary mb-2">Welcome to LendZm</h1>
             <p className="text-gray-600">Set up your organization to get started</p>
           </div>
 
