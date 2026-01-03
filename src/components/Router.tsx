@@ -39,6 +39,7 @@ import BulkRepaymentPage from '@/components/pages/BulkRepaymentPage';
 import CustomerSelfServiceRepaymentPage from '@/components/pages/CustomerSelfServiceRepaymentPage';
 import ComprehensiveReportsPage from '@/components/pages/ComprehensiveReportsPage';
 import OrganisationSettingsComprehensivePage from '@/components/pages/OrganisationSettingsComprehensivePage';
+import CustomerSignupPage from '@/components/pages/CustomerSignupPage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -111,6 +112,10 @@ const router = createBrowserRouter([
             <CustomerSelfServiceRepaymentPage />
           </MemberProtectedRoute>
         ),
+      },
+      {
+        path: "customer-signup",
+        element: <CustomerSignupPage />,
       },
     ],
   },

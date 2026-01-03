@@ -110,6 +110,24 @@ export interface CustomerProfiles {
   creditScore?: number;
   /** @wixFieldType image */
   idDocumentImage?: string;
+  /** @wixFieldType text */
+  branchId?: string;
+  /** @wixFieldType text */
+  activationStatus?: string;
+  /** @wixFieldType datetime */
+  activatedDate?: Date | string;
+  /** @wixFieldType datetime */
+  kycVerifiedDate?: Date | string;
+  /** @wixFieldType text */
+  accountStatus?: string;
+  /** @wixFieldType datetime */
+  lastLoginDate?: Date | string;
+  /** @wixFieldType text */
+  createdBy?: string;
+  /** @wixFieldType datetime */
+  invitationSentDate?: Date | string;
+  /** @wixFieldType datetime */
+  invitationExpiryDate?: Date | string;
 }
 
 
@@ -530,4 +548,78 @@ export interface SubscriptionPlans {
   planDescription?: string;
   /** @wixFieldType boolean */
   isActive?: boolean;
+}
+
+
+/**
+ * Collection ID: customerinvitations
+ * Interface for CustomerInvitations
+ */
+export interface CustomerInvitations {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  customerId?: string;
+  /** @wixFieldType text */
+  organisationId?: string;
+  /** @wixFieldType text */
+  invitationToken?: string;
+  /** @wixFieldType text */
+  invitationEmail?: string;
+  /** @wixFieldType text */
+  invitationPhone?: string;
+  /** @wixFieldType text */
+  invitationType?: string;
+  /** @wixFieldType text */
+  status?: string;
+  /** @wixFieldType datetime */
+  sentDate?: Date | string;
+  /** @wixFieldType datetime */
+  expiryDate?: Date | string;
+  /** @wixFieldType datetime */
+  acceptedDate?: Date | string;
+  /** @wixFieldType number */
+  emailSentCount?: number;
+  /** @wixFieldType number */
+  smsSentCount?: number;
+  /** @wixFieldType number */
+  maxAttempts?: number;
+  /** @wixFieldType text */
+  createdBy?: string;
+  /** @wixFieldType text */
+  notes?: string;
+}
+
+
+/**
+ * Collection ID: customeractivationlog
+ * Interface for CustomerActivationLog
+ */
+export interface CustomerActivationLog {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  customerId?: string;
+  /** @wixFieldType text */
+  organisationId?: string;
+  /** @wixFieldType datetime */
+  invitationSent?: Date | string;
+  /** @wixFieldType datetime */
+  emailVerified?: Date | string;
+  /** @wixFieldType datetime */
+  phoneVerified?: Date | string;
+  /** @wixFieldType datetime */
+  passwordSet?: Date | string;
+  /** @wixFieldType datetime */
+  accountActivated?: Date | string;
+  /** @wixFieldType text */
+  currentStep?: string;
+  /** @wixFieldType number */
+  completionPercentage?: number;
+  /** @wixFieldType text */
+  ipAddress?: string;
+  /** @wixFieldType text */
+  userAgent?: string;
 }

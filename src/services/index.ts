@@ -32,6 +32,8 @@ export { GLIntegrationService } from './GLIntegrationService';
 export { PenaltyWaiverService } from './PenaltyWaiverService';
 export { ReportingService } from './ReportingService';
 export { OrganisationSettingsService } from './OrganisationSettingsService';
+export { CustomerOnboardingService } from './CustomerOnboardingService';
+export { CustomerInvitationService } from './CustomerInvitationService';
 
 // Collection IDs
 export const CollectionIds = {
@@ -39,6 +41,8 @@ export const CollectionIds = {
   BOZ_PROVISIONS: 'bozprovisions',
   CUSTOMER_ACCOUNTS: 'customeraccounts',
   CUSTOMERS: 'customers',
+  CUSTOMER_INVITATIONS: 'customerinvitations',
+  CUSTOMER_ACTIVATION_LOG: 'customeractivationlog',
   ECL_RESULTS: 'eclresults',
   KYC_VERIFICATION_HISTORY: 'kycverificationhistory',
   LOAN_DOCUMENTS: 'loandocuments',
