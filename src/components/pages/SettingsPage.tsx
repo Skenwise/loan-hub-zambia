@@ -124,7 +124,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 p-6">
+    <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
@@ -132,10 +132,10 @@ export default function SettingsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-4xl font-heading font-bold text-primary-foreground mb-2">
+          <h1 className="text-4xl font-heading font-bold text-gray-900 mb-2">
             Settings
           </h1>
-          <p className="text-primary-foreground/70">
+          <p className="text-gray-600">
             Manage organization profile, staff, roles, and system configurations
           </p>
         </motion.div>
@@ -145,10 +145,10 @@ export default function SettingsPage() {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center gap-3"
+            className="mb-6 p-4 bg-green-100 border border-green-300 rounded-lg flex items-center gap-3"
           >
-            <CheckCircle2 className="w-5 h-5 text-green-600" />
-            <p className="text-green-600">{successMessage}</p>
+            <CheckCircle2 className="w-5 h-5 text-green-700" />
+            <p className="text-green-700 font-medium">{successMessage}</p>
           </motion.div>
         )}
 
@@ -156,10 +156,10 @@ export default function SettingsPage() {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-3"
+            className="mb-6 p-4 bg-red-100 border border-red-300 rounded-lg flex items-center gap-3"
           >
-            <AlertCircle className="w-5 h-5 text-red-600" />
-            <p className="text-red-600">{errorMessage}</p>
+            <AlertCircle className="w-5 h-5 text-red-700" />
+            <p className="text-red-700 font-medium">{errorMessage}</p>
           </motion.div>
         )}
 
@@ -167,41 +167,41 @@ export default function SettingsPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-primary-foreground/5 border border-primary-foreground/10 rounded-lg overflow-hidden"
+          className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm"
         >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="w-full justify-start bg-primary-foreground/10 border-b border-primary-foreground/10 rounded-none p-0">
+            <TabsList className="w-full justify-start bg-gray-50 border-b border-gray-200 rounded-none p-0\">
               <TabsTrigger
                 value="organization"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-white text-gray-700 data-[state=active]:text-gray-900"
               >
                 <Building2 className="w-4 h-4 mr-2" />
                 Organization Profile
               </TabsTrigger>
               <TabsTrigger
                 value="staff"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-white text-gray-700 data-[state=active]:text-gray-900"
               >
                 <Users className="w-4 h-4 mr-2" />
                 Staff Management
               </TabsTrigger>
               <TabsTrigger
                 value="roles"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-white text-gray-700 data-[state=active]:text-gray-900"
               >
                 <Lock className="w-4 h-4 mr-2" />
                 Roles & Permissions
               </TabsTrigger>
               <TabsTrigger
                 value="audit"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-white text-gray-700 data-[state=active]:text-gray-900"
               >
                 <FileText className="w-4 h-4 mr-2" />
                 Audit Logs
               </TabsTrigger>
               <TabsTrigger
                 value="email"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-white text-gray-700 data-[state=active]:text-gray-900"
               >
                 <Bell className="w-4 h-4 mr-2" />
                 Email Templates
@@ -211,46 +211,46 @@ export default function SettingsPage() {
             {/* Organization Profile Tab */}
             <TabsContent value="organization" className="p-6">
               <div className="space-y-6">
-                <Card className="bg-primary-foreground/5 border-primary-foreground/10">
+                <Card className="bg-white border-gray-200">
                   <CardHeader>
-                    <CardTitle className="text-primary">Organization Profile</CardTitle>
-                    <CardDescription className="text-primary/70">
+                    <CardTitle className="text-gray-900">Organization Profile</CardTitle>
+                    <CardDescription className="text-gray-600">
                       Update your organization's basic information
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
-                      <Label className="text-primary-foreground mb-2 block">Organization Name</Label>
+                      <Label className="text-gray-700 mb-2 block font-medium">Organization Name</Label>
                       <Input
                         value={orgName}
                         onChange={(e) => setOrgName(e.target.value)}
                         placeholder="Enter organization name"
-                        className="bg-primary/10 border-primary/20 text-primary-foreground placeholder:text-primary-foreground/50"
+                        className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                       />
                     </div>
                     <div>
-                      <Label className="text-primary-foreground mb-2 block">Contact Email</Label>
+                      <Label className="text-gray-700 mb-2 block font-medium">Contact Email</Label>
                       <Input
                         type="email"
                         value={orgEmail}
                         onChange={(e) => setOrgEmail(e.target.value)}
                         placeholder="Enter contact email"
-                        className="bg-primary/10 border-primary/20 text-primary-foreground placeholder:text-primary-foreground/50"
+                        className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                       />
                     </div>
                     <div>
-                      <Label className="text-primary-foreground mb-2 block">Website URL</Label>
+                      <Label className="text-gray-700 mb-2 block font-medium">Website URL</Label>
                       <Input
                         type="url"
                         value={orgWebsite}
                         onChange={(e) => setOrgWebsite(e.target.value)}
                         placeholder="Enter website URL"
-                        className="bg-primary/10 border-primary/20 text-primary-foreground placeholder:text-primary-foreground/50"
+                        className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                       />
                     </div>
                     <Button
                       onClick={handleSaveOrganization}
-                      className="bg-secondary text-primary hover:bg-secondary/90 w-full"
+                      className="bg-blue-600 text-white hover:bg-blue-700 w-full"
                     >
                       <Save className="w-4 h-4 mr-2" />
                       Save Changes
@@ -263,15 +263,15 @@ export default function SettingsPage() {
             {/* Staff Management Tab */}
             <TabsContent value="staff" className="p-6">
               <div className="space-y-6">
-                <Card className="bg-primary-foreground/5 border-primary-foreground/10">
+                <Card className="bg-white border-gray-200">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
-                      <CardTitle className="text-primary">Staff Members</CardTitle>
-                      <CardDescription className="text-primary/70">
+                      <CardTitle className="text-gray-900">Staff Members</CardTitle>
+                      <CardDescription className="text-gray-600">
                         Manage your organization's staff members
                       </CardDescription>
                     </div>
-                    <Button className="bg-secondary text-primary hover:bg-secondary/90">
+                    <Button className="bg-blue-600 text-white hover:bg-blue-700">
                       <Plus className="w-4 h-4 mr-2" />
                       Add Staff
                     </Button>
@@ -281,46 +281,46 @@ export default function SettingsPage() {
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                           <thead>
-                            <tr className="border-b border-primary/10">
-                              <th className="text-left py-3 px-4 text-primary-foreground/70 font-semibold">
+                            <tr className="border-b border-gray-200">
+                              <th className="text-left py-3 px-4 text-gray-700 font-semibold">
                                 Name
                               </th>
-                              <th className="text-left py-3 px-4 text-primary-foreground/70 font-semibold">
+                              <th className="text-left py-3 px-4 text-gray-700 font-semibold">
                                 Email
                               </th>
-                              <th className="text-left py-3 px-4 text-primary-foreground/70 font-semibold">
+                              <th className="text-left py-3 px-4 text-gray-700 font-semibold">
                                 Role
                               </th>
-                              <th className="text-left py-3 px-4 text-primary-foreground/70 font-semibold">
+                              <th className="text-left py-3 px-4 text-gray-700 font-semibold">
                                 Status
                               </th>
-                              <th className="text-left py-3 px-4 text-primary-foreground/70 font-semibold">
+                              <th className="text-left py-3 px-4 text-gray-700 font-semibold">
                                 Actions
                               </th>
                             </tr>
                           </thead>
                           <tbody>
                             {staff.map((member) => (
-                              <tr key={member._id} className="border-b border-primary/5 hover:bg-primary/5">
-                                <td className="py-3 px-4 text-primary-foreground font-semibold">
+                              <tr key={member._id} className="border-b border-gray-100 hover:bg-gray-50">
+                                <td className="py-3 px-4 text-gray-900 font-semibold">
                                   {member.fullName}
                                 </td>
-                                <td className="py-3 px-4 text-primary-foreground/70">{member.email}</td>
+                                <td className="py-3 px-4 text-gray-600">{member.email}</td>
                                 <td className="py-3 px-4">
-                                  <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20 border">
+                                  <Badge className="bg-blue-100 text-blue-800 border-blue-300 border">
                                     {member.role}
                                   </Badge>
                                 </td>
                                 <td className="py-3 px-4">
-                                  <Badge className="bg-green-500/10 text-green-600 border-green-500/20 border">
+                                  <Badge className="bg-green-100 text-green-800 border-green-300 border">
                                     {member.status}
                                   </Badge>
                                 </td>
                                 <td className="py-3 px-4 flex gap-2">
-                                  <Button size="sm" variant="outline">
+                                  <Button size="sm" variant="outline" className="text-gray-700 border-gray-300">
                                     <Edit2 className="w-4 h-4" />
                                   </Button>
-                                  <Button size="sm" variant="outline" className="text-red-600">
+                                  <Button size="sm" variant="outline" className="text-red-600 border-gray-300">
                                     <Trash2 className="w-4 h-4" />
                                   </Button>
                                 </td>
@@ -330,7 +330,7 @@ export default function SettingsPage() {
                         </table>
                       </div>
                     ) : (
-                      <div className="py-8 text-center text-primary-foreground/50">
+                      <div className="py-8 text-center text-gray-500">
                         No staff members found
                       </div>
                     )}
@@ -342,15 +342,15 @@ export default function SettingsPage() {
             {/* Roles & Permissions Tab */}
             <TabsContent value="roles" className="p-6">
               <div className="space-y-6">
-                <Card className="bg-primary-foreground/5 border-primary-foreground/10">
+                <Card className="bg-white border-gray-200">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
-                      <CardTitle className="text-primary">Roles & Permissions</CardTitle>
-                      <CardDescription className="text-primary/70">
+                      <CardTitle className="text-gray-900">Roles & Permissions</CardTitle>
+                      <CardDescription className="text-gray-600">
                         Manage user roles and their permissions
                       </CardDescription>
                     </div>
-                    <Button className="bg-secondary text-primary hover:bg-secondary/90">
+                    <Button className="bg-blue-600 text-white hover:bg-blue-700">
                       <Plus className="w-4 h-4 mr-2" />
                       New Role
                     </Button>
@@ -361,18 +361,18 @@ export default function SettingsPage() {
                         {roles.map((role) => (
                           <div
                             key={role._id}
-                            className="p-4 bg-primary/5 border border-primary/10 rounded-lg flex items-center justify-between"
+                            className="p-4 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between"
                           >
                             <div>
-                              <p className="font-semibold text-primary-foreground">{role.roleName}</p>
-                              <p className="text-sm text-primary-foreground/70">{role.description}</p>
+                              <p className="font-semibold text-gray-900">{role.roleName}</p>
+                              <p className="text-sm text-gray-600">{role.description}</p>
                             </div>
                             <div className="flex gap-2">
-                              <Button size="sm" variant="outline">
+                              <Button size="sm" variant="outline" className="text-gray-700 border-gray-300">
                                 <Edit2 className="w-4 h-4" />
                               </Button>
                               {!role.isSystemRole && (
-                                <Button size="sm" variant="outline" className="text-red-600">
+                                <Button size="sm" variant="outline" className="text-red-600 border-gray-300">
                                   <Trash2 className="w-4 h-4" />
                                 </Button>
                               )}
@@ -381,7 +381,7 @@ export default function SettingsPage() {
                         ))}
                       </div>
                     ) : (
-                      <div className="py-8 text-center text-primary-foreground/50">
+                      <div className="py-8 text-center text-gray-500">
                         No roles found
                       </div>
                     )}
@@ -393,10 +393,10 @@ export default function SettingsPage() {
             {/* Audit Logs Tab */}
             <TabsContent value="audit" className="p-6">
               <div className="space-y-6">
-                <Card className="bg-primary-foreground/5 border-primary-foreground/10">
+                <Card className="bg-white border-gray-200">
                   <CardHeader>
-                    <CardTitle className="text-primary">Audit Logs</CardTitle>
-                    <CardDescription className="text-primary/70">
+                    <CardTitle className="text-gray-900">Audit Logs</CardTitle>
+                    <CardDescription className="text-gray-600">
                       View system activity and user actions
                     </CardDescription>
                   </CardHeader>
@@ -405,34 +405,34 @@ export default function SettingsPage() {
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                           <thead>
-                            <tr className="border-b border-primary/10">
-                              <th className="text-left py-3 px-4 text-primary-foreground/70 font-semibold">
+                            <tr className="border-b border-gray-200">
+                              <th className="text-left py-3 px-4 text-gray-700 font-semibold">
                                 Action
                               </th>
-                              <th className="text-left py-3 px-4 text-primary-foreground/70 font-semibold">
+                              <th className="text-left py-3 px-4 text-gray-700 font-semibold">
                                 Performed By
                               </th>
-                              <th className="text-left py-3 px-4 text-primary-foreground/70 font-semibold">
+                              <th className="text-left py-3 px-4 text-gray-700 font-semibold">
                                 Resource
                               </th>
-                              <th className="text-left py-3 px-4 text-primary-foreground/70 font-semibold">
+                              <th className="text-left py-3 px-4 text-gray-700 font-semibold">
                                 Timestamp
                               </th>
                             </tr>
                           </thead>
                           <tbody>
                             {auditLogs.slice(0, 10).map((log) => (
-                              <tr key={log._id} className="border-b border-primary/5 hover:bg-primary/5">
-                                <td className="py-3 px-4 text-primary-foreground font-semibold">
+                              <tr key={log._id} className="border-b border-gray-100 hover:bg-gray-50">
+                                <td className="py-3 px-4 text-gray-900 font-semibold">
                                   {log.actionType}
                                 </td>
-                                <td className="py-3 px-4 text-primary-foreground/70">
+                                <td className="py-3 px-4 text-gray-600">
                                   {log.performedBy}
                                 </td>
-                                <td className="py-3 px-4 text-primary-foreground/70">
+                                <td className="py-3 px-4 text-gray-600">
                                   {log.resourceAffected}
                                 </td>
-                                <td className="py-3 px-4 text-primary-foreground/70">
+                                <td className="py-3 px-4 text-gray-600">
                                   {log.timestamp
                                     ? new Date(log.timestamp).toLocaleDateString()
                                     : 'N/A'}
@@ -443,7 +443,7 @@ export default function SettingsPage() {
                         </table>
                       </div>
                     ) : (
-                      <div className="py-8 text-center text-primary-foreground/50">
+                      <div className="py-8 text-center text-gray-500">
                         No audit logs found
                       </div>
                     )}
@@ -455,10 +455,10 @@ export default function SettingsPage() {
             {/* Email Templates Tab */}
             <TabsContent value="email" className="p-6">
               <div className="space-y-6">
-                <Card className="bg-primary-foreground/5 border-primary-foreground/10">
+                <Card className="bg-white border-gray-200">
                   <CardHeader>
-                    <CardTitle className="text-primary">Email Templates</CardTitle>
-                    <CardDescription className="text-primary/70">
+                    <CardTitle className="text-gray-900">Email Templates</CardTitle>
+                    <CardDescription className="text-gray-600">
                       Customize email notifications sent to users
                     </CardDescription>
                   </CardHeader>
@@ -472,13 +472,13 @@ export default function SettingsPage() {
                       ].map((template, index) => (
                         <div
                           key={index}
-                          className="p-4 bg-primary/5 border border-primary/10 rounded-lg flex items-center justify-between"
+                          className="p-4 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between"
                         >
                           <div>
-                            <p className="font-semibold text-primary-foreground">{template.name}</p>
-                            <p className="text-sm text-primary-foreground/70">{template.description}</p>
+                            <p className="font-semibold text-gray-900">{template.name}</p>
+                            <p className="text-sm text-gray-600">{template.description}</p>
                           </div>
-                          <Button size="sm" className="bg-secondary text-primary hover:bg-secondary/90">
+                          <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700">
                             <Edit2 className="w-4 h-4 mr-2" />
                             Edit
                           </Button>
