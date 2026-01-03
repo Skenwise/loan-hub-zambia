@@ -71,10 +71,10 @@ export default function AdminPortalLayout() {
       <div
         className={`${
           sidebarOpen ? 'w-64' : 'w-20'
-        } bg-primary text-white transition-all duration-300 flex flex-col`}
+        } bg-primary text-white transition-all duration-300 flex flex-col overflow-hidden`}
       >
         {/* Logo */}
-        <div className="p-6 border-b border-primary/20">
+        <div className="p-6 border-b border-primary/20 flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center font-bold text-white">
               LD
@@ -83,8 +83,8 @@ export default function AdminPortalLayout() {
           </div>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
+        {/* Navigation - Scrollable */}
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto overflow-x-hidden">
           {mainNavItems.map((item, index) => {
             const Icon = item.icon;
             return (
@@ -197,7 +197,7 @@ export default function AdminPortalLayout() {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-primary/20 space-y-2">
+        <div className="p-4 border-t border-primary/20 space-y-2 flex-shrink-0">
           <Link
             to="/profile"
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
