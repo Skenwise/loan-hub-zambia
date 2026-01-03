@@ -29,6 +29,7 @@ export default function AdminPortalLayout() {
     { path: '/admin/loans/apply', label: 'New Application', icon: FileText },
     { path: '/admin/loans/approve', label: 'Approvals', icon: FileText },
     { path: '/admin/loans/disburse', label: 'Disbursement', icon: FileText },
+    { path: '/admin/repayments', label: 'Repayments', icon: FileText },
     { path: '/admin/compliance/ifrs9', label: 'IFRS 9 Compliance', icon: BarChart3 },
     // Loan Officer Dashboard - only visible to Loan Officers
     ...(currentStaff?.role === 'Loan Officer' ? [{ path: '/admin/dashboard/loan-officer', label: 'Loan Officer Dashboard', icon: LayoutDashboard }] : []),
@@ -111,21 +112,6 @@ export default function AdminPortalLayout() {
               </div>
             );
           })}
-
-          {/* Repayments Folder */}
-          <div className="pt-2">
-            <Link
-              to="/admin/repayments"
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                isActive('/admin/repayments')
-                  ? 'bg-secondary text-white'
-                  : 'text-white hover:bg-primary/80'
-              }`}
-            >
-              <FileText size={20} />
-              {sidebarOpen && <span>Repayments</span>}
-            </Link>
-          </div>
 
           {/* Collateral Register */}
           <div className="pt-2">
