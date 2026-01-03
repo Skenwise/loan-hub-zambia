@@ -110,12 +110,6 @@ export interface CustomerProfiles {
   creditScore?: number;
   /** @wixFieldType image */
   idDocumentImage?: string;
-  /** @wixFieldType text */
-  activationStatus?: string;
-  /** @wixFieldType text */
-  accountStatus?: string;
-  /** @wixFieldType datetime */
-  activatedDate?: Date | string;
 }
 
 
