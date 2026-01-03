@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useCurrencyStore } from '@/store/currencyStore';
 import { 
   FileText, 
   Download, 
@@ -22,7 +23,8 @@ import {
   TrendingDown,
   PieChart,
   Activity,
-  Printer
+  Printer,
+  Calendar
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ReportExportService } from '@/services/ReportExportService';
@@ -37,6 +39,7 @@ export default function ReportsPage() {
   const [products, setProducts] = useState<LoanProducts[]>([]);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const { getCurrencyCode, getCurrencySymbol } = useCurrencyStore();
 
   useEffect(() => {
     loadData();
@@ -87,6 +90,21 @@ export default function ReportsPage() {
     Doubtful: provisions.filter(p => p.bozClassification === 'Doubtful').reduce((sum, p) => sum + (p.provisionAmount || 0), 0),
     Loss: provisions.filter(p => p.bozClassification === 'Loss').reduce((sum, p) => sum + (p.provisionAmount || 0), 0)
   };
+
+  const filterDataByDateRange = (data: any[]) => {
+    if (!dateRange.start && !dateRange.end) return data;
+    
+    return data.filter(item => {
+      const itemDate = new Date(item.repaymentDate || item.disbursementDate || item.calculationTimestamp || '');
+      const startDate = dateRange.start ? new Date(dateRange.start) : new Date('1900-01-01');
+      const endDate = dateRange.end ? new Date(dateRange.end) : new Date('2100-12-31');
+      
+      return itemDate >= startDate && itemDate <= endDate;
+    });
+  };
+
+  const currencyCode = getCurrencyCode();
+  const currencySymbol = getCurrencySymbol();
 
   const downloadCSV = (data: any[], filename: string) => {
     if (data.length === 0) return;
@@ -155,6 +173,50 @@ export default function ReportsPage() {
           </p>
         </div>
 
+        {/* Date Range Filter */}
+        <Card className="bg-primary border-primary-foreground/10 p-6 mb-8">
+          <h2 className="font-heading text-lg font-bold text-secondary mb-4 flex items-center gap-2">
+            <Calendar className="w-5 h-5" />
+            Filter Reports by Date Range
+          </h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <Label className="font-paragraph text-sm text-primary-foreground mb-2 block">Start Date</Label>
+              <Input
+                type="date"
+                value={dateRange.start}
+                onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                className="bg-primary border-primary-foreground/20 text-primary-foreground"
+              />
+            </div>
+            <div>
+              <Label className="font-paragraph text-sm text-primary-foreground mb-2 block">End Date</Label>
+              <Input
+                type="date"
+                value={dateRange.end}
+                onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                className="bg-primary border-primary-foreground/20 text-primary-foreground"
+              />
+            </div>
+            <div className="flex items-end">
+              <Button
+                onClick={() => setDateRange({ start: '', end: '' })}
+                className="bg-primary border border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 w-full"
+              >
+                Clear Filters
+              </Button>
+            </div>
+            <div className="flex items-end">
+              <div className="w-full p-3 bg-primary-foreground/5 rounded-lg border border-primary-foreground/10">
+                <p className="font-paragraph text-xs text-primary-foreground/60 mb-1">Active Filter</p>
+                <p className="font-heading text-sm font-bold text-secondary">
+                  {dateRange.start || dateRange.end ? 'Date Range Applied' : 'No Filter'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </Card>
+
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="bg-primary border border-primary-foreground/10 flex flex-wrap gap-2 h-auto p-2">
             <TabsTrigger value="overview" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
@@ -220,7 +282,7 @@ export default function ReportsPage() {
                     </div>
                   </div>
                   <div className="font-heading text-3xl font-bold text-primary-foreground mb-1">
-                    ZMW {totalDisbursed.toLocaleString()}
+                    {currencySymbol} {totalDisbursed.toLocaleString()}
                   </div>
                   <div className="font-paragraph text-sm text-primary-foreground">
                     Total Disbursed
@@ -236,7 +298,7 @@ export default function ReportsPage() {
                     </div>
                   </div>
                   <div className="font-heading text-3xl font-bold text-primary-foreground mb-1">
-                    ZMW {totalOutstanding.toLocaleString()}
+                    {currencySymbol} {totalOutstanding.toLocaleString()}
                   </div>
                   <div className="font-paragraph text-sm text-primary-foreground">
                     Outstanding Balance
@@ -252,7 +314,7 @@ export default function ReportsPage() {
                     </div>
                   </div>
                   <div className="font-heading text-3xl font-bold text-primary-foreground mb-1">
-                    ZMW {totalRepaid.toLocaleString()}
+                    {currencySymbol} {totalRepaid.toLocaleString()}
                   </div>
                   <div className="font-paragraph text-sm text-primary-foreground">
                     Total Repaid

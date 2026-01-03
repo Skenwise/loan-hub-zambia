@@ -4,9 +4,12 @@ import { Loans, ECLResults, BoZProvisions } from '@/entities';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { AlertCircle, TrendingDown, TrendingUp } from 'lucide-react';
+import { useCurrencyStore } from '@/store/currencyStore';
+import { AlertCircle, TrendingDown, TrendingUp, Calendar } from 'lucide-react';
 
 interface ComplianceMetrics {
   totalLoans: number;
@@ -25,10 +28,17 @@ export default function IFRS9CompliancePage() {
   const [metrics, setMetrics] = useState<ComplianceMetrics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedLoan, setSelectedLoan] = useState<Loans | null>(null);
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [filteredECLResults, setFilteredECLResults] = useState<ECLResults[]>([]);
+  const { getCurrencyCode, getCurrencySymbol } = useCurrencyStore();
 
   useEffect(() => {
     loadComplianceData();
   }, []);
+
+  useEffect(() => {
+    applyDateRangeFilter();
+  }, [dateRange, eclResults]);
 
   const loadComplianceData = async () => {
     try {
@@ -40,6 +50,7 @@ export default function IFRS9CompliancePage() {
 
       setLoans(loansRes.items);
       setEclResults(eclRes.items);
+      setFilteredECLResults(eclRes.items);
       setBozProvisions(bozRes.items);
 
       // Calculate metrics
@@ -63,6 +74,31 @@ export default function IFRS9CompliancePage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const applyDateRangeFilter = () => {
+    if (!dateRange.start && !dateRange.end) {
+      setFilteredECLResults(eclResults);
+      return;
+    }
+
+    const filtered = eclResults.filter(ecl => {
+      const calcDate = new Date(ecl.calculationTimestamp || '');
+      const startDate = dateRange.start ? new Date(dateRange.start) : new Date('1900-01-01');
+      const endDate = dateRange.end ? new Date(dateRange.end) : new Date('2100-12-31');
+      
+      return calcDate >= startDate && calcDate <= endDate;
+    });
+
+    setFilteredECLResults(filtered);
+  };
+
+  const calculateECLAtPointInTime = () => {
+    if (!dateRange.start && !dateRange.end) {
+      return metrics?.totalECL || 0;
+    }
+
+    return filteredECLResults.reduce((sum, e) => sum + (e.eclValue || 0), 0);
   };
 
   const getStageColor = (stage: string) => {
@@ -106,6 +142,9 @@ export default function IFRS9CompliancePage() {
     );
   }
 
+  const currencyCode = getCurrencyCode();
+  const currencySymbol = getCurrencySymbol();
+
   return (
     <div className="min-h-screen bg-primary flex flex-col">
       <Header />
@@ -117,6 +156,53 @@ export default function IFRS9CompliancePage() {
           </p>
         </div>
 
+        {/* Date Range Filter for ECL Calculation */}
+        <Card className="bg-primary border-primary-foreground/10 p-6 mb-8">
+          <h2 className="font-heading text-xl font-bold text-secondary mb-4 flex items-center gap-2">
+            <Calendar className="w-5 h-5" />
+            ECL Calculation at Point in Time
+          </h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <Label className="font-paragraph text-sm text-primary-foreground mb-2 block">Start Date</Label>
+              <Input
+                type="date"
+                value={dateRange.start}
+                onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                className="bg-primary border-primary-foreground/20 text-primary-foreground"
+              />
+            </div>
+            <div>
+              <Label className="font-paragraph text-sm text-primary-foreground mb-2 block">End Date</Label>
+              <Input
+                type="date"
+                value={dateRange.end}
+                onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                className="bg-primary border-primary-foreground/20 text-primary-foreground"
+              />
+            </div>
+            <div className="flex items-end">
+              <Button
+                onClick={() => setDateRange({ start: '', end: '' })}
+                className="bg-primary border border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 w-full"
+              >
+                Clear Filters
+              </Button>
+            </div>
+            <div className="flex items-end">
+              <div className="w-full p-3 bg-primary-foreground/5 rounded-lg border border-primary-foreground/10">
+                <p className="font-paragraph text-xs text-primary-foreground/60 mb-1">ECL at Point in Time</p>
+                <p className="font-heading text-lg font-bold text-secondary">
+                  {currencySymbol}{calculateECLAtPointInTime().toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </div>
+          <p className="font-paragraph text-xs text-primary-foreground/60 mt-4">
+            Filter ECL results by calculation date to analyze Expected Credit Loss at a specific point in time
+          </p>
+        </Card>
+
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card className="bg-primary border-primary-foreground/10 p-6">
@@ -125,15 +211,15 @@ export default function IFRS9CompliancePage() {
           </Card>
           <Card className="bg-primary border-primary-foreground/10 p-6">
             <p className="font-paragraph text-sm text-primary-foreground/70 mb-2">Total ECL</p>
-            <p className="font-heading text-3xl font-bold text-secondary">ZMW {(metrics?.totalECL || 0).toLocaleString()}</p>
+            <p className="font-heading text-3xl font-bold text-secondary">{currencySymbol} {(metrics?.totalECL || 0).toLocaleString()}</p>
           </Card>
           <Card className="bg-primary border-primary-foreground/10 p-6">
             <p className="font-paragraph text-sm text-primary-foreground/70 mb-2">Total Provisions</p>
-            <p className="font-heading text-3xl font-bold text-secondary">ZMW {(metrics?.totalProvisions || 0).toLocaleString()}</p>
+            <p className="font-heading text-3xl font-bold text-secondary">{currencySymbol} {(metrics?.totalProvisions || 0).toLocaleString()}</p>
           </Card>
           <Card className="bg-primary border-primary-foreground/10 p-6">
             <p className="font-paragraph text-sm text-primary-foreground/70 mb-2">Average ECL per Loan</p>
-            <p className="font-heading text-3xl font-bold text-primary-foreground">ZMW {(metrics?.averageECL || 0).toFixed(2)}</p>
+            <p className="font-heading text-3xl font-bold text-primary-foreground">{currencySymbol} {(metrics?.averageECL || 0).toFixed(2)}</p>
           </Card>
         </div>
 
@@ -187,14 +273,14 @@ export default function IFRS9CompliancePage() {
                 </tr>
               </thead>
               <tbody>
-                {eclResults.length === 0 ? (
+                {filteredECLResults.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="py-8 text-center font-paragraph text-primary-foreground/60">
                       No ECL results available
                     </td>
                   </tr>
                 ) : (
-                  eclResults.slice(0, 10).map(ecl => (
+                  filteredECLResults.slice(0, 10).map(ecl => (
                     <tr key={ecl._id} className="border-b border-primary-foreground/5 hover:bg-primary-foreground/5">
                       <td className="py-3 px-4 font-paragraph text-primary-foreground">{ecl.loanReference}</td>
                       <td className="py-3 px-4">
@@ -203,7 +289,7 @@ export default function IFRS9CompliancePage() {
                         </Badge>
                       </td>
                       <td className="py-3 px-4 text-right font-paragraph font-medium text-primary-foreground">
-                        ZMW {(ecl.eclValue || 0).toLocaleString()}
+                        {currencySymbol} {(ecl.eclValue || 0).toLocaleString()}
                       </td>
                       <td className="py-3 px-4 font-paragraph text-primary-foreground/70">
                         {ecl.calculationTimestamp ? new Date(ecl.calculationTimestamp).toLocaleDateString() : 'N/A'}
@@ -247,7 +333,7 @@ export default function IFRS9CompliancePage() {
                         </Badge>
                       </td>
                       <td className="py-3 px-4 text-right font-paragraph font-medium text-primary-foreground">
-                        ZMW {(prov.provisionAmount || 0).toLocaleString()}
+                        {currencySymbol} {(prov.provisionAmount || 0).toLocaleString()}
                       </td>
                       <td className="py-3 px-4 text-right font-paragraph text-primary-foreground/70">
                         {prov.provisionPercentage}%
@@ -275,6 +361,7 @@ export default function IFRS9CompliancePage() {
                 <li>• Stage 3: Credit-impaired loans (30+ days past due)</li>
                 <li>• ECL is calculated based on probability of default, loss given default, and exposure at default</li>
                 <li>• BoZ provisions follow Bank of Zimbabwe regulatory requirements</li>
+                <li>• Currency: {currencyCode} - All amounts displayed in {currencyCode}</li>
               </ul>
             </div>
           </div>
