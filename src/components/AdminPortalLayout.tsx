@@ -3,6 +3,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useMember } from '@/integrations';
 import { Button } from '@/components/ui/button';
 import { useOrganisationStore } from '@/store/organisationStore';
+import { useRoleStore } from '@/store/roleStore';
 import {
   LayoutDashboard,
   Users,
@@ -18,7 +19,7 @@ import {
 export default function AdminPortalLayout() {
   const location = useLocation();
   const { member, actions } = useMember();
-  const { currentOrganisation } = useOrganisationStore();
+  const { currentOrganisation, currentStaff } = useOrganisationStore();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -31,7 +32,8 @@ export default function AdminPortalLayout() {
     { path: '/admin/loans/disburse', label: 'Disbursement', icon: FileText },
     { path: '/admin/collateral-register', label: 'Collateral Register', icon: FileText },
     { path: '/admin/compliance/ifrs9', label: 'IFRS 9 Compliance', icon: BarChart3 },
-    { path: '/admin/dashboard/loan-officer', label: 'Loan Officer Dashboard', icon: LayoutDashboard },
+    // Loan Officer Dashboard - only visible to Loan Officers
+    ...(currentStaff?.role === 'Loan Officer' ? [{ path: '/admin/dashboard/loan-officer', label: 'Loan Officer Dashboard', icon: LayoutDashboard }] : []),
   ];
 
   const customersItems = [

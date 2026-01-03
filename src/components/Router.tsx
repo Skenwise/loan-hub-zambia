@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-rou
 import { ScrollToTop } from '@/lib/scroll-to-top';
 import ErrorPage from '@/integrations/errorHandlers/ErrorPage';
 import { MemberProtectedRoute } from '@/components/ui/member-protected-route';
+import { RoleProtectedRoute } from '@/components/ui/role-protected-route';
 import HomePage from '@/components/pages/HomePage';
 import FeaturesPage from '@/components/pages/FeaturesPage';
 import PricingPage from '@/components/pages/PricingPage';
@@ -255,7 +256,12 @@ const router = createBrowserRouter([
         path: "dashboard/loan-officer",
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to access your dashboard">
-            <LoanOfficerDashboardPage />
+            <RoleProtectedRoute 
+              requiredRoles={['Loan Officer']}
+              messageToSignIn="This dashboard is only accessible to Loan Officers."
+            >
+              <LoanOfficerDashboardPage />
+            </RoleProtectedRoute>
           </MemberProtectedRoute>
         ),
       },
