@@ -39,7 +39,6 @@ export default function AdminPortalLayout() {
 
   const customersItems = [
     { path: '/admin/customers', label: 'View Customers', icon: Users },
-    { path: '/admin/customers/bulk-upload', label: 'Bulk Upload Customers', icon: Users },
   ];
 
   const repaymentsItems = [
@@ -89,67 +88,70 @@ export default function AdminPortalLayout() {
 
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-2">
-          {mainNavItems.map((item) => {
+          {mainNavItems.map((item, index) => {
             const Icon = item.icon;
             return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                  isActive(item.path)
-                    ? 'bg-secondary text-white'
-                    : 'text-white hover:bg-primary/80'
-                }`}
-              >
-                <Icon size={20} />
-                {sidebarOpen && <span>{item.label}</span>}
-              </Link>
-            );
-          })}
-
-          {/* Customers Folder */}
-          <div className="pt-2">
-            <button
-              onClick={() => setCustomersOpen(!customersOpen)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                isCustomersActive
-                  ? 'bg-secondary text-white'
-                  : 'text-white hover:bg-primary/80'
-              }`}
-            >
-              <Users size={20} />
-              {sidebarOpen && (
-                <>
-                  <span>Customers</span>
-                  <ChevronDown
-                    size={16}
-                    className={`ml-auto transition-transform ${customersOpen ? 'rotate-180' : ''}`}
-                  />
-                </>
-              )}
-            </button>
-            {customersOpen && (
-              <div className="ml-4 mt-1 space-y-1">
-                {customersItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      className={`flex items-center gap-3 px-4 py-2 rounded-lg transition text-sm ${
-                        isActive(item.path)
+              <div key={item.path}>
+                <Link
+                  to={item.path}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+                    isActive(item.path)
+                      ? 'bg-secondary text-white'
+                      : 'text-white hover:bg-primary/80'
+                  }`}
+                >
+                  <Icon size={20} />
+                  {sidebarOpen && <span>{item.label}</span>}
+                </Link>
+                
+                {/* Customers Folder - appears after Dashboard */}
+                {index === 0 && (
+                  <div className="pt-2">
+                    <button
+                      onClick={() => setCustomersOpen(!customersOpen)}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+                        isCustomersActive
                           ? 'bg-secondary text-white'
                           : 'text-white hover:bg-primary/80'
                       }`}
                     >
-                      <Icon size={16} />
-                      {sidebarOpen && <span>{item.label}</span>}
-                    </Link>
-                  );
-                })}
+                      <Users size={20} />
+                      {sidebarOpen && (
+                        <>
+                          <span>Customers</span>
+                          <ChevronDown
+                            size={16}
+                            className={`ml-auto transition-transform ${customersOpen ? 'rotate-180' : ''}`}
+                          />
+                        </>
+                      )}
+                    </button>
+                    {customersOpen && (
+                      <div className="ml-4 mt-1 space-y-1">
+                        {customersItems.map((item) => {
+                          const Icon = item.icon;
+                          return (
+                            <Link
+                              key={item.path}
+                              to={item.path}
+                              className={`flex items-center gap-3 px-4 py-2 rounded-lg transition text-sm ${
+                                isActive(item.path)
+                                  ? 'bg-secondary text-white'
+                                  : 'text-white hover:bg-primary/80'
+                              }`}
+                            >
+                              <Icon size={16} />
+                              {sidebarOpen && <span>{item.label}</span>}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            );
+          })}
 
           {/* Repayments Folder */}
           <div className="pt-2">
