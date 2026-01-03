@@ -4,6 +4,8 @@ import { Loans, ECLResults, BoZProvisions } from '@/entities';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import { AlertCircle, TrendingDown, TrendingUp } from 'lucide-react';
 
 interface ComplianceMetrics {
@@ -66,13 +68,13 @@ export default function IFRS9CompliancePage() {
   const getStageColor = (stage: string) => {
     switch (stage) {
       case 'Stage 1':
-        return 'bg-green-100 text-green-800';
+        return 'bg-secondary/20 text-secondary';
       case 'Stage 2':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-brandaccent/20 text-brandaccent';
       case 'Stage 3':
-        return 'bg-red-100 text-red-800';
+        return 'bg-destructive/20 text-destructive';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-primary-foreground/10 text-primary-foreground';
     }
   };
 
@@ -91,181 +93,194 @@ export default function IFRS9CompliancePage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-gray-600">Loading compliance data...</p>
+      <div className="min-h-screen bg-primary flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-secondary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="font-paragraph text-primary-foreground/70">Loading compliance data...</p>
+          </div>
+        </main>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">IFRS 9 Compliance</h1>
-        <p className="text-gray-600 mt-2">Expected Credit Loss (ECL) and Risk Classification</p>
-      </div>
+    <div className="min-h-screen bg-primary flex flex-col">
+      <Header />
+      <main className="flex-1 w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-12">
+        <div className="mb-8">
+          <h1 className="font-heading text-4xl font-bold text-secondary mb-2">IFRS 9 Compliance</h1>
+          <p className="font-paragraph text-base text-primary-foreground">
+            Expected Credit Loss (ECL) and Risk Classification
+          </p>
+        </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <Card className="p-6">
-          <p className="text-sm text-gray-600 mb-2">Total Loans</p>
-          <p className="text-3xl font-bold text-gray-900">{metrics?.totalLoans || 0}</p>
-        </Card>
-        <Card className="p-6">
-          <p className="text-sm text-gray-600 mb-2">Total ECL</p>
-          <p className="text-3xl font-bold text-primary">${(metrics?.totalECL || 0).toLocaleString()}</p>
-        </Card>
-        <Card className="p-6">
-          <p className="text-sm text-gray-600 mb-2">Total Provisions</p>
-          <p className="text-3xl font-bold text-primary">${(metrics?.totalProvisions || 0).toLocaleString()}</p>
-        </Card>
-        <Card className="p-6">
-          <p className="text-sm text-gray-600 mb-2">Average ECL per Loan</p>
-          <p className="text-3xl font-bold text-gray-900">${(metrics?.averageECL || 0).toFixed(2)}</p>
-        </Card>
-      </div>
+        {/* Key Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-primary border-primary-foreground/10 p-6">
+            <p className="font-paragraph text-sm text-primary-foreground/70 mb-2">Total Loans</p>
+            <p className="font-heading text-3xl font-bold text-primary-foreground">{metrics?.totalLoans || 0}</p>
+          </Card>
+          <Card className="bg-primary border-primary-foreground/10 p-6">
+            <p className="font-paragraph text-sm text-primary-foreground/70 mb-2">Total ECL</p>
+            <p className="font-heading text-3xl font-bold text-secondary">ZMW {(metrics?.totalECL || 0).toLocaleString()}</p>
+          </Card>
+          <Card className="bg-primary border-primary-foreground/10 p-6">
+            <p className="font-paragraph text-sm text-primary-foreground/70 mb-2">Total Provisions</p>
+            <p className="font-heading text-3xl font-bold text-secondary">ZMW {(metrics?.totalProvisions || 0).toLocaleString()}</p>
+          </Card>
+          <Card className="bg-primary border-primary-foreground/10 p-6">
+            <p className="font-paragraph text-sm text-primary-foreground/70 mb-2">Average ECL per Loan</p>
+            <p className="font-heading text-3xl font-bold text-primary-foreground">ZMW {(metrics?.averageECL || 0).toFixed(2)}</p>
+          </Card>
+        </div>
 
-      {/* Stage Distribution */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <Card className="p-6">
-          <h3 className="font-semibold text-gray-900 mb-4">Stage 1 (Low Risk)</h3>
-          <div className="text-center">
-            <p className="text-4xl font-bold text-green-600">{metrics?.stage1Loans || 0}</p>
-            <p className="text-sm text-gray-600 mt-2">
-              {metrics?.totalLoans ? ((metrics.stage1Loans / metrics.totalLoans) * 100).toFixed(1) : 0}% of portfolio
-            </p>
-          </div>
-          <p className="text-xs text-gray-600 mt-4">12-month ECL provision</p>
-        </Card>
+        {/* Stage Distribution */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <Card className="bg-primary border-primary-foreground/10 p-6">
+            <h3 className="font-heading font-semibold text-secondary mb-4">Stage 1 (Low Risk)</h3>
+            <div className="text-center">
+              <p className="font-heading text-4xl font-bold text-secondary">{metrics?.stage1Loans || 0}</p>
+              <p className="font-paragraph text-sm text-primary-foreground/70 mt-2">
+                {metrics?.totalLoans ? ((metrics.stage1Loans / metrics.totalLoans) * 100).toFixed(1) : 0}% of portfolio
+              </p>
+            </div>
+            <p className="font-paragraph text-xs text-primary-foreground/60 mt-4">12-month ECL provision</p>
+          </Card>
 
-        <Card className="p-6">
-          <h3 className="font-semibold text-gray-900 mb-4">Stage 2 (Medium Risk)</h3>
-          <div className="text-center">
-            <p className="text-4xl font-bold text-yellow-600">{metrics?.stage2Loans || 0}</p>
-            <p className="text-sm text-gray-600 mt-2">
-              {metrics?.totalLoans ? ((metrics.stage2Loans / metrics.totalLoans) * 100).toFixed(1) : 0}% of portfolio
-            </p>
-          </div>
-          <p className="text-xs text-gray-600 mt-4">Lifetime ECL provision</p>
-        </Card>
+          <Card className="bg-primary border-primary-foreground/10 p-6">
+            <h3 className="font-heading font-semibold text-secondary mb-4">Stage 2 (Medium Risk)</h3>
+            <div className="text-center">
+              <p className="font-heading text-4xl font-bold text-brandaccent">{metrics?.stage2Loans || 0}</p>
+              <p className="font-paragraph text-sm text-primary-foreground/70 mt-2">
+                {metrics?.totalLoans ? ((metrics.stage2Loans / metrics.totalLoans) * 100).toFixed(1) : 0}% of portfolio
+              </p>
+            </div>
+            <p className="font-paragraph text-xs text-primary-foreground/60 mt-4">Lifetime ECL provision</p>
+          </Card>
 
-        <Card className="p-6">
-          <h3 className="font-semibold text-gray-900 mb-4">Stage 3 (High Risk)</h3>
-          <div className="text-center">
-            <p className="text-4xl font-bold text-red-600">{metrics?.stage3Loans || 0}</p>
-            <p className="text-sm text-gray-600 mt-2">
-              {metrics?.totalLoans ? ((metrics.stage3Loans / metrics.totalLoans) * 100).toFixed(1) : 0}% of portfolio
-            </p>
-          </div>
-          <p className="text-xs text-gray-600 mt-4">Credit-impaired loans</p>
-        </Card>
-      </div>
+          <Card className="bg-primary border-primary-foreground/10 p-6">
+            <h3 className="font-heading font-semibold text-secondary mb-4">Stage 3 (High Risk)</h3>
+            <div className="text-center">
+              <p className="font-heading text-4xl font-bold text-destructive">{metrics?.stage3Loans || 0}</p>
+              <p className="font-paragraph text-sm text-primary-foreground/70 mt-2">
+                {metrics?.totalLoans ? ((metrics.stage3Loans / metrics.totalLoans) * 100).toFixed(1) : 0}% of portfolio
+              </p>
+            </div>
+            <p className="font-paragraph text-xs text-primary-foreground/60 mt-4">Credit-impaired loans</p>
+          </Card>
+        </div>
 
-      {/* ECL Results Table */}
-      <Card className="p-6 mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">ECL Calculation Results</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Loan Reference</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">IFRS 9 Stage</th>
-                <th className="text-right py-3 px-4 font-semibold text-gray-900">ECL Value</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Calculation Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {eclResults.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="py-8 text-center text-gray-600">
-                    No ECL results available
-                  </td>
+        {/* ECL Results Table */}
+        <Card className="bg-primary border-primary-foreground/10 p-6 mb-8">
+          <h2 className="font-heading text-xl font-semibold text-secondary mb-4">ECL Calculation Results</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-primary-foreground/10">
+                  <th className="text-left py-3 px-4 font-paragraph font-semibold text-primary-foreground">Loan Reference</th>
+                  <th className="text-left py-3 px-4 font-paragraph font-semibold text-primary-foreground">IFRS 9 Stage</th>
+                  <th className="text-right py-3 px-4 font-paragraph font-semibold text-primary-foreground">ECL Value</th>
+                  <th className="text-left py-3 px-4 font-paragraph font-semibold text-primary-foreground">Calculation Date</th>
                 </tr>
-              ) : (
-                eclResults.slice(0, 10).map(ecl => (
-                  <tr key={ecl._id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4 text-gray-900">{ecl.loanReference}</td>
-                    <td className="py-3 px-4">
-                      <Badge className={getStageColor(ecl.ifrs9Stage || '')}>
-                        {ecl.ifrs9Stage}
-                      </Badge>
-                    </td>
-                    <td className="py-3 px-4 text-right font-medium text-gray-900">
-                      ${(ecl.eclValue || 0).toLocaleString()}
-                    </td>
-                    <td className="py-3 px-4 text-gray-600">
-                      {ecl.calculationTimestamp ? new Date(ecl.calculationTimestamp).toLocaleDateString() : 'N/A'}
+              </thead>
+              <tbody>
+                {eclResults.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="py-8 text-center font-paragraph text-primary-foreground/60">
+                      No ECL results available
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+                ) : (
+                  eclResults.slice(0, 10).map(ecl => (
+                    <tr key={ecl._id} className="border-b border-primary-foreground/5 hover:bg-primary-foreground/5">
+                      <td className="py-3 px-4 font-paragraph text-primary-foreground">{ecl.loanReference}</td>
+                      <td className="py-3 px-4">
+                        <Badge className={getStageColor(ecl.ifrs9Stage || '')}>
+                          {ecl.ifrs9Stage}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4 text-right font-paragraph font-medium text-primary-foreground">
+                        ZMW {(ecl.eclValue || 0).toLocaleString()}
+                      </td>
+                      <td className="py-3 px-4 font-paragraph text-primary-foreground/70">
+                        {ecl.calculationTimestamp ? new Date(ecl.calculationTimestamp).toLocaleDateString() : 'N/A'}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </Card>
 
-      {/* BoZ Provisions Table */}
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Bank of Zimbabwe Provisions</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Loan ID</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">BoZ Classification</th>
-                <th className="text-right py-3 px-4 font-semibold text-gray-900">Provision Amount</th>
-                <th className="text-right py-3 px-4 font-semibold text-gray-900">Provision %</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Effective Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bozProvisions.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-8 text-center text-gray-600">
-                    No BoZ provisions available
-                  </td>
+        {/* BoZ Provisions Table */}
+        <Card className="bg-primary border-primary-foreground/10 p-6 mb-8">
+          <h2 className="font-heading text-xl font-semibold text-secondary mb-4">Bank of Zimbabwe Provisions</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-primary-foreground/10">
+                  <th className="text-left py-3 px-4 font-paragraph font-semibold text-primary-foreground">Loan ID</th>
+                  <th className="text-left py-3 px-4 font-paragraph font-semibold text-primary-foreground">BoZ Classification</th>
+                  <th className="text-right py-3 px-4 font-paragraph font-semibold text-primary-foreground">Provision Amount</th>
+                  <th className="text-right py-3 px-4 font-paragraph font-semibold text-primary-foreground">Provision %</th>
+                  <th className="text-left py-3 px-4 font-paragraph font-semibold text-primary-foreground">Effective Date</th>
                 </tr>
-              ) : (
-                bozProvisions.slice(0, 10).map(prov => (
-                  <tr key={prov._id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4 text-gray-900">{prov.loanId}</td>
-                    <td className="py-3 px-4">
-                      <Badge className="bg-blue-100 text-blue-800">
-                        {prov.bozClassification}
-                      </Badge>
-                    </td>
-                    <td className="py-3 px-4 text-right font-medium text-gray-900">
-                      ${(prov.provisionAmount || 0).toLocaleString()}
-                    </td>
-                    <td className="py-3 px-4 text-right text-gray-600">
-                      {prov.provisionPercentage}%
-                    </td>
-                    <td className="py-3 px-4 text-gray-600">
-                      {prov.effectiveDate ? new Date(prov.effectiveDate).toLocaleDateString() : 'N/A'}
+              </thead>
+              <tbody>
+                {bozProvisions.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center font-paragraph text-primary-foreground/60">
+                      No BoZ provisions available
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </Card>
-
-      {/* Compliance Notes */}
-      <Card className="p-6 mt-8 bg-blue-50 border border-blue-200">
-        <div className="flex gap-4">
-          <AlertCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
-          <div>
-            <h3 className="font-semibold text-blue-900 mb-2">IFRS 9 Compliance Information</h3>
-            <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Stage 1: Loans with no significant increase in credit risk since origination</li>
-              <li>• Stage 2: Loans with significant increase in credit risk but not credit-impaired</li>
-              <li>• Stage 3: Credit-impaired loans (30+ days past due)</li>
-              <li>• ECL is calculated based on probability of default, loss given default, and exposure at default</li>
-              <li>• BoZ provisions follow Bank of Zimbabwe regulatory requirements</li>
-            </ul>
+                ) : (
+                  bozProvisions.slice(0, 10).map(prov => (
+                    <tr key={prov._id} className="border-b border-primary-foreground/5 hover:bg-primary-foreground/5">
+                      <td className="py-3 px-4 font-paragraph text-primary-foreground">{prov.loanId}</td>
+                      <td className="py-3 px-4">
+                        <Badge className="bg-secondary/20 text-secondary">
+                          {prov.bozClassification}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4 text-right font-paragraph font-medium text-primary-foreground">
+                        ZMW {(prov.provisionAmount || 0).toLocaleString()}
+                      </td>
+                      <td className="py-3 px-4 text-right font-paragraph text-primary-foreground/70">
+                        {prov.provisionPercentage}%
+                      </td>
+                      <td className="py-3 px-4 font-paragraph text-primary-foreground/70">
+                        {prov.effectiveDate ? new Date(prov.effectiveDate).toLocaleDateString() : 'N/A'}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-        </div>
-      </Card>
+        </Card>
+
+        {/* Compliance Notes */}
+        <Card className="bg-secondary/10 border border-secondary/20 p-6 mb-8">
+          <div className="flex gap-4">
+            <AlertCircle className="w-6 h-6 text-secondary flex-shrink-0 mt-1" />
+            <div>
+              <h3 className="font-heading font-semibold text-secondary mb-2">IFRS 9 Compliance Information</h3>
+              <ul className="font-paragraph text-sm text-primary-foreground/80 space-y-1">
+                <li>• Stage 1: Loans with no significant increase in credit risk since origination</li>
+                <li>• Stage 2: Loans with significant increase in credit risk but not credit-impaired</li>
+                <li>• Stage 3: Credit-impaired loans (30+ days past due)</li>
+                <li>• ECL is calculated based on probability of default, loss given default, and exposure at default</li>
+                <li>• BoZ provisions follow Bank of Zimbabwe regulatory requirements</li>
+              </ul>
+            </div>
+          </div>
+        </Card>
+      </main>
+      <Footer />
     </div>
   );
 }
