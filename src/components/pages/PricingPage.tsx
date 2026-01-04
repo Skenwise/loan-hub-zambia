@@ -27,64 +27,36 @@ const AnimatedReveal = ({ children, className, delay = 0 }: { children: React.Re
 const PRICING_PLANS = [
   {
     name: 'Starter',
-    price: 59,
-    description: 'Perfect for small lending operations',
+    price: 1209.50,
+    description: 'Ideal for small microfinance institutions or individual loan officers managing a limited portfolio. Get essential tools to streamline loan applications and borrower communication.',
     features: [
-      'Up to 2 users',
-      'Up to 100 loans',
-      'Loan management',
-      'Customer profiles',
-      'KYC verification',
-      'Loan origination',
-      'Payment processing',
-      'Basic reporting',
-      'Basic analytics',
-      'Email support'
+      'Full system access',
+      'Up to 2 system users',
+      'Up to 100 active loans'
     ],
     highlighted: false,
     cta: 'Start Free Trial'
   },
   {
     name: 'Professional',
-    price: 199,
-    description: 'For growing lending institutions',
+    price: 4079.50,
+    description: 'Designed for growing financial institutions needing robust tools for both retail and SME lending. Includes advanced reporting and compliance features for efficient operations.',
     features: [
-      'Up to 5 users',
-      'Up to 2,000 loans',
-      'Loan management',
-      'Customer profiles',
-      'Advanced analytics',
-      'Custom reports',
-      'Write-off management',
-      'IFRS 9 compliance',
-      'BoZ provisioning',
-      'Portfolio analytics',
-      'Risk management',
-      'Priority support'
+      'Full system access',
+      'Up to 5 system users',
+      'Up to 2,000 active loans'
     ],
     highlighted: true,
     cta: 'Start Free Trial'
   },
   {
     name: 'Enterprise',
-    price: 299,
-    description: 'For large-scale operations',
+    price: 6129.50,
+    description: 'The ultimate solution for large banks and financial corporations requiring full compliance, extensive customization, and high-volume loan processing with advanced risk management.',
     features: [
+      'Full system access',
       'Unlimited users',
-      'Unlimited loans',
-      'Loan management',
-      'Customer profiles',
-      'Advanced analytics',
-      'Custom reports',
-      'Write-off management',
-      'IFRS 9 compliance',
-      'BoZ provisioning',
-      'API access',
-      'White-label options',
-      'Dedicated support',
-      'Custom integrations',
-      'Advanced compliance',
-      'SLA guarantee'
+      'Unlimited loans'
     ],
     highlighted: false,
     cta: 'Contact Sales'
