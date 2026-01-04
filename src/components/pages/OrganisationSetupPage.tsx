@@ -268,9 +268,14 @@ export default function OrganisationSetupPage() {
                     const limitPairs = plan.usageLimits.split(',');
                     limitPairs.forEach(pair => {
                       const [key, value] = pair.split(':').map(s => s.trim());
-                      limits[key] = value;
+                      if (key && value) {
+                        limits[key] = value;
+                      }
                     });
                   }
+
+                  const maxUsers = limits['max_users'];
+                  const maxLoans = limits['max_loans'];
 
                   return (
                     <div
@@ -294,27 +299,29 @@ export default function OrganisationSetupPage() {
                       </div>
 
                       {/* Usage Limits */}
-                      <div className="mt-4 pt-4 border-t border-gray-200">
-                        <p className="text-xs font-semibold text-gray-700 uppercase mb-3">Limits</p>
-                        <div className="grid grid-cols-2 gap-3">
-                          {(limits['max_users'] || limits['max_customers']) && (
-                            <div className="bg-gray-50 p-3 rounded">
-                              <p className="text-xs text-gray-600">Users</p>
-                              <p className="text-lg font-semibold text-gray-900">
-                                {(limits['max_users'] || limits['max_customers']) === 'unlimited' ? '∞' : (limits['max_users'] || limits['max_customers'])}
-                              </p>
-                            </div>
-                          )}
-                          {limits['max_loans'] && (
-                            <div className="bg-gray-50 p-3 rounded">
-                              <p className="text-xs text-gray-600">Loans</p>
-                              <p className="text-lg font-semibold text-gray-900">
-                                {limits['max_loans'] === 'unlimited' ? '∞' : limits['max_loans']}
-                              </p>
-                            </div>
-                          )}
+                      {(maxUsers || maxLoans) && (
+                        <div className="mt-4 pt-4 border-t border-gray-200">
+                          <p className="text-xs font-semibold text-gray-700 uppercase mb-3">Limits</p>
+                          <div className="grid grid-cols-2 gap-3">
+                            {maxUsers && (
+                              <div className="bg-gray-50 p-3 rounded">
+                                <p className="text-xs text-gray-600">Users</p>
+                                <p className="text-lg font-semibold text-gray-900">
+                                  {maxUsers === 'unlimited' ? '∞' : maxUsers}
+                                </p>
+                              </div>
+                            )}
+                            {maxLoans && (
+                              <div className="bg-gray-50 p-3 rounded">
+                                <p className="text-xs text-gray-600">Loans</p>
+                                <p className="text-lg font-semibold text-gray-900">
+                                  {maxLoans === 'unlimited' ? '∞' : maxLoans}
+                                </p>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Features */}
                       {plan.features && (
