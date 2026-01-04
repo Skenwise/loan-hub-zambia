@@ -307,14 +307,6 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "repayments",
-        element: (
-          <MemberProtectedRoute messageToSignIn="Sign in to access repayment management">
-            <RepaymentManagementPage />
-          </MemberProtectedRoute>
-        ),
-      },
-      {
         path: "repayments/bulk",
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to access bulk repayment processing">
