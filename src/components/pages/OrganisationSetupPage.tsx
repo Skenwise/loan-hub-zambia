@@ -44,8 +44,19 @@ export default function OrganisationSetupPage() {
         plan.planName && 
         allowedPlanNames.includes(plan.planName)
       );
+      
+      // Deduplicate by plan name - keep only the first occurrence of each plan name
+      const seenPlanNames = new Set<string>();
+      const uniquePlans = activePlans.filter(plan => {
+        if (seenPlanNames.has(plan.planName!)) {
+          return false;
+        }
+        seenPlanNames.add(plan.planName!);
+        return true;
+      });
+      
       // Sort by the order: Starter, Professional, Enterprise
-      const sortedPlans = activePlans.sort((a, b) => {
+      const sortedPlans = uniquePlans.sort((a, b) => {
         const orderMap = { 'Starter': 0, 'Professional': 1, 'Enterprise': 2 };
         return (orderMap[a.planName as keyof typeof orderMap] ?? 999) - (orderMap[b.planName as keyof typeof orderMap] ?? 999);
       });
