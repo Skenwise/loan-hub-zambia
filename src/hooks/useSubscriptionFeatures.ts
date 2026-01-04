@@ -20,9 +20,8 @@ export function useSubscriptionFeatures() {
   const { subscriptionPlan, currentOrganisation } = useOrganisationStore();
 
   const hasFeature = (feature: FeatureKey): boolean => {
-    if (!subscriptionPlan?.features) return false;
-    const features = subscriptionPlan.features.split(',').map(f => f.trim());
-    return features.includes(feature);
+    // All features are now accessible to all subscription plans
+    return true;
   };
 
   const hasAnyFeature = (features: FeatureKey[]): boolean => {
@@ -43,12 +42,7 @@ export function useSubscriptionFeatures() {
   };
 
   const canAccessFeature = async (feature: FeatureKey): Promise<boolean> => {
-    if (!currentOrganisation) return false;
-    
-    // Check if feature is in the subscription plan
-    if (!hasFeature(feature)) return false;
-
-    // Additional checks can be added here (e.g., usage limits)
+    // All features are now accessible to all users
     return true;
   };
 
