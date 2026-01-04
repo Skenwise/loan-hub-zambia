@@ -28,7 +28,7 @@ const PRICING_PLANS = [
   {
     name: 'Starter',
     price: 1209.50,
-    description: 'Ideal for small microfinance institutions or individual loan officers managing a limited portfolio. Get essential tools to streamline loan applications and borrower communication.',
+    description: 'Ideal for small microfinance institutions or individual loan officers managing a limited portfolio. Get essential tools to streamline loan applications and borrower communication. FEATURES: Full system access, Up to 2 system users, Up to 100 active loans',
     features: [
       'Full system access',
       'Up to 2 system users',
@@ -40,7 +40,7 @@ const PRICING_PLANS = [
   {
     name: 'Professional',
     price: 4079.50,
-    description: 'Designed for growing financial institutions needing robust tools for both retail and SME lending. Includes advanced reporting and compliance features for efficient operations.',
+    description: 'Designed for growing financial institutions needing robust tools for both retail and SME lending. Includes advanced reporting and compliance features for efficient operations. FEATURES: Full system access, Up to 5 system users, Up to 2,000 active loans',
     features: [
       'Full system access',
       'Up to 5 system users',
@@ -52,7 +52,7 @@ const PRICING_PLANS = [
   {
     name: 'Enterprise',
     price: 6129.50,
-    description: 'The ultimate solution for large banks and financial corporations requiring full compliance, extensive customization, and high-volume loan processing with advanced risk management.',
+    description: 'The ultimate solution for large banks and financial corporations requiring full compliance, extensive customization, and high-volume loan processing with advanced risk management. FEATURES: Full system access, Unlimited users, Unlimited loans',
     features: [
       'Full system access',
       'Unlimited users',

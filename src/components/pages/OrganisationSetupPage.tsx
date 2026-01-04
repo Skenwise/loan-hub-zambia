@@ -262,21 +262,6 @@ export default function OrganisationSetupPage() {
 
               <div className="grid gap-4">
                 {subscriptionPlans.map((plan) => {
-                  // Parse usage limits
-                  const limits: Record<string, string> = {};
-                  if (plan.usageLimits) {
-                    const limitPairs = plan.usageLimits.split(',');
-                    limitPairs.forEach(pair => {
-                      const [key, value] = pair.split(':').map(s => s.trim());
-                      if (key && value) {
-                        limits[key] = value;
-                      }
-                    });
-                  }
-
-                  const maxUsers = limits['max_users'];
-                  const maxLoans = limits['max_loans'];
-
                   return (
                     <div
                       key={plan._id}
@@ -288,48 +273,15 @@ export default function OrganisationSetupPage() {
                       }`}
                     >
                       <div className="flex justify-between items-start mb-4">
-                        <div>
+                        <div className="flex-1">
                           <h3 className="font-semibold text-lg text-gray-900">{plan.planName}</h3>
                           <p className="text-gray-600 text-sm mt-1">{plan.planDescription}</p>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right ml-4">
                           <p className="text-2xl font-bold text-secondary">{formatPrice(plan.pricePerMonth || 0)}</p>
                           <p className="text-gray-600 text-sm">/month</p>
                         </div>
                       </div>
-
-                      {/* Usage Limits */}
-                      {(maxUsers || maxLoans) && (
-                        <div className="mt-4 pt-4 border-t border-gray-200">
-                          <p className="text-xs font-semibold text-gray-700 uppercase mb-3">Limits</p>
-                          <div className="grid grid-cols-2 gap-3">
-                            {maxUsers && (
-                              <div className="bg-gray-50 p-3 rounded">
-                                <p className="text-xs text-gray-600">Users</p>
-                                <p className="text-lg font-semibold text-gray-900">
-                                  {maxUsers === 'unlimited' ? '∞' : maxUsers}
-                                </p>
-                              </div>
-                            )}
-                            {maxLoans && (
-                              <div className="bg-gray-50 p-3 rounded">
-                                <p className="text-xs text-gray-600">Loans</p>
-                                <p className="text-lg font-semibold text-gray-900">
-                                  {maxLoans === 'unlimited' ? '∞' : maxLoans}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Features */}
-                      {plan.features && (
-                        <div className="mt-4 pt-4 border-t border-gray-200">
-                          <p className="text-xs font-semibold text-gray-700 uppercase mb-2">Features</p>
-                          <p className="text-sm text-gray-700">{plan.features}</p>
-                        </div>
-                      )}
                     </div>
                   );
                 })}
