@@ -297,11 +297,11 @@ export default function OrganisationSetupPage() {
                       <div className="mt-4 pt-4 border-t border-gray-200">
                         <p className="text-xs font-semibold text-gray-700 uppercase mb-3">Limits</p>
                         <div className="grid grid-cols-2 gap-3">
-                          {limits['max_customers'] && (
+                          {(limits['max_users'] || limits['max_customers']) && (
                             <div className="bg-gray-50 p-3 rounded">
                               <p className="text-xs text-gray-600">Users</p>
                               <p className="text-lg font-semibold text-gray-900">
-                                {limits['max_customers'] === 'unlimited' ? '∞' : limits['max_customers']}
+                                {(limits['max_users'] || limits['max_customers']) === 'unlimited' ? '∞' : (limits['max_users'] || limits['max_customers'])}
                               </p>
                             </div>
                           )}
