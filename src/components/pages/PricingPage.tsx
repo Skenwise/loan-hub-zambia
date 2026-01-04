@@ -30,14 +30,16 @@ const PRICING_PLANS = [
     price: 59,
     description: 'Perfect for small lending operations',
     features: [
+      'Up to 2 users',
       'Up to 100 loans',
-      'Up to 5 users',
-      'Basic reporting',
-      'Email support',
+      'Loan management',
+      'Customer profiles',
       'KYC verification',
       'Loan origination',
       'Payment processing',
-      'Basic analytics'
+      'Basic reporting',
+      'Basic analytics',
+      'Email support'
     ],
     highlighted: false,
     cta: 'Start Free Trial'
@@ -47,16 +49,18 @@ const PRICING_PLANS = [
     price: 199,
     description: 'For growing lending institutions',
     features: [
-      'Up to 1,000 loans',
-      'Up to 25 users',
+      'Up to 5 users',
+      'Up to 2,000 loans',
+      'Loan management',
+      'Customer profiles',
       'Advanced analytics',
       'Custom reports',
       'Write-off management',
-      'Priority support',
       'IFRS 9 compliance',
       'BoZ provisioning',
       'Portfolio analytics',
-      'Risk management'
+      'Risk management',
+      'Priority support'
     ],
     highlighted: true,
     cta: 'Start Free Trial'
@@ -66,15 +70,20 @@ const PRICING_PLANS = [
     price: 299,
     description: 'For large-scale operations',
     features: [
-      'Unlimited loans',
       'Unlimited users',
-      'All features included',
-      'Advanced compliance',
+      'Unlimited loans',
+      'Loan management',
+      'Customer profiles',
+      'Advanced analytics',
+      'Custom reports',
+      'Write-off management',
+      'IFRS 9 compliance',
+      'BoZ provisioning',
       'API access',
       'White-label options',
       'Dedicated support',
       'Custom integrations',
-      'Advanced reporting',
+      'Advanced compliance',
       'SLA guarantee'
     ],
     highlighted: false,
