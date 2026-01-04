@@ -150,7 +150,7 @@ export class SubscriptionService {
         },
         {
           planName: 'Professional',
-          pricePerMonth: 199,
+          pricePerMonth: 129,
           features: 'advanced_reporting,customer_management,loan_management,ifrs9_compliance,boz_provisions,write_off_management,priority_support,portfolio_analytics,risk_management',
           usageLimits: 'max_users:5,max_loans:2000',
           planDescription: 'For growing lending institutions',
@@ -158,7 +158,7 @@ export class SubscriptionService {
         },
         {
           planName: 'Enterprise',
-          pricePerMonth: 299,
+          pricePerMonth: 346,
           features: 'advanced_reporting,customer_management,loan_management,ifrs9_compliance,boz_provisions,api_access,custom_integrations,white_label,dedicated_support,advanced_compliance,sla_guarantee',
           usageLimits: 'max_users:unlimited,max_loans:unlimited',
           planDescription: 'For large-scale operations',
