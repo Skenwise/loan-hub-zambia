@@ -108,7 +108,7 @@ export interface CustomerProfiles {
   kycVerificationStatus?: string;
   /** @wixFieldType number */
   creditScore?: number;
-  /** @wixFieldType image */
+  /** @wixFieldType image - Contains image URL, render with <Image> component, NOT as text */
   idDocumentImage?: string;
 }
 

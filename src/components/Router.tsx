@@ -4,6 +4,7 @@ import { ScrollToTop } from '@/lib/scroll-to-top';
 import ErrorPage from '@/integrations/errorHandlers/ErrorPage';
 import { MemberProtectedRoute } from '@/components/ui/member-protected-route';
 import { RoleProtectedRoute } from '@/components/ui/role-protected-route';
+import { SubscriptionFeatureGuard } from '@/components/ui/subscription-feature-guard';
 import HomePage from '@/components/pages/HomePage';
 import FeaturesPage from '@/components/pages/FeaturesPage';
 import PricingPage from '@/components/pages/PricingPage';
@@ -138,55 +139,95 @@ const router = createBrowserRouter([
       },
       {
         path: "customers",
-        element: <CustomersPage />,
+        element: (
+          <SubscriptionFeatureGuard feature="customer_management">
+            <CustomersPage />
+          </SubscriptionFeatureGuard>
+        ),
       },
       {
         path: "customers/bulk-upload",
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to bulk upload customers">
-            <BulkCustomerUploadPage />
+            <SubscriptionFeatureGuard feature="customer_management">
+              <BulkCustomerUploadPage />
+            </SubscriptionFeatureGuard>
           </MemberProtectedRoute>
         ),
       },
       {
         path: "loans",
-        element: <AdminLoansManagementPage />,
+        element: (
+          <SubscriptionFeatureGuard feature="loan_management">
+            <AdminLoansManagementPage />
+          </SubscriptionFeatureGuard>
+        ),
       },
       {
         path: "loans/apply",
-        element: <LoanApplicationPage />,
+        element: (
+          <SubscriptionFeatureGuard feature="loan_management">
+            <LoanApplicationPage />
+          </SubscriptionFeatureGuard>
+        ),
       },
       {
         path: "loans/approve",
-        element: <LoanApprovalPage />,
+        element: (
+          <SubscriptionFeatureGuard feature="loan_management">
+            <LoanApprovalPage />
+          </SubscriptionFeatureGuard>
+        ),
       },
       {
         path: "loans/disburse",
-        element: <DisbursementPage />,
+        element: (
+          <SubscriptionFeatureGuard feature="loan_management">
+            <DisbursementPage />
+          </SubscriptionFeatureGuard>
+        ),
       },
       {
         path: "repayments",
-        element: <RepaymentsPage />,
+        element: (
+          <SubscriptionFeatureGuard feature="loan_management">
+            <RepaymentsPage />
+          </SubscriptionFeatureGuard>
+        ),
       },
       {
         path: "reports",
-        element: <ReportsPage />,
+        element: (
+          <SubscriptionFeatureGuard feature="basic_reporting">
+            <ReportsPage />
+          </SubscriptionFeatureGuard>
+        ),
       },
       {
         path: "reports/advanced",
-        element: <AdvancedReportsPage />,
+        element: (
+          <SubscriptionFeatureGuard feature="advanced_reporting">
+            <AdvancedReportsPage />
+          </SubscriptionFeatureGuard>
+        ),
       },
       {
         path: "reports/comprehensive",
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to access reports">
-            <ComprehensiveReportsPage />
+            <SubscriptionFeatureGuard feature="advanced_reporting">
+              <ComprehensiveReportsPage />
+            </SubscriptionFeatureGuard>
           </MemberProtectedRoute>
         ),
       },
       {
         path: "compliance/ifrs9",
-        element: <IFRS9CompliancePage />,
+        element: (
+          <SubscriptionFeatureGuard feature="ifrs9_compliance">
+            <IFRS9CompliancePage />
+          </SubscriptionFeatureGuard>
+        ),
       },
       {
         path: "settings",

@@ -4,6 +4,7 @@ import { useMember } from '@/integrations';
 import { Button } from '@/components/ui/button';
 import { useOrganisationStore } from '@/store/organisationStore';
 import { useRoleStore } from '@/store/roleStore';
+import { useSubscriptionFeatures } from '@/hooks/useSubscriptionFeatures';
 import {
   LayoutDashboard,
   Users,
@@ -14,41 +15,44 @@ import {
   Menu,
   X,
   ChevronDown,
+  Lock,
 } from 'lucide-react';
 
 export default function AdminPortalLayout() {
   const location = useLocation();
   const { member, actions } = useMember();
   const { currentOrganisation, currentStaff } = useOrganisationStore();
+  const { hasFeature, getPlanType } = useSubscriptionFeatures();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
+  // Define navigation items with feature requirements
   const mainNavItems = [
-    { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/admin/loans', label: 'Loans', icon: FileText },
-    { path: '/admin/loans/apply', label: 'New Application', icon: FileText },
-    { path: '/admin/loans/approve', label: 'Approvals', icon: FileText },
-    { path: '/admin/loans/disburse', label: 'Disbursement', icon: FileText },
-    { path: '/admin/repayments', label: 'Repayments', icon: FileText },
-    { path: '/admin/compliance/ifrs9', label: 'IFRS 9 Compliance', icon: BarChart3 },
+    { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard, feature: null },
+    { path: '/admin/loans', label: 'Loans', icon: FileText, feature: 'loan_management' },
+    { path: '/admin/loans/apply', label: 'New Application', icon: FileText, feature: 'loan_management' },
+    { path: '/admin/loans/approve', label: 'Approvals', icon: FileText, feature: 'loan_management' },
+    { path: '/admin/loans/disburse', label: 'Disbursement', icon: FileText, feature: 'loan_management' },
+    { path: '/admin/repayments', label: 'Repayments', icon: FileText, feature: 'loan_management' },
+    { path: '/admin/compliance/ifrs9', label: 'IFRS 9 Compliance', icon: BarChart3, feature: 'ifrs9_compliance' },
     // Loan Officer Dashboard - only visible to Loan Officers
-    ...(currentStaff?.role === 'Loan Officer' ? [{ path: '/admin/dashboard/loan-officer', label: 'Loan Officer Dashboard', icon: LayoutDashboard }] : []),
+    ...(currentStaff?.role === 'Loan Officer' ? [{ path: '/admin/dashboard/loan-officer', label: 'Loan Officer Dashboard', icon: LayoutDashboard, feature: null }] : []),
   ];
 
   const customersItems = [
-    { path: '/admin/customers', label: 'View Customers', icon: Users },
+    { path: '/admin/customers', label: 'View Customers', icon: Users, feature: 'customer_management' },
   ];
 
   const repaymentsItems = [
-    { path: '/admin/repayments', label: 'View Repayments', icon: FileText },
-    { path: '/admin/repayments/bulk', label: 'Bulk Repayment', icon: FileText },
+    { path: '/admin/repayments', label: 'View Repayments', icon: FileText, feature: 'loan_management' },
+    { path: '/admin/repayments/bulk', label: 'Bulk Repayment', icon: FileText, feature: 'loan_management' },
   ];
 
   const reportItems = [
-    { path: '/admin/reports', label: 'Reports', icon: BarChart3 },
-    { path: '/admin/reports/advanced', label: 'Advanced Reports', icon: BarChart3 },
-    { path: '/admin/reports/comprehensive', label: 'Comprehensive Reports', icon: BarChart3 },
-    { path: '/admin/reports/disbursements', label: 'Disbursement Reports', icon: BarChart3 },
+    { path: '/admin/reports', label: 'Reports', icon: BarChart3, feature: 'basic_reporting' },
+    { path: '/admin/reports/advanced', label: 'Advanced Reports', icon: BarChart3, feature: 'advanced_reporting' },
+    { path: '/admin/reports/comprehensive', label: 'Comprehensive Reports', icon: BarChart3, feature: 'advanced_reporting' },
+    { path: '/admin/reports/disbursements', label: 'Disbursement Reports', icon: BarChart3, feature: 'advanced_reporting' },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -79,22 +83,40 @@ export default function AdminPortalLayout() {
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto overflow-x-hidden">
           {mainNavItems.map((item, index) => {
             const Icon = item.icon;
+            // Check if feature is available
+            const isFeatureAvailable = !item.feature || hasFeature(item.feature as any);
+            
             return (
               <div key={item.path}>
-                <Link
-                  to={item.path}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                    isActive(item.path)
-                      ? 'bg-secondary text-white'
-                      : 'text-white hover:bg-primary/80'
-                  }`}
-                >
-                  <Icon size={20} />
-                  {sidebarOpen && <span>{item.label}</span>}
-                </Link>
+                {isFeatureAvailable ? (
+                  <Link
+                    to={item.path}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+                      isActive(item.path)
+                        ? 'bg-secondary text-white'
+                        : 'text-white hover:bg-primary/80'
+                    }`}
+                  >
+                    <Icon size={20} />
+                    {sidebarOpen && <span>{item.label}</span>}
+                  </Link>
+                ) : (
+                  <div
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/50 cursor-not-allowed"
+                    title={`Not available in ${getPlanType()} plan`}
+                  >
+                    <Icon size={20} />
+                    {sidebarOpen && (
+                      <div className="flex items-center gap-2 flex-1">
+                        <span>{item.label}</span>
+                        <Lock size={14} />
+                      </div>
+                    )}
+                  </div>
+                )}
                 
                 {/* Customers Folder - appears after Dashboard */}
-                {index === 0 && (
+                {index === 0 && hasFeature('customer_management' as any) && (
                   <div className="pt-2">
                     <Link
                       to="/admin/customers"
@@ -129,19 +151,21 @@ export default function AdminPortalLayout() {
           </div>
 
           {/* Reports Folder */}
-          <div className="pt-2">
-            <Link
-              to="/admin/reports"
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                isActive('/admin/reports')
-                  ? 'bg-secondary text-white'
-                  : 'text-white hover:bg-primary/80'
-              }`}
-            >
-              <BarChart3 size={20} />
-              {sidebarOpen && <span>Reports</span>}
-            </Link>
-          </div>
+          {reportItems.some(item => !item.feature || hasFeature(item.feature as any)) && (
+            <div className="pt-2">
+              <Link
+                to="/admin/reports"
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+                  isReportsActive
+                    ? 'bg-secondary text-white'
+                    : 'text-white hover:bg-primary/80'
+                }`}
+              >
+                <BarChart3 size={20} />
+                {sidebarOpen && <span>Reports</span>}
+              </Link>
+            </div>
+          )}
 
           {/* Settings Folder */}
           <div className="pt-2">
