@@ -1,11 +1,14 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { CheckCircle2, ArrowRight, Zap } from 'lucide-react';
 import { motion, useInView } from 'framer-motion';
 import { useCurrencyStore } from '@/store/currencyStore';
+import { BaseCrudService } from '@/integrations';
+import { SubscriptionPlans } from '@/entities';
 
 const AnimatedReveal = ({ children, className, delay = 0 }: { children: React.ReactNode, className?: string, delay?: number }) => {
   const ref = useRef(null);
@@ -24,44 +27,29 @@ const AnimatedReveal = ({ children, className, delay = 0 }: { children: React.Re
   );
 };
 
-const PRICING_PLANS = [
-  {
-    name: 'Starter',
-    price: 59,
-    description: 'Ideal for small microfinance institutions or individual loan officers managing a limited portfolio. Get essential tools to streamline loan applications and borrower communication. FEATURES: Full system access, Up to 2 system users, Up to 100 active loans',
-    features: [
-      'Full system access',
-      'Up to 2 system users',
-      'Up to 100 active loans'
-    ],
-    highlighted: false,
-    cta: 'Start Free Trial'
-  },
-  {
-    name: 'Professional',
-    price: 129,
-    description: 'Designed for growing financial institutions needing robust tools for both retail and SME lending. Includes advanced reporting and compliance features for efficient operations. FEATURES: Full system access, Up to 5 system users, Up to 2,000 active loans',
-    features: [
-      'Full system access',
-      'Up to 5 system users',
-      'Up to 2,000 active loans'
-    ],
-    highlighted: true,
-    cta: 'Start Free Trial'
-  },
-  {
-    name: 'Enterprise',
-    price: 346,
-    description: 'The ultimate solution for large banks and financial corporations requiring full compliance, extensive customization, and high-volume loan processing with advanced risk management. FEATURES: Full system access, Unlimited users, Unlimited loans',
-    features: [
-      'Full system access',
-      'Unlimited users',
-      'Unlimited loans'
-    ],
-    highlighted: false,
-    cta: 'Contact Sales'
-  }
-];
+const PLAN_DESCRIPTIONS = {
+  'Starter': 'Ideal for small microfinance institutions or individual loan officers managing a limited portfolio. Get essential tools to streamline loan applications and borrower communication.',
+  'Professional': 'Designed for growing financial institutions needing robust tools for both retail and SME lending. Includes advanced reporting and compliance features for efficient operations.',
+  'Enterprise': 'The ultimate solution for large banks and financial corporations requiring full compliance, extensive customization, and high-volume loan processing with advanced risk management.'
+};
+
+const PLAN_FEATURES = {
+  'Starter': [
+    'Full system access',
+    'Up to 2 system users',
+    'Up to 100 active loans'
+  ],
+  'Professional': [
+    'Full system access',
+    'Up to 5 system users',
+    'Up to 2,000 active loans'
+  ],
+  'Enterprise': [
+    'Full system access',
+    'Unlimited users',
+    'Unlimited loans'
+  ]
+};
 
 const FAQ_ITEMS = [
   {
@@ -93,6 +81,65 @@ const FAQ_ITEMS = [
 export default function PricingPage() {
   const { formatPrice } = useCurrencyStore();
   const navigate = useNavigate();
+  const [pricingPlans, setPricingPlans] = useState<Array<{
+    name: string;
+    price: number;
+    description: string;
+    features: string[];
+    highlighted: boolean;
+    cta: string;
+  }>>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadPricingPlans();
+  }, []);
+
+  const loadPricingPlans = async () => {
+    try {
+      const { items } = await BaseCrudService.getAll<SubscriptionPlans>('subscriptionplans');
+      
+      // Filter to only show active plans with the correct names
+      const allowedPlanNames = ['Starter', 'Professional', 'Enterprise'];
+      const activePlans = items.filter(plan => 
+        plan.isActive === true && 
+        plan.planName && 
+        allowedPlanNames.includes(plan.planName)
+      );
+      
+      // Deduplicate by plan name - keep only the first occurrence of each plan name
+      const seenPlanNames = new Set<string>();
+      const uniquePlans = activePlans.filter(plan => {
+        if (seenPlanNames.has(plan.planName!)) {
+          return false;
+        }
+        seenPlanNames.add(plan.planName!);
+        return true;
+      });
+      
+      // Sort by the order: Starter, Professional, Enterprise
+      const sortedPlans = uniquePlans.sort((a, b) => {
+        const orderMap = { 'Starter': 0, 'Professional': 1, 'Enterprise': 2 };
+        return (orderMap[a.planName as keyof typeof orderMap] ?? 999) - (orderMap[b.planName as keyof typeof orderMap] ?? 999);
+      });
+
+      // Transform to pricing plan format
+      const plans = sortedPlans.map(plan => ({
+        name: plan.planName || '',
+        price: plan.pricePerMonth || 0,
+        description: PLAN_DESCRIPTIONS[plan.planName as keyof typeof PLAN_DESCRIPTIONS] || '',
+        features: PLAN_FEATURES[plan.planName as keyof typeof PLAN_FEATURES] || [],
+        highlighted: plan.planName === 'Professional',
+        cta: plan.planName === 'Enterprise' ? 'Contact Sales' : 'Start Free Trial'
+      }));
+
+      setPricingPlans(plans);
+    } catch (error) {
+      console.error('Failed to load pricing plans:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleStartTrial = () => {
     navigate('/setup');
@@ -144,74 +191,82 @@ export default function PricingPage() {
       {/* Pricing Cards */}
       <section className="w-full py-32 relative">
         <div className="max-w-[120rem] mx-auto px-6 lg:px-12">
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {PRICING_PLANS.map((plan, index) => (
-              <AnimatedReveal key={index} delay={index * 0.2} className="group">
-                <div className={`h-full rounded-3xl transition-all duration-500 flex flex-col relative overflow-hidden ${
-                  plan.highlighted 
-                    ? 'bg-gradient-to-br from-secondary/20 to-transparent border-2 border-secondary p-8 lg:scale-105' 
-                    : 'bg-primary-foreground/[0.03] border border-primary-foreground/10 p-8 hover:border-primary-foreground/20'
-                }`}>
-                  {plan.highlighted && (
-                    <div className="absolute top-0 right-0 bg-secondary text-primary px-4 py-2 rounded-bl-2xl font-bold text-sm">
-                      POPULAR
-                    </div>
-                  )}
+          {isLoading ? (
+            <div className="flex justify-center items-center min-h-[400px]">
+              <LoadingSpinner />
+            </div>
+          ) : (
+            <>
+              <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                {pricingPlans.map((plan, index) => (
+                  <AnimatedReveal key={index} delay={index * 0.2} className="group">
+                    <div className={`h-full rounded-3xl transition-all duration-500 flex flex-col relative overflow-hidden ${
+                      plan.highlighted 
+                        ? 'bg-gradient-to-br from-secondary/20 to-transparent border-2 border-secondary p-8 lg:scale-105' 
+                        : 'bg-primary-foreground/[0.03] border border-primary-foreground/10 p-8 hover:border-primary-foreground/20'
+                    }`}>
+                      {plan.highlighted && (
+                        <div className="absolute top-0 right-0 bg-secondary text-primary px-4 py-2 rounded-bl-2xl font-bold text-sm">
+                          POPULAR
+                        </div>
+                      )}
 
-                  <div className="mb-8">
-                    <h3 className="font-heading text-3xl font-bold mb-2">{plan.name}</h3>
-                    <p className="text-primary-foreground/60 mb-6">{plan.description}</p>
-                    <div className="flex items-baseline gap-2 mb-4">
-                      <span className="font-heading text-5xl font-bold">{formatPrice(plan.price)}</span>
-                      <span className="text-primary-foreground/60">/month</span>
-                    </div>
-                    <p className="text-sm text-primary-foreground/50">Billed monthly. Cancel anytime.</p>
-                  </div>
-
-                  <Button 
-                    onClick={() => handleCTAClick(plan.cta)}
-                    className={`w-full h-12 rounded-full font-bold mb-8 transition-all ${
-                      plan.highlighted
-                        ? 'bg-secondary text-primary hover:bg-secondary/90'
-                        : 'bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20 border border-primary-foreground/20'
-                    }`}
-                  >
-                    {plan.cta}
-                  </Button>
-
-                  <div className="space-y-4 flex-1">
-                    {plan.features.map((feature, i) => (
-                      <div key={i} className="flex items-start gap-3">
-                        <CheckCircle2 className={`w-5 h-5 flex-shrink-0 mt-0.5 ${plan.highlighted ? 'text-secondary' : 'text-brandaccent'}`} />
-                        <span className="text-primary-foreground/80">{feature}</span>
+                      <div className="mb-8">
+                        <h3 className="font-heading text-3xl font-bold mb-2">{plan.name}</h3>
+                        <p className="text-primary-foreground/60 mb-6">{plan.description}</p>
+                        <div className="flex items-baseline gap-2 mb-4">
+                          <span className="font-heading text-5xl font-bold">{formatPrice(plan.price)}</span>
+                          <span className="text-primary-foreground/60">/month</span>
+                        </div>
+                        <p className="text-sm text-primary-foreground/50">Billed monthly. Cancel anytime.</p>
                       </div>
-                    ))}
+
+                      <Button 
+                        onClick={() => handleCTAClick(plan.cta)}
+                        className={`w-full h-12 rounded-full font-bold mb-8 transition-all ${
+                          plan.highlighted
+                            ? 'bg-secondary text-primary hover:bg-secondary/90'
+                            : 'bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20 border border-primary-foreground/20'
+                        }`}
+                      >
+                        {plan.cta}
+                      </Button>
+
+                      <div className="space-y-4 flex-1">
+                        {plan.features.map((feature, i) => (
+                          <div key={i} className="flex items-start gap-3">
+                            <CheckCircle2 className={`w-5 h-5 flex-shrink-0 mt-0.5 ${plan.highlighted ? 'text-secondary' : 'text-brandaccent'}`} />
+                            <span className="text-primary-foreground/80">{feature}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </AnimatedReveal>
+                ))}
+              </div>
+
+              {/* Additional Info */}
+              <AnimatedReveal className="mt-20 text-center max-w-3xl mx-auto">
+                <div className="p-8 rounded-3xl bg-primary-foreground/[0.03] border border-primary-foreground/10">
+                  <div className="flex items-center justify-center gap-2 mb-4">
+                    <Zap className="w-5 h-5 text-secondary" />
+                    <span className="font-semibold text-secondary">Special Offer</span>
                   </div>
+                  <h3 className="font-heading text-2xl font-bold mb-4">Annual Billing Discount</h3>
+                  <p className="text-primary-foreground/70 mb-6">
+                    Save 2 months when you pay annually. Plus, get priority support and custom implementation assistance.
+                  </p>
+                  <Button 
+                    onClick={handleLearnMore}
+                    variant="link" 
+                    className="text-secondary p-0 h-auto font-semibold text-lg group"
+                  >
+                    Learn More <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
                 </div>
               </AnimatedReveal>
-            ))}
-          </div>
-
-          {/* Additional Info */}
-          <AnimatedReveal className="mt-20 text-center max-w-3xl mx-auto">
-            <div className="p-8 rounded-3xl bg-primary-foreground/[0.03] border border-primary-foreground/10">
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <Zap className="w-5 h-5 text-secondary" />
-                <span className="font-semibold text-secondary">Special Offer</span>
-              </div>
-              <h3 className="font-heading text-2xl font-bold mb-4">Annual Billing Discount</h3>
-              <p className="text-primary-foreground/70 mb-6">
-                Save 2 months when you pay annually. Plus, get priority support and custom implementation assistance.
-              </p>
-              <Button 
-                onClick={handleLearnMore}
-                variant="link" 
-                className="text-secondary p-0 h-auto font-semibold text-lg group"
-              >
-                Learn More <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </div>
-          </AnimatedReveal>
+            </>
+          )}
         </div>
       </section>
 
