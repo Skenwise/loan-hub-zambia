@@ -800,9 +800,12 @@ export default function SettingsPage() {
                       Manage user roles and their permissions
                     </CardDescription>
                   </div>
-                  <Button className="bg-blue-600 text-white hover:bg-blue-700">
+                  <Button 
+                    onClick={() => navigate('/admin/settings/roles-permissions')}
+                    className="bg-blue-600 text-white hover:bg-blue-700"
+                  >
                     <Plus className="w-4 h-4 mr-2" />
-                    New Role
+                    Manage Roles
                   </Button>
                 </CardHeader>
                 <CardContent>

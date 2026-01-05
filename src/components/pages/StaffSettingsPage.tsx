@@ -6,8 +6,9 @@
 import { useState, useEffect } from 'react';
 import { useMember } from '@/integrations';
 import { useOrganisationStore } from '@/store/organisationStore';
-import { BaseCrudService, StaffService, AuditService } from '@/services';
-import { StaffMembers } from '@/entities';
+import { useNavigate } from 'react-router-dom';
+import { BaseCrudService, StaffService, AuditService, RoleService } from '@/services';
+import { StaffMembers, Roles } from '@/entities';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,6 +36,7 @@ import {
   Shield,
   Calendar,
   MapPin,
+  ArrowLeft,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
@@ -168,6 +170,7 @@ interface StaffFormData extends StaffMembers {
 }
 
 export default function StaffSettingsPage() {
+  const navigate = useNavigate();
   const { member } = useMember();
   const { currentOrganisation } = useOrganisationStore();
   const [isLoading, setIsLoading] = useState(true);
@@ -178,6 +181,8 @@ export default function StaffSettingsPage() {
   
   const [staffList, setStaffList] = useState<StaffFormData[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [roles, setRoles] = useState<Roles[]>([]);
+  const [branches, setBranches] = useState<string[]>(['Main Branch', 'Branch A', 'Branch B', 'Branch C']);
   const [formData, setFormData] = useState<StaffFormData>({
     _id: '',
     firstName: '',
@@ -239,12 +244,20 @@ export default function StaffSettingsPage() {
   });
 
   useEffect(() => {
-    const loadStaff = async () => {
+    const loadData = async () => {
       try {
         setIsLoading(true);
         if (currentOrganisation?._id) {
           const result = await BaseCrudService.getAll<StaffFormData>('staffmembers', {}, { limit: 100 });
           setStaffList(result.items || []);
+        }
+        
+        // Load roles
+        try {
+          const rolesResult = await BaseCrudService.getAll<Roles>('roles', {}, { limit: 100 });
+          setRoles(rolesResult.items || []);
+        } catch (error) {
+          console.error('Error loading roles:', error);
         }
       } catch (error) {
         console.error('Error loading staff:', error);
@@ -254,7 +267,7 @@ export default function StaffSettingsPage() {
       }
     };
 
-    loadStaff();
+    loadData();
   }, [currentOrganisation]);
 
   const validateForm = (): boolean => {

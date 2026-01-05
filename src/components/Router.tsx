@@ -44,6 +44,7 @@ import CustomerSignupPage from '@/components/pages/CustomerSignupPage';
 import BulkCustomerUploadPage from '@/components/pages/BulkCustomerUploadPage';
 import SettingsPage from '@/components/pages/SettingsPage';
 import StaffSettingsPage from '@/components/pages/StaffSettingsPage';
+import RolesPermissionsPage from '@/components/pages/RolesPermissionsPage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -243,6 +244,14 @@ const router = createBrowserRouter([
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to access staff settings">
             <StaffSettingsPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "settings/roles-permissions",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to access roles and permissions">
+            <RolesPermissionsPage />
           </MemberProtectedRoute>
         ),
       },
