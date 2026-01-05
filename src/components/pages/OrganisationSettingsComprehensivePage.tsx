@@ -111,6 +111,7 @@ export default function OrganisationSettingsComprehensivePage() {
   const [editingSettings, setEditingSettings] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>('');
+  const [contactEmail, setContactEmail] = useState('');
 
   // Load data
   useEffect(() => {
@@ -153,6 +154,11 @@ export default function OrganisationSettingsComprehensivePage() {
           await BaseCrudService.create('organisationsettings', defaultSettings);
           setSettings(defaultSettings);
         }
+
+        // Set contact email from organisation
+        if (currentOrganisation?.contactEmail) {
+          setContactEmail(currentOrganisation.contactEmail);
+        }
       } catch (error) {
         console.error('Error loading settings:', error);
         setErrorMessage('Failed to load organisation settings');
@@ -191,6 +197,14 @@ export default function OrganisationSettingsComprehensivePage() {
         await BaseCrudService.update('organisationsettings', updatedSettings);
       } else {
         await BaseCrudService.create('organisationsettings', updatedSettings);
+      }
+
+      // Update organisation contact email if changed
+      if (currentOrganisation && contactEmail !== currentOrganisation.contactEmail) {
+        await BaseCrudService.update('organisations', {
+          ...currentOrganisation,
+          contactEmail: contactEmail,
+        });
       }
 
       setSettings(updatedSettings);
@@ -347,6 +361,17 @@ export default function OrganisationSettingsComprehensivePage() {
                           onChange={(e) =>
                             setSettings({ ...settings, companyName: e.target.value })
                           }
+                          disabled={!editingSettings}
+                          className="bg-white border-slate-300 text-slate-900 disabled:bg-slate-100"
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-slate-700 text-sm mb-2 block">Contact Email</Label>
+                        <Input
+                          type="email"
+                          value={contactEmail}
+                          onChange={(e) => setContactEmail(e.target.value)}
                           disabled={!editingSettings}
                           className="bg-white border-slate-300 text-slate-900 disabled:bg-slate-100"
                         />

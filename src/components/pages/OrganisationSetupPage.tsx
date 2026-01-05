@@ -30,6 +30,13 @@ export default function OrganisationSetupPage() {
   const [selectedPlanId, setSelectedPlanId] = useState<string>('');
   const [selectedCurrency, setSelectedCurrency] = useState<string>(currency);
 
+  // Auto-populate email from member
+  useEffect(() => {
+    if (member?.loginEmail && !contactEmail) {
+      setContactEmail(member.loginEmail);
+    }
+  }, [member?.loginEmail]);
+
   useEffect(() => {
     loadSubscriptionPlans();
   }, []);
