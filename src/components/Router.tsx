@@ -46,6 +46,9 @@ import SettingsPage from '@/components/pages/SettingsPage';
 import StaffSettingsPage from '@/components/pages/StaffSettingsPage';
 import RolesPermissionsPage from '@/components/pages/RolesPermissionsPage';
 import LoanSettingsPage from '@/components/pages/LoanSettingsPage';
+import LoanProductsListPage from '@/components/pages/LoanProductsListPage';
+import AddEditLoanProductPage from '@/components/pages/AddEditLoanProductPage';
+import LoanPenaltySettingsPage from '@/components/pages/LoanPenaltySettingsPage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -338,6 +341,30 @@ const router = createBrowserRouter([
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to access bulk repayment processing">
             <BulkRepaymentPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "loans/loan-products",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to access loan products">
+            <LoanProductsListPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "loans/loan-products/add-edit",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to manage loan products">
+            <AddEditLoanProductPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "loans/loan-products/penalty-settings",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to manage penalty settings">
+            <LoanPenaltySettingsPage />
           </MemberProtectedRoute>
         ),
       },

@@ -264,6 +264,45 @@ export interface LoanDocuments {
 
 
 /**
+ * Collection ID: loanpenaltysettings
+ * Interface for LoanPenaltySettings
+ */
+export interface LoanPenaltySettings {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  loanProductId?: string;
+  /** @wixFieldType boolean */
+  enableLatePaymentPenalty?: boolean;
+  /** @wixFieldType number */
+  latePaymentGracePeriodDays?: number;
+  /** @wixFieldType number */
+  latePaymentRate?: number;
+  /** @wixFieldType number */
+  latePaymentCapAmount?: number;
+  /** @wixFieldType text */
+  latePaymentCalculationMethod?: string;
+  /** @wixFieldType boolean */
+  enableEarlySettlementPenalty?: boolean;
+  /** @wixFieldType number */
+  earlySettlementRate?: number;
+  /** @wixFieldType number */
+  earlySettlementCapAmount?: number;
+  /** @wixFieldType text */
+  earlySettlementCalculationMethod?: string;
+  /** @wixFieldType boolean */
+  enablePrepaymentPenalty?: boolean;
+  /** @wixFieldType number */
+  prepaymentRate?: number;
+  /** @wixFieldType number */
+  prepaymentCapAmount?: number;
+  /** @wixFieldType text */
+  prepaymentCalculationMethod?: string;
+}
+
+
+/**
  * Collection ID: loanproducts
  * Interface for LoanProducts
  */
