@@ -769,10 +769,24 @@ export default function SettingsPage() {
                                 </Badge>
                               </td>
                               <td className="py-3 px-4 flex gap-2">
-                                <Button size="sm" variant="outline" className="text-slate-700 border-slate-300">
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="text-slate-700 border-slate-300 hover:bg-slate-100 cursor-pointer"
+                                  onClick={() => navigate(`/admin/settings/staff?edit=${member._id}`)}
+                                >
                                   <Edit2 className="w-4 h-4" />
                                 </Button>
-                                <Button size="sm" variant="outline" className="text-red-600 border-slate-300">
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="text-red-600 border-slate-300 hover:bg-red-50 cursor-pointer"
+                                  onClick={() => {
+                                    if (confirm('Are you sure you want to delete this staff member?')) {
+                                      // Delete logic will be implemented
+                                    }
+                                  }}
+                                >
                                   <Trash2 className="w-4 h-4" />
                                 </Button>
                               </td>
@@ -821,11 +835,25 @@ export default function SettingsPage() {
                             <p className="text-sm text-slate-600">{role.description}</p>
                           </div>
                           <div className="flex gap-2">
-                            <Button size="sm" variant="outline" className="text-slate-700 border-slate-300">
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="text-slate-700 border-slate-300 hover:bg-slate-100 cursor-pointer"
+                              onClick={() => navigate(`/admin/settings/roles-permissions?edit=${role._id}`)}
+                            >
                               <Edit2 className="w-4 h-4" />
                             </Button>
                             {!role.isSystemRole && (
-                              <Button size="sm" variant="outline" className="text-red-600 border-slate-300">
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="text-red-600 border-slate-300 hover:bg-red-50 cursor-pointer"
+                                onClick={() => {
+                                  if (confirm('Are you sure you want to delete this role?')) {
+                                    // Delete logic will be implemented
+                                  }
+                                }}
+                              >
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             )}
