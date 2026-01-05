@@ -122,9 +122,14 @@ export default function SettingsPage() {
         // Load organisation settings
         const result = await BaseCrudService.getAll<OrganisationSettings>('organisationsettings', {}, { limit: 1 });
         if (result.items && result.items.length > 0) {
-          setSettings(result.items[0]);
-          if (result.items[0].companyLogo) {
-            setLogoPreview(result.items[0].companyLogo);
+          const existingSettings = result.items[0];
+          // Sync company name from organisation if it differs
+          if (currentOrganisation?.organizationName && existingSettings.companyName !== currentOrganisation.organizationName) {
+            existingSettings.companyName = currentOrganisation.organizationName;
+          }
+          setSettings(existingSettings);
+          if (existingSettings.companyLogo) {
+            setLogoPreview(existingSettings.companyLogo);
           }
         } else {
           // Create default settings if none exist
@@ -222,12 +227,24 @@ export default function SettingsPage() {
         await BaseCrudService.create('organisationsettings', updatedSettings);
       }
 
-      // Update organisation contact email if changed
-      if (currentOrganisation && contactEmail !== currentOrganisation.contactEmail) {
-        await BaseCrudService.update('organisations', {
-          ...currentOrganisation,
-          contactEmail: contactEmail,
-        });
+      // Update organisation with company name and contact email if changed
+      if (currentOrganisation) {
+        const orgUpdates: any = { _id: currentOrganisation._id };
+        let hasChanges = false;
+
+        if (settings.companyName !== currentOrganisation.organizationName) {
+          orgUpdates.organizationName = settings.companyName;
+          hasChanges = true;
+        }
+
+        if (contactEmail !== currentOrganisation.contactEmail) {
+          orgUpdates.contactEmail = contactEmail;
+          hasChanges = true;
+        }
+
+        if (hasChanges) {
+          await BaseCrudService.update('organisations', orgUpdates);
+        }
       }
 
       setSettings(updatedSettings);
