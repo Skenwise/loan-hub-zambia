@@ -1,12 +1,13 @@
 /**
  * Organisation Settings - Comprehensive Page
- * Manages all organisation-level configurations
+ * Manages all organisation-level configurations including company settings, loan settings, and invoice details
  */
 
 import { useEffect, useState } from 'react';
 import { useMember } from '@/integrations';
 import { useOrganisationStore } from '@/store/organisationStore';
-import { OrganisationSettingsService } from '@/services';
+import { BaseCrudService } from '@/services';
+import { OrganisationSettings } from '@/entities';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,6 +29,13 @@ import {
   Trash2,
   Save,
   X,
+  Upload,
+  Globe,
+  Clock,
+  DollarSign,
+  Calendar,
+  FileCheck,
+  MapPin,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -38,39 +46,71 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Image } from '@/components/ui/image';
+
+// Constants for dropdowns
+const COUNTRIES = [
+  'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Argentina', 'Armenia', 'Australia',
+  'Austria', 'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium',
+  'Belize', 'Benin', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Brunei',
+  'Bulgaria', 'Burkina Faso', 'Burundi', 'Cambodia', 'Cameroon', 'Canada', 'Cape Verde', 'Central African Republic',
+  'Chad', 'Chile', 'China', 'Colombia', 'Comoros', 'Congo', 'Costa Rica', 'Croatia', 'Cuba', 'Cyprus',
+  'Czech Republic', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic', 'East Timor', 'Ecuador', 'Egypt',
+  'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Ethiopia', 'Fiji', 'Finland', 'France',
+  'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada', 'Guatemala', 'Guinea', 'Guinea-Bissau',
+  'Guyana', 'Haiti', 'Honduras', 'Hungary', 'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland',
+  'Israel', 'Italy', 'Jamaica', 'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Kosovo', 'Kuwait',
+  'Kyrgyzstan', 'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg',
+  'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands', 'Mauritania', 'Mauritius', 'Mexico',
+  'Micronesia', 'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar', 'Namibia', 'Nauru',
+  'Nepal', 'Netherlands', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'North Macedonia', 'Norway', 'Oman',
+  'Pakistan', 'Palau', 'Palestine', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal',
+  'Qatar', 'Romania', 'Russia', 'Rwanda', 'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa',
+  'San Marino', 'Sao Tome and Principe', 'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore', 'Slovakia',
+  'Slovenia', 'Solomon Islands', 'Somalia', 'South Africa', 'South Korea', 'South Sudan', 'Spain', 'Sri Lanka', 'Sudan', 'Suriname',
+  'Sweden', 'Switzerland', 'Syria', 'Taiwan', 'Tajikistan', 'Tanzania', 'Thailand', 'Togo', 'Tonga', 'Trinidad and Tobago',
+  'Tunisia', 'Turkey', 'Turkmenistan', 'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom', 'United States',
+  'Uruguay', 'Uzbekistan', 'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe'
+];
+
+const TIMEZONES = [
+  'UTC-12:00', 'UTC-11:00', 'UTC-10:00', 'UTC-09:00', 'UTC-08:00', 'UTC-07:00', 'UTC-06:00', 'UTC-05:00',
+  'UTC-04:00', 'UTC-03:00', 'UTC-02:00', 'UTC-01:00', 'UTC+00:00', 'UTC+01:00', 'UTC+02:00', 'UTC+03:00',
+  'UTC+04:00', 'UTC+05:00', 'UTC+06:00', 'UTC+07:00', 'UTC+08:00', 'UTC+09:00', 'UTC+10:00', 'UTC+11:00', 'UTC+12:00'
+];
+
+const CURRENCIES = [
+  'USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR', 'MXN',
+  'ZAR', 'ZMW', 'KES', 'NGN', 'GHS', 'UGX', 'TZS', 'RWF', 'BWP', 'MUR'
+];
+
+const DATE_FORMATS = [
+  'DD/MM/YYYY',
+  'MM/DD/YYYY',
+  'YYYY-MM-DD',
+  'DD-MM-YYYY',
+  'MM-DD-YYYY',
+];
+
+const DECIMAL_SEPARATORS = ['.', ','];
+const THOUSAND_SEPARATORS = [',', '.', ' '];
+
+const REPAYMENT_CYCLES = ['Monthly', 'Quarterly', 'Semi-Annual', 'Annual'];
 
 export default function OrganisationSettingsComprehensivePage() {
   const { member } = useMember();
   const { currentOrganisation } = useOrganisationStore();
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('profile');
+  const [isSaving, setIsSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState('company');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Profile state
-  const [profile, setProfile] = useState<any>(null);
-  const [editingProfile, setEditingProfile] = useState(false);
-
-  // Staff state
-  const [staff, setStaff] = useState<any[]>([]);
-  const [showAddStaff, setShowAddStaff] = useState(false);
-  const [newStaff, setNewStaff] = useState({
-    fullName: '',
-    email: '',
-    role: '',
-    branch: '',
-    approvalLimit: 100000,
-  });
-
-  // Branches state
-  const [branches, setBranches] = useState<any[]>([]);
-  const [showAddBranch, setShowAddBranch] = useState(false);
-  const [newBranch, setNewBranch] = useState({
-    branchName: '',
-    branchCode: '',
-    branchManager: '',
-    location: '',
-  });
+  // Settings state
+  const [settings, setSettings] = useState<OrganisationSettings | null>(null);
+  const [editingSettings, setEditingSettings] = useState(false);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string>('');
 
   // Load data
   useEffect(() => {
@@ -83,23 +123,36 @@ export default function OrganisationSettingsComprehensivePage() {
       try {
         setIsLoading(true);
 
-        // Load profile
-        const profileData = await OrganisationSettingsService.getOrganisationProfile(
-          currentOrganisation._id
-        );
-        setProfile(profileData);
-
-        // Load staff
-        const staffData = await OrganisationSettingsService.getStaffMembers(
-          currentOrganisation._id
-        );
-        setStaff(staffData);
-
-        // Load branches
-        const branchesData = await OrganisationSettingsService.getBranches(
-          currentOrganisation._id
-        );
-        setBranches(branchesData);
+        // Load organisation settings
+        const result = await BaseCrudService.getAll<OrganisationSettings>('organisationsettings', {}, { limit: 1 });
+        if (result.items && result.items.length > 0) {
+          setSettings(result.items[0]);
+          if (result.items[0].companyLogo) {
+            setLogoPreview(result.items[0].companyLogo);
+          }
+        } else {
+          // Create default settings if none exist
+          const defaultSettings: OrganisationSettings = {
+            _id: crypto.randomUUID(),
+            companyName: currentOrganisation.organizationName || '',
+            country: '',
+            timezone: 'UTC+00:00',
+            currency: 'USD',
+            dateFormat: 'DD/MM/YYYY',
+            decimalSeparator: '.',
+            thousandSeparator: ',',
+            loanRepaymentCycle: 'Monthly',
+            daysInMonthForInterestCalculation: 30,
+            daysInYearForInterestCalculation: 365,
+            businessRegistrationNumber: '',
+            address: '',
+            city: '',
+            provinceState: '',
+            zipPostalCode: '',
+          };
+          await BaseCrudService.create('organisationsettings', defaultSettings);
+          setSettings(defaultSettings);
+        }
       } catch (error) {
         console.error('Error loading settings:', error);
         setErrorMessage('Failed to load organisation settings');
@@ -111,64 +164,57 @@ export default function OrganisationSettingsComprehensivePage() {
     loadData();
   }, [currentOrganisation]);
 
-  const handleAddStaff = async () => {
+  const handleSaveSettings = async () => {
     try {
-      if (!newStaff.fullName || !newStaff.email || !newStaff.role) {
-        setErrorMessage('Please fill in all required fields');
-        return;
+      if (!settings) return;
+
+      setIsSaving(true);
+      
+      // Handle logo upload if new file selected
+      let logoUrl = settings.companyLogo;
+      if (logoFile) {
+        // In a real app, you'd upload to a file service
+        // For now, we'll use a data URL
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          logoUrl = e.target?.result as string;
+        };
+        reader.readAsDataURL(logoFile);
       }
 
-      const staffMember = await OrganisationSettingsService.addStaffMember(
-        currentOrganisation?._id || '',
-        {
-          ...newStaff,
-          status: 'ACTIVE',
-          dateHired: new Date(),
-          accessLevel: 'STANDARD',
-        }
-      );
+      const updatedSettings = {
+        ...settings,
+        companyLogo: logoUrl,
+      };
 
-      setStaff([...staff, staffMember]);
-      setNewStaff({
-        fullName: '',
-        email: '',
-        role: '',
-        branch: '',
-        approvalLimit: 100000,
-      });
-      setShowAddStaff(false);
-      setSuccessMessage('Staff member added successfully');
+      if (settings._id) {
+        await BaseCrudService.update('organisationsettings', updatedSettings);
+      } else {
+        await BaseCrudService.create('organisationsettings', updatedSettings);
+      }
+
+      setSettings(updatedSettings);
+      setEditingSettings(false);
+      setLogoFile(null);
+      setSuccessMessage('Settings saved successfully');
+      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error: any) {
-      setErrorMessage(error.message || 'Failed to add staff member');
+      setErrorMessage(error.message || 'Failed to save settings');
+      setTimeout(() => setErrorMessage(''), 3000);
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handleAddBranch = async () => {
-    try {
-      if (!newBranch.branchName || !newBranch.branchCode) {
-        setErrorMessage('Please fill in all required fields');
-        return;
-      }
-
-      const branch = await OrganisationSettingsService.createBranch(
-        currentOrganisation?._id || '',
-        {
-          ...newBranch,
-          isActive: true,
-        }
-      );
-
-      setBranches([...branches, branch]);
-      setNewBranch({
-        branchName: '',
-        branchCode: '',
-        branchManager: '',
-        location: '',
-      });
-      setShowAddBranch(false);
-      setSuccessMessage('Branch created successfully');
-    } catch (error: any) {
-      setErrorMessage(error.message || 'Failed to create branch');
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setLogoFile(file);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setLogoPreview(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -193,7 +239,7 @@ export default function OrganisationSettingsComprehensivePage() {
             Organisation Settings
           </h1>
           <p className="text-primary-foreground/70">
-            Manage your organisation profile, staff, branches, and configurations
+            Configure company settings, loan parameters, and invoice details
           </p>
         </motion.div>
 
@@ -226,42 +272,256 @@ export default function OrganisationSettingsComprehensivePage() {
           animate={{ opacity: 1, y: 0 }}
         >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-5 bg-slate-200 mb-8">
-              <TabsTrigger value="profile" className="text-slate-900 text-xs md:text-sm">
-                <Settings className="w-4 h-4 mr-2" />
-                Profile
+            <TabsList className="grid w-full grid-cols-3 bg-slate-200 mb-8">
+              <TabsTrigger value="company" className="text-slate-900 text-xs md:text-sm">
+                <Globe className="w-4 h-4 mr-2" />
+                Company Settings
               </TabsTrigger>
-              <TabsTrigger value="staff" className="text-slate-900 text-xs md:text-sm">
-                <Users className="w-4 h-4 mr-2" />
-                Staff
-              </TabsTrigger>
-              <TabsTrigger value="branches" className="text-slate-900 text-xs md:text-sm">
-                <Building2 className="w-4 h-4 mr-2" />
-                Branches
-              </TabsTrigger>
-              <TabsTrigger value="products" className="text-slate-900 text-xs md:text-sm">
-                <FileText className="w-4 h-4 mr-2" />
-                Products
-              </TabsTrigger>
-              <TabsTrigger value="subscription" className="text-slate-900 text-xs md:text-sm">
+              <TabsTrigger value="loan" className="text-slate-900 text-xs md:text-sm">
                 <CreditCard className="w-4 h-4 mr-2" />
-                Subscription
+                Loan Settings
+              </TabsTrigger>
+              <TabsTrigger value="invoice" className="text-slate-900 text-xs md:text-sm">
+                <FileCheck className="w-4 h-4 mr-2" />
+                Invoice Details
               </TabsTrigger>
             </TabsList>
 
-            {/* Profile Tab */}
-            <TabsContent value="profile" className="space-y-6">
-              {profile && (
+            {/* Company Settings Tab */}
+            <TabsContent value="company" className="space-y-6">
+              {settings && (
                 <Card className="bg-slate-50 border-slate-300">
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-slate-900">Organisation Profile</CardTitle>
+                      <CardTitle className="text-slate-900">Company Settings</CardTitle>
                       <Button
-                        onClick={() => setEditingProfile(!editingProfile)}
+                        onClick={() => setEditingSettings(!editingSettings)}
                         variant="outline"
                         className="border-slate-300 text-slate-900 hover:bg-slate-100"
                       >
-                        {editingProfile ? (
+                        {editingSettings ? (
+                          <>
+                            <X className="w-4 h-4 mr-2" />
+                            Cancel
+                          </>
+                        ) : (
+                          <>
+                            <Edit2 className="w-4 h-4 mr-2" />
+                            Edit
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Company Logo */}
+                    {editingSettings && (
+                      <div>
+                        <Label className="text-slate-700 text-sm mb-2 block">Company Logo</Label>
+                        <div className="flex items-center gap-4">
+                          {logoPreview && (
+                            <Image
+                              src={logoPreview}
+                              alt="Company Logo"
+                              width={100}
+                              height={100}
+                              className="rounded-lg border border-slate-300"
+                            />
+                          )}
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleLogoChange}
+                            className="bg-white border-slate-300 text-slate-900"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Company Details Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <Label className="text-slate-700 text-sm mb-2 block">Company Name</Label>
+                        <Input
+                          value={settings.companyName || ''}
+                          onChange={(e) =>
+                            setSettings({ ...settings, companyName: e.target.value })
+                          }
+                          disabled={!editingSettings}
+                          className="bg-white border-slate-300 text-slate-900 disabled:bg-slate-100"
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-slate-700 text-sm mb-2 block">Country</Label>
+                        <Select
+                          value={settings.country || ''}
+                          onValueChange={(value) =>
+                            setSettings({ ...settings, country: value })
+                          }
+                          disabled={!editingSettings}
+                        >
+                          <SelectTrigger className="bg-white border-slate-300 text-slate-900 disabled:bg-slate-100">
+                            <SelectValue placeholder="Select country" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {COUNTRIES.map((country) => (
+                              <SelectItem key={country} value={country}>
+                                {country}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label className="text-slate-700 text-sm mb-2 block">Timezone</Label>
+                        <Select
+                          value={settings.timezone || 'UTC+00:00'}
+                          onValueChange={(value) =>
+                            setSettings({ ...settings, timezone: value })
+                          }
+                          disabled={!editingSettings}
+                        >
+                          <SelectTrigger className="bg-white border-slate-300 text-slate-900 disabled:bg-slate-100">
+                            <SelectValue placeholder="Select timezone" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {TIMEZONES.map((tz) => (
+                              <SelectItem key={tz} value={tz}>
+                                {tz}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label className="text-slate-700 text-sm mb-2 block">Currency</Label>
+                        <Select
+                          value={settings.currency || 'USD'}
+                          onValueChange={(value) =>
+                            setSettings({ ...settings, currency: value })
+                          }
+                          disabled={!editingSettings}
+                        >
+                          <SelectTrigger className="bg-white border-slate-300 text-slate-900 disabled:bg-slate-100">
+                            <SelectValue placeholder="Select currency" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {CURRENCIES.map((curr) => (
+                              <SelectItem key={curr} value={curr}>
+                                {curr}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label className="text-slate-700 text-sm mb-2 block">Date Format</Label>
+                        <Select
+                          value={settings.dateFormat || 'DD/MM/YYYY'}
+                          onValueChange={(value) =>
+                            setSettings({ ...settings, dateFormat: value })
+                          }
+                          disabled={!editingSettings}
+                        >
+                          <SelectTrigger className="bg-white border-slate-300 text-slate-900 disabled:bg-slate-100">
+                            <SelectValue placeholder="Select date format" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {DATE_FORMATS.map((fmt) => (
+                              <SelectItem key={fmt} value={fmt}>
+                                {fmt}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label className="text-slate-700 text-sm mb-2 block">Decimal Separator</Label>
+                        <Select
+                          value={settings.decimalSeparator || '.'}
+                          onValueChange={(value) =>
+                            setSettings({ ...settings, decimalSeparator: value })
+                          }
+                          disabled={!editingSettings}
+                        >
+                          <SelectTrigger className="bg-white border-slate-300 text-slate-900 disabled:bg-slate-100">
+                            <SelectValue placeholder="Select separator" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {DECIMAL_SEPARATORS.map((sep) => (
+                              <SelectItem key={sep} value={sep}>
+                                {sep === '.' ? 'Period (.)' : 'Comma (,)'}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label className="text-slate-700 text-sm mb-2 block">Thousand Separator</Label>
+                        <Select
+                          value={settings.thousandSeparator || ','}
+                          onValueChange={(value) =>
+                            setSettings({ ...settings, thousandSeparator: value })
+                          }
+                          disabled={!editingSettings}
+                        >
+                          <SelectTrigger className="bg-white border-slate-300 text-slate-900 disabled:bg-slate-100">
+                            <SelectValue placeholder="Select separator" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {THOUSAND_SEPARATORS.map((sep) => (
+                              <SelectItem key={sep} value={sep}>
+                                {sep === ',' ? 'Comma (,)' : sep === '.' ? 'Period (.)' : 'Space ( )'}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    {editingSettings && (
+                      <div className="flex gap-3 justify-end pt-4 border-t border-slate-300">
+                        <Button
+                          onClick={() => setEditingSettings(false)}
+                          variant="outline"
+                          className="border-slate-300 text-slate-900 hover:bg-slate-100"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleSaveSettings}
+                          disabled={isSaving}
+                          className="bg-blue-600 text-white hover:bg-blue-700"
+                        >
+                          <Save className="w-4 h-4 mr-2" />
+                          {isSaving ? 'Saving...' : 'Save Changes'}
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            {/* Loan Settings Tab */}
+            <TabsContent value="loan" className="space-y-6">
+              {settings && (
+                <Card className="bg-slate-50 border-slate-300">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-slate-900">Loan Settings</CardTitle>
+                      <Button
+                        onClick={() => setEditingSettings(!editingSettings)}
+                        variant="outline"
+                        className="border-slate-300 text-slate-900 hover:bg-slate-100"
+                      >
+                        {editingSettings ? (
                           <>
                             <X className="w-4 h-4 mr-2" />
                             Cancel
@@ -279,96 +539,85 @@ export default function OrganisationSettingsComprehensivePage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <Label className="text-slate-700 text-sm mb-2 block">
-                          Organisation Name
+                          Loan Repayment Cycle
                         </Label>
-                        <Input
-                          value={profile.organizationName}
-                          onChange={(e) =>
-                            setProfile({ ...profile, organizationName: e.target.value })
+                        <Select
+                          value={settings.loanRepaymentCycle || 'Monthly'}
+                          onValueChange={(value) =>
+                            setSettings({ ...settings, loanRepaymentCycle: value })
                           }
-                          disabled={!editingProfile}
-                          className="bg-white border-slate-300 text-slate-900 disabled:bg-slate-100"
-                        />
+                          disabled={!editingSettings}
+                        >
+                          <SelectTrigger className="bg-white border-slate-300 text-slate-900 disabled:bg-slate-100">
+                            <SelectValue placeholder="Select cycle" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {REPAYMENT_CYCLES.map((cycle) => (
+                              <SelectItem key={cycle} value={cycle}>
+                                {cycle}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
+
                       <div>
                         <Label className="text-slate-700 text-sm mb-2 block">
-                          Contact Email
+                          Days in Month for Interest Calculation
                         </Label>
                         <Input
-                          value={profile.contactEmail}
+                          type="number"
+                          value={settings.daysInMonthForInterestCalculation || 30}
                           onChange={(e) =>
-                            setProfile({ ...profile, contactEmail: e.target.value })
+                            setSettings({
+                              ...settings,
+                              daysInMonthForInterestCalculation: parseInt(e.target.value),
+                            })
                           }
-                          disabled={!editingProfile}
+                          disabled={!editingSettings}
                           className="bg-white border-slate-300 text-slate-900 disabled:bg-slate-100"
+                          min="28"
+                          max="31"
                         />
                       </div>
+
                       <div>
                         <Label className="text-slate-700 text-sm mb-2 block">
-                          Financial Year Start
+                          Days in Year for Interest Calculation
                         </Label>
                         <Input
-                          value={profile.financialYearStart}
+                          type="number"
+                          value={settings.daysInYearForInterestCalculation || 365}
                           onChange={(e) =>
-                            setProfile({ ...profile, financialYearStart: e.target.value })
+                            setSettings({
+                              ...settings,
+                              daysInYearForInterestCalculation: parseInt(e.target.value),
+                            })
                           }
-                          disabled={!editingProfile}
+                          disabled={!editingSettings}
                           className="bg-white border-slate-300 text-slate-900 disabled:bg-slate-100"
-                          placeholder="MM-DD"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-slate-700 text-sm mb-2 block">
-                          Financial Year End
-                        </Label>
-                        <Input
-                          value={profile.financialYearEnd}
-                          onChange={(e) =>
-                            setProfile({ ...profile, financialYearEnd: e.target.value })
-                          }
-                          disabled={!editingProfile}
-                          className="bg-white border-slate-300 text-slate-900 disabled:bg-slate-100"
-                          placeholder="MM-DD"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-slate-700 text-sm mb-2 block">
-                          Default Currency
-                        </Label>
-                        <Input
-                          value={profile.defaultCurrency}
-                          onChange={(e) =>
-                            setProfile({ ...profile, defaultCurrency: e.target.value })
-                          }
-                          disabled={!editingProfile}
-                          className="bg-white border-slate-300 text-slate-900 disabled:bg-slate-100"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-slate-700 text-sm mb-2 block">Time Zone</Label>
-                        <Input
-                          value={profile.timeZone}
-                          onChange={(e) =>
-                            setProfile({ ...profile, timeZone: e.target.value })
-                          }
-                          disabled={!editingProfile}
-                          className="bg-white border-slate-300 text-slate-900 disabled:bg-slate-100"
+                          min="360"
+                          max="366"
                         />
                       </div>
                     </div>
 
-                    {editingProfile && (
+                    {editingSettings && (
                       <div className="flex gap-3 justify-end pt-4 border-t border-slate-300">
                         <Button
-                          onClick={() => setEditingProfile(false)}
+                          onClick={() => setEditingSettings(false)}
                           variant="outline"
                           className="border-slate-300 text-slate-900 hover:bg-slate-100"
                         >
                           Cancel
                         </Button>
-                        <Button className="bg-blue-600 text-white hover:bg-blue-700">
+                        <Button
+                          onClick={handleSaveSettings}
+                          disabled={isSaving}
+                          className="bg-blue-600 text-white hover:bg-blue-700"
+                        >
                           <Save className="w-4 h-4 mr-2" />
-                          Save Changes
+                          {isSaving ? 'Saving...' : 'Save Changes'}
                         </Button>
                       </div>
                     )}
@@ -377,388 +626,131 @@ export default function OrganisationSettingsComprehensivePage() {
               )}
             </TabsContent>
 
-            {/* Staff Tab */}
-            <TabsContent value="staff" className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-slate-900">Staff Members</h2>
-                <Button
-                  onClick={() => setShowAddStaff(!showAddStaff)}
-                  className="bg-blue-600 text-white hover:bg-blue-700"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Staff
-                </Button>
-              </div>
-
-              {showAddStaff && (
+            {/* Invoice Details Tab */}
+            <TabsContent value="invoice" className="space-y-6">
+              {settings && (
                 <Card className="bg-slate-50 border-slate-300">
                   <CardHeader>
-                    <CardTitle className="text-slate-900">Add New Staff Member</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-slate-700 text-sm mb-2 block">Full Name *</Label>
-                        <Input
-                          value={newStaff.fullName}
-                          onChange={(e) =>
-                            setNewStaff({ ...newStaff, fullName: e.target.value })
-                          }
-                          className="bg-white border-slate-300 text-slate-900"
-                          placeholder="John Doe"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-slate-700 text-sm mb-2 block">Email *</Label>
-                        <Input
-                          type="email"
-                          value={newStaff.email}
-                          onChange={(e) => setNewStaff({ ...newStaff, email: e.target.value })}
-                          className="bg-white border-slate-300 text-slate-900"
-                          placeholder="john@example.com"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-slate-700 text-sm mb-2 block">Role *</Label>
-                        <Select value={newStaff.role} onValueChange={(value) => setNewStaff({ ...newStaff, role: value })}>
-                          <SelectTrigger className="bg-white border-slate-300 text-slate-900">
-                            <SelectValue placeholder="Select role" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Loan Officer">Loan Officer</SelectItem>
-                            <SelectItem value="Credit Manager">Credit Manager</SelectItem>
-                            <SelectItem value="Finance Officer">Finance Officer</SelectItem>
-                            <SelectItem value="Branch Manager">Branch Manager</SelectItem>
-                            <SelectItem value="Admin">Admin</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label className="text-slate-700 text-sm mb-2 block">Branch</Label>
-                        <Input
-                          value={newStaff.branch}
-                          onChange={(e) =>
-                            setNewStaff({ ...newStaff, branch: e.target.value })
-                          }
-                          className="bg-white border-slate-300 text-slate-900"
-                          placeholder="Head Office"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-slate-700 text-sm mb-2 block">
-                          Approval Limit (ZMW)
-                        </Label>
-                        <Input
-                          type="number"
-                          value={newStaff.approvalLimit}
-                          onChange={(e) =>
-                            setNewStaff({ ...newStaff, approvalLimit: parseInt(e.target.value) })
-                          }
-                          className="bg-white border-slate-300 text-slate-900"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex gap-3 justify-end pt-4 border-t border-slate-300">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-slate-900">Invoice Details</CardTitle>
                       <Button
-                        onClick={() => setShowAddStaff(false)}
+                        onClick={() => setEditingSettings(!editingSettings)}
                         variant="outline"
                         className="border-slate-300 text-slate-900 hover:bg-slate-100"
                       >
-                        Cancel
-                      </Button>
-                      <Button
-                        onClick={handleAddStaff}
-                        className="bg-blue-600 text-white hover:bg-blue-700"
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Staff Member
+                        {editingSettings ? (
+                          <>
+                            <X className="w-4 h-4 mr-2" />
+                            Cancel
+                          </>
+                        ) : (
+                          <>
+                            <Edit2 className="w-4 h-4 mr-2" />
+                            Edit
+                          </>
+                        )}
                       </Button>
                     </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Staff List */}
-              <div className="space-y-4">
-                {staff.map((member, idx) => (
-                  <motion.div
-                    key={member._id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                  >
-                    <Card className="bg-slate-50 border-slate-300">
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <h3 className="text-lg font-bold text-slate-900">
-                              {member.fullName}
-                            </h3>
-                            <p className="text-slate-600 text-sm mt-1">{member.email}</p>
-                            <div className="flex items-center gap-2 mt-3">
-                              <Badge className="bg-blue-100 text-blue-700 border-blue-300 border text-xs">
-                                {member.role}
-                              </Badge>
-                              <Badge className="bg-green-100 text-green-700 border-green-300 border text-xs">
-                                {member.status}
-                              </Badge>
-                              {member.branch && (
-                                <Badge className="bg-slate-200 text-slate-700 border-slate-300 border text-xs">
-                                  {member.branch}
-                                </Badge>
-                              )}
-                            </div>
-                            <p className="text-xs text-slate-600 mt-2">
-                              Approval Limit: ZMW {member.approvalLimit?.toLocaleString()}
-                            </p>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              className="border-slate-300 text-slate-900 hover:bg-slate-100"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              className="border-red-300 text-red-600 hover:bg-red-50"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </div>
-            </TabsContent>
-
-            {/* Branches Tab */}
-            <TabsContent value="branches" className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-slate-900">Branches</h2>
-                <Button
-                  onClick={() => setShowAddBranch(!showAddBranch)}
-                  className="bg-blue-600 text-white hover:bg-blue-700"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Branch
-                </Button>
-              </div>
-
-              {showAddBranch && (
-                <Card className="bg-slate-50 border-slate-300">
-                  <CardHeader>
-                    <CardTitle className="text-slate-900">Create New Branch</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <Label className="text-slate-700 text-sm mb-2 block">
-                          Branch Name *
+                          Business Registration Number
                         </Label>
                         <Input
-                          value={newBranch.branchName}
+                          value={settings.businessRegistrationNumber || ''}
                           onChange={(e) =>
-                            setNewBranch({ ...newBranch, branchName: e.target.value })
+                            setSettings({
+                              ...settings,
+                              businessRegistrationNumber: e.target.value,
+                            })
                           }
-                          className="bg-white border-slate-300 text-slate-900"
-                          placeholder="Head Office"
+                          disabled={!editingSettings}
+                          className="bg-white border-slate-300 text-slate-900 disabled:bg-slate-100"
+                          placeholder="e.g., REG-2024-001"
                         />
                       </div>
+
+                      <div>
+                        <Label className="text-slate-700 text-sm mb-2 block">Address</Label>
+                        <Input
+                          value={settings.address || ''}
+                          onChange={(e) =>
+                            setSettings({ ...settings, address: e.target.value })
+                          }
+                          disabled={!editingSettings}
+                          className="bg-white border-slate-300 text-slate-900 disabled:bg-slate-100"
+                          placeholder="Street address"
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-slate-700 text-sm mb-2 block">City</Label>
+                        <Input
+                          value={settings.city || ''}
+                          onChange={(e) =>
+                            setSettings({ ...settings, city: e.target.value })
+                          }
+                          disabled={!editingSettings}
+                          className="bg-white border-slate-300 text-slate-900 disabled:bg-slate-100"
+                          placeholder="City"
+                        />
+                      </div>
+
                       <div>
                         <Label className="text-slate-700 text-sm mb-2 block">
-                          Branch Code *
+                          Province/State
                         </Label>
                         <Input
-                          value={newBranch.branchCode}
+                          value={settings.provinceState || ''}
                           onChange={(e) =>
-                            setNewBranch({ ...newBranch, branchCode: e.target.value })
+                            setSettings({ ...settings, provinceState: e.target.value })
                           }
-                          className="bg-white border-slate-300 text-slate-900"
-                          placeholder="HO-001"
+                          disabled={!editingSettings}
+                          className="bg-white border-slate-300 text-slate-900 disabled:bg-slate-100"
+                          placeholder="Province or State"
                         />
                       </div>
+
                       <div>
                         <Label className="text-slate-700 text-sm mb-2 block">
-                          Branch Manager
+                          Zip/Postal Code
                         </Label>
                         <Input
-                          value={newBranch.branchManager}
+                          value={settings.zipPostalCode || ''}
                           onChange={(e) =>
-                            setNewBranch({ ...newBranch, branchManager: e.target.value })
+                            setSettings({ ...settings, zipPostalCode: e.target.value })
                           }
-                          className="bg-white border-slate-300 text-slate-900"
-                          placeholder="Manager name"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-slate-700 text-sm mb-2 block">Location</Label>
-                        <Input
-                          value={newBranch.location}
-                          onChange={(e) =>
-                            setNewBranch({ ...newBranch, location: e.target.value })
-                          }
-                          className="bg-white border-slate-300 text-slate-900"
-                          placeholder="Lusaka"
+                          disabled={!editingSettings}
+                          className="bg-white border-slate-300 text-slate-900 disabled:bg-slate-100"
+                          placeholder="Postal code"
                         />
                       </div>
                     </div>
 
-                    <div className="flex gap-3 justify-end pt-4 border-t border-slate-300">
-                      <Button
-                        onClick={() => setShowAddBranch(false)}
-                        variant="outline"
-                        className="border-slate-300 text-slate-900 hover:bg-slate-100"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        onClick={handleAddBranch}
-                        className="bg-blue-600 text-white hover:bg-blue-700"
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Create Branch
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Branches List */}
-              {branches.length > 0 ? (
-                <div className="space-y-4">
-                  {branches.map((branch, idx) => (
-                    <motion.div
-                      key={branch._id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.05 }}
-                    >
-                      <Card className="bg-slate-50 border-slate-300">
-                        <CardContent className="p-6">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <h3 className="text-lg font-bold text-slate-900">
-                                {branch.branchName}
-                              </h3>
-                              <p className="text-slate-600 text-sm mt-1">{branch.location}</p>
-                              <div className="flex items-center gap-2 mt-3">
-                                <Badge className="bg-slate-200 text-slate-700 border-slate-300 border text-xs">
-                                  {branch.branchCode}
-                                </Badge>
-                                {branch.branchManager && (
-                                  <Badge className="bg-blue-100 text-blue-700 border-blue-300 border text-xs">
-                                    Manager: {branch.branchManager}
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                className="border-slate-300 text-slate-900 hover:bg-slate-100"
-                              >
-                                <Edit2 className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                className="border-red-300 text-red-600 hover:bg-red-50"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  ))}
-                </div>
-              ) : (
-                <Card className="bg-slate-50 border-slate-300">
-                  <CardContent className="p-12 text-center">
-                    <Building2 className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                      No Branches Yet
-                    </h3>
-                    <p className="text-slate-600">
-                      Create your first branch to get started
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
-
-            {/* Products Tab */}
-            <TabsContent value="products" className="space-y-6">
-              <Card className="bg-slate-50 border-slate-300">
-                <CardHeader>
-                  <CardTitle className="text-slate-900">Loan Products</CardTitle>
-                  <CardDescription className="text-slate-600">
-                    Manage loan products and their settings
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-slate-600">Loan product management coming soon...</p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Subscription Tab */}
-            <TabsContent value="subscription" className="space-y-6">
-              <Card className="bg-slate-50 border-slate-300">
-                <CardHeader>
-                  <CardTitle className="text-slate-900">Subscription & Billing</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-4 rounded-lg bg-white border border-slate-300">
-                      <p className="text-xs text-slate-600 mb-1">Current Plan</p>
-                      <p className="text-2xl font-bold text-slate-900">
-                        {profile?.subscriptionPlanType || 'BASIC'}
-                      </p>
-                    </div>
-                    <div className="p-4 rounded-lg bg-white border border-slate-300">
-                      <p className="text-xs text-slate-600 mb-1">Active Users</p>
-                      <p className="text-2xl font-bold text-slate-900">5 / 10</p>
-                    </div>
-                    <div className="p-4 rounded-lg bg-white border border-slate-300">
-                      <p className="text-xs text-slate-600 mb-1">Next Billing</p>
-                      <p className="text-2xl font-bold text-slate-900">
-                        {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="p-4 rounded-lg bg-blue-50 border border-blue-300">
-                    <h3 className="font-semibold text-blue-900 mb-2">Modules Enabled</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {['Loans', 'Repayments', 'Reports', 'KYC', 'Compliance'].map((module) => (
-                        <Badge
-                          key={module}
-                          className="bg-blue-100 text-blue-700 border-blue-300 border"
+                    {editingSettings && (
+                      <div className="flex gap-3 justify-end pt-4 border-t border-slate-300">
+                        <Button
+                          onClick={() => setEditingSettings(false)}
+                          variant="outline"
+                          className="border-slate-300 text-slate-900 hover:bg-slate-100"
                         >
-                          {module}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3 justify-end pt-4 border-t border-slate-300">
-                    <Button
-                      variant="outline"
-                      className="border-slate-300 text-slate-900 hover:bg-slate-100"
-                    >
-                      View Payment History
-                    </Button>
-                    <Button className="bg-blue-600 text-white hover:bg-blue-700">
-                      Upgrade Plan
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleSaveSettings}
+                          disabled={isSaving}
+                          className="bg-blue-600 text-white hover:bg-blue-700"
+                        >
+                          <Save className="w-4 h-4 mr-2" />
+                          {isSaving ? 'Saving...' : 'Save Changes'}
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
           </Tabs>
         </motion.div>

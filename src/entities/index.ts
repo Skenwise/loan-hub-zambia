@@ -384,6 +384,49 @@ export interface Organizations {
 
 
 /**
+ * Collection ID: organisationsettings
+ * Interface for OrganisationSettings
+ */
+export interface OrganisationSettings {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  companyName?: string;
+  /** @wixFieldType text */
+  country?: string;
+  /** @wixFieldType text */
+  timezone?: string;
+  /** @wixFieldType text */
+  currency?: string;
+  /** @wixFieldType text */
+  dateFormat?: string;
+  /** @wixFieldType text */
+  decimalSeparator?: string;
+  /** @wixFieldType text */
+  thousandSeparator?: string;
+  /** @wixFieldType text */
+  loanRepaymentCycle?: string;
+  /** @wixFieldType number */
+  daysInMonthForInterestCalculation?: number;
+  /** @wixFieldType number */
+  daysInYearForInterestCalculation?: number;
+  /** @wixFieldType text */
+  businessRegistrationNumber?: string;
+  /** @wixFieldType text */
+  address?: string;
+  /** @wixFieldType text */
+  city?: string;
+  /** @wixFieldType text */
+  provinceState?: string;
+  /** @wixFieldType text */
+  zipPostalCode?: string;
+  /** @wixFieldType image - Contains image URL, render with <Image> component, NOT as text */
+  companyLogo?: string;
+}
+
+
+/**
  * Collection ID: organisationsetup
  * Interface for OrganisationSetup
  */
