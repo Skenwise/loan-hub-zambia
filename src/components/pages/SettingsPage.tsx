@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useMember } from '@/integrations';
 import { useOrganisationStore } from '@/store/organisationStore';
 import { BaseCrudService, StaffService, RoleService, AuditService } from '@/services';
@@ -94,6 +95,7 @@ const THOUSAND_SEPARATORS = [',', '.', ' '];
 const REPAYMENT_CYCLES = ['Monthly', 'Quarterly', 'Semi-Annual', 'Annual'];
 
 export default function SettingsPage() {
+  const navigate = useNavigate();
   const { member } = useMember();
   const { currentOrganisation, currentStaff } = useOrganisationStore();
   const [isLoading, setIsLoading] = useState(true);
@@ -718,7 +720,10 @@ export default function SettingsPage() {
                       Manage your organization's staff members
                     </CardDescription>
                   </div>
-                  <Button className="bg-blue-600 text-white hover:bg-blue-700">
+                  <Button 
+                    onClick={() => navigate('/admin/settings/staff')}
+                    className="bg-blue-600 text-white hover:bg-blue-700"
+                  >
                     <Plus className="w-4 h-4 mr-2" />
                     Add Staff
                   </Button>
