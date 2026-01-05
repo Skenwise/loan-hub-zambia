@@ -396,7 +396,7 @@ export default function SettingsPage() {
           animate={{ opacity: 1, y: 0 }}
         >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-5 bg-slate-200 mb-8">
+            <TabsList className="grid w-full grid-cols-6 bg-slate-200 mb-8">
               <TabsTrigger value="organization" className="text-slate-900 text-xs md:text-sm">
                 <Building2 className="w-4 h-4 mr-2" />
                 Organization
@@ -408,6 +408,10 @@ export default function SettingsPage() {
               <TabsTrigger value="roles" className="text-slate-900 text-xs md:text-sm">
                 <Lock className="w-4 h-4 mr-2" />
                 Roles
+              </TabsTrigger>
+              <TabsTrigger value="loans" className="text-slate-900 text-xs md:text-sm">
+                <DollarSign className="w-4 h-4 mr-2" />
+                Loans
               </TabsTrigger>
               <TabsTrigger value="audit" className="text-slate-900 text-xs md:text-sm">
                 <FileText className="w-4 h-4 mr-2" />
@@ -868,6 +872,32 @@ export default function SettingsPage() {
                       No staff members found
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Loan Settings Tab */}
+            <TabsContent value="loans" className="space-y-6">
+              <Card className="bg-slate-50 border-slate-300">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-slate-900">Loan Settings</CardTitle>
+                    <CardDescription className="text-slate-600">
+                      Configure loan products and advanced lending parameters
+                    </CardDescription>
+                  </div>
+                  <Button 
+                    onClick={() => navigate('/admin/settings/loans')}
+                    className="bg-blue-600 text-white hover:bg-blue-700"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Manage Loan Settings
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-slate-600 text-sm">
+                    Click "Manage Loan Settings" to configure loan products, interest rates, repayment cycles, and advanced lending parameters.
+                  </p>
                 </CardContent>
               </Card>
             </TabsContent>

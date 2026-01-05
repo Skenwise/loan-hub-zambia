@@ -45,6 +45,7 @@ import BulkCustomerUploadPage from '@/components/pages/BulkCustomerUploadPage';
 import SettingsPage from '@/components/pages/SettingsPage';
 import StaffSettingsPage from '@/components/pages/StaffSettingsPage';
 import RolesPermissionsPage from '@/components/pages/RolesPermissionsPage';
+import LoanSettingsPage from '@/components/pages/LoanSettingsPage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -252,6 +253,14 @@ const router = createBrowserRouter([
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to access roles and permissions">
             <RolesPermissionsPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "settings/loans",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to access loan settings">
+            <LoanSettingsPage />
           </MemberProtectedRoute>
         ),
       },
