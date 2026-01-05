@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMember } from '@/integrations';
 import { useOrganisationStore } from '@/store/organisationStore';
 import { BaseCrudService, StaffService, RoleService, AuditService } from '@/services';
-import { OrganisationSettings } from '@/entities';
+import { OrganisationSettings, AuditTrail } from '@/entities';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,6 +36,9 @@ import {
   DollarSign,
   MapPin,
   Upload,
+  ArrowLeft,
+  RefreshCw,
+  Filter,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
@@ -115,7 +118,43 @@ export default function SettingsPage() {
   // Staff state
   const [staff, setStaff] = useState<any[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
-  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditTrail[]>([]);
+  
+  // Audit Management state
+  const [auditFilters, setAuditFilters] = useState({
+    startDate: '',
+    endDate: '',
+    staffMemberId: '',
+    category: '',
+    actionType: '',
+    branch: '',
+  });
+  const [filteredAuditLogs, setFilteredAuditLogs] = useState<AuditTrail[]>([]);
+  const [auditAutoReload, setAuditAutoReload] = useState(true);
+
+  // Filter and apply 12-month limit to audit logs
+  const applyAuditFilters = (logs: AuditTrail[]) => {
+    const now = new Date();
+    const twelveMonthsAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+    
+    let filtered = logs.filter(log => {
+      const logDate = log.timestamp ? new Date(log.timestamp) : null;
+      if (!logDate || logDate < twelveMonthsAgo) return false;
+      
+      if (auditFilters.startDate && logDate < new Date(auditFilters.startDate)) return false;
+      if (auditFilters.endDate && logDate > new Date(auditFilters.endDate)) return false;
+      if (auditFilters.staffMemberId && log.staffMemberId !== auditFilters.staffMemberId) return false;
+      if (auditFilters.actionType && log.actionType !== auditFilters.actionType) return false;
+      
+      return true;
+    });
+    
+    setFilteredAuditLogs(filtered);
+  };
+
+  useEffect(() => {
+    applyAuditFilters(auditLogs);
+  }, [auditFilters, auditLogs]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -200,6 +239,24 @@ export default function SettingsPage() {
 
     loadData();
   }, [currentOrganisation]);
+
+  // Auto-reload audit logs every 30 seconds
+  useEffect(() => {
+    if (!auditAutoReload) return;
+    
+    const interval = setInterval(async () => {
+      if (currentOrganisation?._id) {
+        try {
+          const logs = await AuditService.getAuditLogs(currentOrganisation._id);
+          setAuditLogs(logs || []);
+        } catch (error) {
+          console.error('Error reloading audit logs:', error);
+        }
+      }
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, [auditAutoReload, currentOrganisation]);
 
   const handleSaveSettings = async () => {
     try {
@@ -286,18 +343,28 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
+        {/* Header with Back Button */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-8 flex items-center justify-between"
         >
-          <h1 className="text-4xl font-heading font-bold text-primary-foreground mb-2">
-            Settings
-          </h1>
-          <p className="text-primary-foreground/70">
-            Manage organization profile, staff, roles, and system configurations
-          </p>
+          <div>
+            <h1 className="text-4xl font-heading font-bold text-primary-foreground mb-2">
+              Settings
+            </h1>
+            <p className="text-primary-foreground/70">
+              Manage organization profile, staff, roles, and system configurations
+            </p>
+          </div>
+          <Button
+            onClick={() => navigate('/admin/dashboard')}
+            variant="outline"
+            className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </Button>
         </motion.div>
 
         {/* Success/Error Messages */}
@@ -871,21 +938,177 @@ export default function SettingsPage() {
               </Card>
             </TabsContent>
 
-            {/* Audit Logs Tab */}
+            {/* Audit Management Tab */}
             <TabsContent value="audit" className="space-y-6">
               <Card className="bg-slate-50 border-slate-300">
                 <CardHeader>
-                  <CardTitle className="text-slate-900">Audit Logs</CardTitle>
+                  <CardTitle className="text-slate-900">Audit Management</CardTitle>
                   <CardDescription className="text-slate-600">
-                    View system activity and user actions
+                    View and filter system activity and user actions (Last 12 months)
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  {auditLogs.length > 0 ? (
+                <CardContent className="space-y-6">
+                  {/* Filter Section */}
+                  <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                        <Filter className="w-4 h-4" />
+                        Filters
+                      </h3>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setAuditFilters({
+                            startDate: '',
+                            endDate: '',
+                            staffMemberId: '',
+                            category: '',
+                            actionType: '',
+                            branch: '',
+                          });
+                        }}
+                        className="border-slate-300 text-slate-700 hover:bg-slate-100"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Clear Filters
+                      </Button>
+                    </div>
+
+                    {/* Filter Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {/* Start Date */}
+                      <div>
+                        <Label className="text-slate-700 text-sm mb-2 block">Start Date</Label>
+                        <Input
+                          type="date"
+                          value={auditFilters.startDate}
+                          onChange={(e) =>
+                            setAuditFilters({ ...auditFilters, startDate: e.target.value })
+                          }
+                          className="bg-white border-slate-300 text-slate-900"
+                        />
+                      </div>
+
+                      {/* End Date */}
+                      <div>
+                        <Label className="text-slate-700 text-sm mb-2 block">End Date</Label>
+                        <Input
+                          type="date"
+                          value={auditFilters.endDate}
+                          onChange={(e) =>
+                            setAuditFilters({ ...auditFilters, endDate: e.target.value })
+                          }
+                          className="bg-white border-slate-300 text-slate-900"
+                        />
+                      </div>
+
+                      {/* Staff Member */}
+                      <div>
+                        <Label className="text-slate-700 text-sm mb-2 block">Staff Member</Label>
+                        <Select
+                          value={auditFilters.staffMemberId}
+                          onValueChange={(value) =>
+                            setAuditFilters({ ...auditFilters, staffMemberId: value })
+                          }
+                        >
+                          <SelectTrigger className="bg-white border-slate-300 text-slate-900">
+                            <SelectValue placeholder="Select staff member" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Staff</SelectItem>
+                            {staff.map((member) => (
+                              <SelectItem key={member._id} value={member._id}>
+                                {member.fullName}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Action Type */}
+                      <div>
+                        <Label className="text-slate-700 text-sm mb-2 block">Action Type</Label>
+                        <Select
+                          value={auditFilters.actionType}
+                          onValueChange={(value) =>
+                            setAuditFilters({ ...auditFilters, actionType: value })
+                          }
+                        >
+                          <SelectTrigger className="bg-white border-slate-300 text-slate-900">
+                            <SelectValue placeholder="Select action type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Actions</SelectItem>
+                            <SelectItem value="CREATE">Create</SelectItem>
+                            <SelectItem value="UPDATE">Update</SelectItem>
+                            <SelectItem value="DELETE">Delete</SelectItem>
+                            <SelectItem value="VIEW">View</SelectItem>
+                            <SelectItem value="EXPORT">Export</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Category */}
+                      <div>
+                        <Label className="text-slate-700 text-sm mb-2 block">Category</Label>
+                        <Select
+                          value={auditFilters.category}
+                          onValueChange={(value) =>
+                            setAuditFilters({ ...auditFilters, category: value })
+                          }
+                        >
+                          <SelectTrigger className="bg-white border-slate-300 text-slate-900">
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Categories</SelectItem>
+                            <SelectItem value="LOAN">Loan</SelectItem>
+                            <SelectItem value="REPAYMENT">Repayment</SelectItem>
+                            <SelectItem value="CUSTOMER">Customer</SelectItem>
+                            <SelectItem value="STAFF">Staff</SelectItem>
+                            <SelectItem value="SETTINGS">Settings</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Branch */}
+                      <div>
+                        <Label className="text-slate-700 text-sm mb-2 block">Branch</Label>
+                        <Input
+                          placeholder="Filter by branch"
+                          value={auditFilters.branch}
+                          onChange={(e) =>
+                            setAuditFilters({ ...auditFilters, branch: e.target.value })
+                          }
+                          className="bg-white border-slate-300 text-slate-900"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Auto-reload Toggle */}
+                    <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+                      <div className="flex items-center gap-2">
+                        <RefreshCw className="w-4 h-4 text-slate-600" />
+                        <span className="text-sm text-slate-700">Auto-reload every 30 seconds</span>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant={auditAutoReload ? 'default' : 'outline'}
+                        onClick={() => setAuditAutoReload(!auditAutoReload)}
+                        className={auditAutoReload ? 'bg-green-600 hover:bg-green-700' : 'border-slate-300 text-slate-700'}
+                      >
+                        {auditAutoReload ? 'Enabled' : 'Disabled'}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Audit Logs Table */}
+                  {filteredAuditLogs.length > 0 ? (
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b border-slate-200">
+                          <tr className="border-b border-slate-200 bg-slate-100">
                             <th className="text-left py-3 px-4 text-slate-700 font-semibold">
                               Action
                             </th>
@@ -896,25 +1119,33 @@ export default function SettingsPage() {
                               Resource
                             </th>
                             <th className="text-left py-3 px-4 text-slate-700 font-semibold">
+                              Details
+                            </th>
+                            <th className="text-left py-3 px-4 text-slate-700 font-semibold">
                               Timestamp
                             </th>
                           </tr>
                         </thead>
                         <tbody>
-                          {auditLogs.slice(0, 10).map((log) => (
-                            <tr key={log._id} className="border-b border-slate-100 hover:bg-slate-100">
-                              <td className="py-3 px-4 text-slate-900 font-semibold">
-                                {log.actionType}
+                          {filteredAuditLogs.map((log) => (
+                            <tr key={log._id} className="border-b border-slate-100 hover:bg-slate-50">
+                              <td className="py-3 px-4">
+                                <Badge className="bg-blue-100 text-blue-800 border-blue-300 border">
+                                  {log.actionType}
+                                </Badge>
                               </td>
                               <td className="py-3 px-4 text-slate-600">
-                                {log.performedBy}
+                                {log.performedBy || 'System'}
                               </td>
                               <td className="py-3 px-4 text-slate-600">
                                 {log.resourceAffected}
                               </td>
-                              <td className="py-3 px-4 text-slate-600">
+                              <td className="py-3 px-4 text-slate-600 text-xs">
+                                {log.actionDetails}
+                              </td>
+                              <td className="py-3 px-4 text-slate-600 whitespace-nowrap">
                                 {log.timestamp
-                                  ? new Date(log.timestamp).toLocaleDateString()
+                                  ? new Date(log.timestamp).toLocaleString()
                                   : 'N/A'}
                               </td>
                             </tr>
@@ -924,9 +1155,18 @@ export default function SettingsPage() {
                     </div>
                   ) : (
                     <div className="py-8 text-center text-slate-500">
-                      No audit logs found
+                      No audit logs found matching your filters
                     </div>
                   )}
+
+                  {/* Summary */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-sm text-slate-700">
+                      <strong>Total Records:</strong> {filteredAuditLogs.length} of {auditLogs.length} logs
+                      <br />
+                      <strong>Data Retention:</strong> Last 12 months
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -961,47 +1201,47 @@ export default function SettingsPage() {
                     <div className="space-y-3">
                       <div className="p-4 bg-white border border-slate-200 rounded-lg">
                         <div className="flex items-start gap-3">
-                          <Checkbox className="mt-1" />
-                          <div className="flex-1">
+                          <Checkbox id="loans-due" className="mt-1 h-5 w-5 border-slate-400" />
+                          <label htmlFor="loans-due" className="flex-1 cursor-pointer">
                             <p className="font-medium text-slate-900">Loans Due Today</p>
                             <p className="text-sm text-slate-600">Daily report of loans due for repayment</p>
-                          </div>
+                          </label>
                         </div>
                       </div>
                       <div className="p-4 bg-white border border-slate-200 rounded-lg">
                         <div className="flex items-start gap-3">
-                          <Checkbox className="mt-1" />
-                          <div className="flex-1">
+                          <Checkbox id="loans-expiring" className="mt-1 h-5 w-5 border-slate-400" />
+                          <label htmlFor="loans-expiring" className="flex-1 cursor-pointer">
                             <p className="font-medium text-slate-900">Loans Expiring Today</p>
                             <p className="text-sm text-slate-600">Daily report of loans expiring today</p>
-                          </div>
+                          </label>
                         </div>
                       </div>
                       <div className="p-4 bg-white border border-slate-200 rounded-lg">
                         <div className="flex items-start gap-3">
-                          <Checkbox className="mt-1" />
-                          <div className="flex-1">
+                          <Checkbox id="loans-overdue" className="mt-1 h-5 w-5 border-slate-400" />
+                          <label htmlFor="loans-overdue" className="flex-1 cursor-pointer">
                             <p className="font-medium text-slate-900">Loans Past Maturity Date</p>
                             <p className="text-sm text-slate-600">Daily report of overdue loans</p>
-                          </div>
+                          </label>
                         </div>
                       </div>
                       <div className="p-4 bg-white border border-slate-200 rounded-lg">
                         <div className="flex items-start gap-3">
-                          <Checkbox className="mt-1" />
-                          <div className="flex-1">
+                          <Checkbox id="new-loans" className="mt-1 h-5 w-5 border-slate-400" />
+                          <label htmlFor="new-loans" className="flex-1 cursor-pointer">
                             <p className="font-medium text-slate-900">New Loans Added</p>
                             <p className="text-sm text-slate-600">Daily report of newly created loans</p>
-                          </div>
+                          </label>
                         </div>
                       </div>
                       <div className="p-4 bg-white border border-slate-200 rounded-lg">
                         <div className="flex items-start gap-3">
-                          <Checkbox className="mt-1" />
-                          <div className="flex-1">
+                          <Checkbox id="new-repayments" className="mt-1 h-5 w-5 border-slate-400" />
+                          <label htmlFor="new-repayments" className="flex-1 cursor-pointer">
                             <p className="font-medium text-slate-900">New Repayments Added</p>
                             <p className="text-sm text-slate-600">Daily report of new repayment records</p>
-                          </div>
+                          </label>
                         </div>
                       </div>
                       <div className="p-4 bg-white border border-slate-200 rounded-lg">
@@ -1030,11 +1270,11 @@ export default function SettingsPage() {
                     <div className="space-y-3">
                       <div className="p-4 bg-white border border-slate-200 rounded-lg">
                         <div className="flex items-start gap-3">
-                          <Checkbox className="mt-1" />
-                          <div className="flex-1">
+                          <Checkbox id="weekly-summary" className="mt-1 h-5 w-5 border-slate-400" />
+                          <label htmlFor="weekly-summary" className="flex-1 cursor-pointer">
                             <p className="font-medium text-slate-900">Weekly Summary Report</p>
                             <p className="text-sm text-slate-600">Comprehensive weekly summary of all loan activities</p>
-                          </div>
+                          </label>
                         </div>
                       </div>
                       <div className="p-4 bg-white border border-slate-200 rounded-lg">
@@ -1063,11 +1303,11 @@ export default function SettingsPage() {
                     <div className="space-y-3">
                       <div className="p-4 bg-white border border-slate-200 rounded-lg">
                         <div className="flex items-start gap-3">
-                          <Checkbox className="mt-1" />
-                          <div className="flex-1">
+                          <Checkbox id="repayment-approval" className="mt-1 h-5 w-5 border-slate-400" />
+                          <label htmlFor="repayment-approval" className="flex-1 cursor-pointer">
                             <p className="font-medium text-slate-900">Send Approval Notifications</p>
                             <p className="text-sm text-slate-600">Notify staff when repayments require approval</p>
-                          </div>
+                          </label>
                         </div>
                       </div>
                       <div className="p-4 bg-white border border-slate-200 rounded-lg">
@@ -1096,11 +1336,11 @@ export default function SettingsPage() {
                     <div className="space-y-3">
                       <div className="p-4 bg-white border border-slate-200 rounded-lg">
                         <div className="flex items-start gap-3">
-                          <Checkbox className="mt-1" />
-                          <div className="flex-1">
+                          <Checkbox id="savings-approval" className="mt-1 h-5 w-5 border-slate-400" />
+                          <label htmlFor="savings-approval" className="flex-1 cursor-pointer">
                             <p className="font-medium text-slate-900">Send Approval Notifications</p>
                             <p className="text-sm text-slate-600">Notify staff when savings transactions require approval</p>
-                          </div>
+                          </label>
                         </div>
                       </div>
                       <div className="p-4 bg-white border border-slate-200 rounded-lg">
@@ -1129,11 +1369,11 @@ export default function SettingsPage() {
                     <div className="space-y-3">
                       <div className="p-4 bg-white border border-slate-200 rounded-lg">
                         <div className="flex items-start gap-3">
-                          <Checkbox className="mt-1" />
-                          <div className="flex-1">
+                          <Checkbox id="journal-approval" className="mt-1 h-5 w-5 border-slate-400" />
+                          <label htmlFor="journal-approval" className="flex-1 cursor-pointer">
                             <p className="font-medium text-slate-900">Send Approval Notifications</p>
                             <p className="text-sm text-slate-600">Notify staff when manual journal entries require approval</p>
-                          </div>
+                          </label>
                         </div>
                       </div>
                       <div className="p-4 bg-white border border-slate-200 rounded-lg">
