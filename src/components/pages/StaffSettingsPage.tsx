@@ -431,18 +431,28 @@ export default function StaffSettingsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary to-primary/95 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
+        {/* Header with Back Button */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-8 flex items-center justify-between"
         >
-          <h1 className="text-4xl font-heading font-bold text-primary-foreground mb-2">
-            Staff Management
-          </h1>
-          <p className="text-primary-foreground/70">
-            Manage staff roles, permissions, access controls, and personal information
-          </p>
+          <div>
+            <h1 className="text-4xl font-heading font-bold text-primary-foreground mb-2">
+              Staff Management
+            </h1>
+            <p className="text-primary-foreground/70">
+              Manage staff roles, permissions, access controls, and personal information
+            </p>
+          </div>
+          <Button
+            onClick={() => navigate('/admin/settings')}
+            variant="outline"
+            className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Settings
+          </Button>
         </motion.div>
 
         {/* Success/Error Messages */}
