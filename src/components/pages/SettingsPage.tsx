@@ -1182,19 +1182,6 @@ export default function SettingsPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-8">
-                  {/* Guidance Text */}
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-slate-700">
-                      <strong>Note:</strong> Configure loan reminder notifications and approval settings in the dedicated sections. 
-                      <a href="/admin/settings/loan-reminders" className="text-blue-600 hover:underline ml-1">
-                        View Loan Reminder Notifications →
-                      </a>
-                      <a href="/admin/settings/loan-approvals" className="text-blue-600 hover:underline ml-1">
-                        View Loan Approvals Settings →
-                      </a>
-                    </p>
-                  </div>
-
                   {/* Daily Reports */}
                   <div className="border-t border-slate-200 pt-6">
                     <h4 className="font-semibold text-slate-900 mb-4">Daily Reports</h4>
