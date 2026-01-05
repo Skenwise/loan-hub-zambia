@@ -439,7 +439,7 @@ export default function LoanSettingsPage() {
           animate={{ opacity: 1, y: 0 }}
         >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-slate-200 mb-8">
+            <TabsList className="grid w-full grid-cols-4 bg-slate-200 mb-8">
               <TabsTrigger value="products" className="text-slate-900">
                 <Settings className="w-4 h-4 mr-2" />
                 Loan Products
@@ -447,6 +447,14 @@ export default function LoanSettingsPage() {
               <TabsTrigger value="form" className="text-slate-900">
                 <Plus className="w-4 h-4 mr-2" />
                 {editingId ? 'Edit Product' : 'New Product'}
+              </TabsTrigger>
+              <TabsTrigger value="penalties" className="text-slate-900">
+                <AlertCircle className="w-4 h-4 mr-2" />
+                Penalties
+              </TabsTrigger>
+              <TabsTrigger value="advanced" className="text-slate-900">
+                <Settings className="w-4 h-4 mr-2" />
+                Advanced
               </TabsTrigger>
             </TabsList>
 
@@ -525,6 +533,71 @@ export default function LoanSettingsPage() {
                       No loan products found. Click "New Product" to create one.
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Penalties Tab */}
+            <TabsContent value="penalties" className="space-y-6">
+              <Card className="bg-slate-50 border-slate-300">
+                <CardHeader>
+                  <CardTitle className="text-slate-900">Loan Penalty Settings</CardTitle>
+                  <CardDescription className="text-slate-600">
+                    Configure late payment, early settlement, and prepayment penalties
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <p className="text-slate-600 mb-4">
+                      Select a loan product to configure its penalty settings
+                    </p>
+                    <Button
+                      onClick={() => setActiveTab('products')}
+                      className="bg-blue-600 text-white hover:bg-blue-700"
+                    >
+                      View Loan Products
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Advanced Tab */}
+            <TabsContent value="advanced" className="space-y-6">
+              <Card className="bg-slate-50 border-slate-300">
+                <CardHeader>
+                  <CardTitle className="text-slate-900">Advanced Loan Configuration</CardTitle>
+                  <CardDescription className="text-slate-600">
+                    Access additional loan management tools and configurations
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Button
+                      onClick={() => navigate('/admin/loans/loan-products')}
+                      variant="outline"
+                      className="h-auto p-4 flex flex-col items-start justify-start border-slate-300 text-slate-900 hover:bg-slate-100"
+                    >
+                      <div className="font-semibold mb-1">Loan Products List</div>
+                      <div className="text-xs text-slate-600">View and manage all loan products</div>
+                    </Button>
+                    <Button
+                      onClick={() => navigate('/admin/loans/loan-products/add-edit')}
+                      variant="outline"
+                      className="h-auto p-4 flex flex-col items-start justify-start border-slate-300 text-slate-900 hover:bg-slate-100"
+                    >
+                      <div className="font-semibold mb-1">Add/Edit Loan Product</div>
+                      <div className="text-xs text-slate-600">Create or modify loan products</div>
+                    </Button>
+                    <Button
+                      onClick={() => navigate('/admin/loans/loan-products/penalty-settings')}
+                      variant="outline"
+                      className="h-auto p-4 flex flex-col items-start justify-start border-slate-300 text-slate-900 hover:bg-slate-100"
+                    >
+                      <div className="font-semibold mb-1">Penalty Settings</div>
+                      <div className="text-xs text-slate-600">Configure penalty parameters</div>
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
