@@ -601,7 +601,7 @@ export default function RolesPermissionsPage() {
                             {category.permissions.map((permission) => (
                               <div
                                 key={permission.id}
-                                className="flex items-center gap-2"
+                                className="flex items-center gap-2 p-2 rounded hover:bg-slate-100 transition-colors"
                               >
                                 <Checkbox
                                   checked={
@@ -610,8 +610,9 @@ export default function RolesPermissionsPage() {
                                   onCheckedChange={() =>
                                     togglePermission(permission.id)
                                   }
+                                  className="border-2 border-blue-500 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                                 />
-                                <label className="text-sm text-slate-700 cursor-pointer">
+                                <label className="text-sm text-slate-700 cursor-pointer font-medium">
                                   {permission.label}
                                 </label>
                               </div>

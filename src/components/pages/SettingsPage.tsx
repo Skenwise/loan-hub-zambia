@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Badge } from '@/components/ui/badge';
@@ -932,6 +933,246 @@ export default function SettingsPage() {
 
             {/* Email Templates Tab */}
             <TabsContent value="email" className="space-y-6">
+              {/* Staff Email Reminders Section */}
+              <Card className="bg-slate-50 border-slate-300">
+                <CardHeader>
+                  <CardTitle className="text-slate-900">Staff Email Reminders</CardTitle>
+                  <CardDescription className="text-slate-600">
+                    Configure automated email notifications for staff members
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-8">
+                  {/* Guidance Text */}
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-slate-700">
+                      <strong>Note:</strong> Configure loan reminder notifications and approval settings in the dedicated sections. 
+                      <a href="/admin/settings/loan-reminders" className="text-blue-600 hover:underline ml-1">
+                        View Loan Reminder Notifications →
+                      </a>
+                      <a href="/admin/settings/loan-approvals" className="text-blue-600 hover:underline ml-1">
+                        View Loan Approvals Settings →
+                      </a>
+                    </p>
+                  </div>
+
+                  {/* Daily Reports */}
+                  <div className="border-t border-slate-200 pt-6">
+                    <h4 className="font-semibold text-slate-900 mb-4">Daily Reports</h4>
+                    <div className="space-y-3">
+                      <div className="p-4 bg-white border border-slate-200 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <Checkbox className="mt-1" />
+                          <div className="flex-1">
+                            <p className="font-medium text-slate-900">Loans Due Today</p>
+                            <p className="text-sm text-slate-600">Daily report of loans due for repayment</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-4 bg-white border border-slate-200 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <Checkbox className="mt-1" />
+                          <div className="flex-1">
+                            <p className="font-medium text-slate-900">Loans Expiring Today</p>
+                            <p className="text-sm text-slate-600">Daily report of loans expiring today</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-4 bg-white border border-slate-200 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <Checkbox className="mt-1" />
+                          <div className="flex-1">
+                            <p className="font-medium text-slate-900">Loans Past Maturity Date</p>
+                            <p className="text-sm text-slate-600">Daily report of overdue loans</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-4 bg-white border border-slate-200 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <Checkbox className="mt-1" />
+                          <div className="flex-1">
+                            <p className="font-medium text-slate-900">New Loans Added</p>
+                            <p className="text-sm text-slate-600">Daily report of newly created loans</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-4 bg-white border border-slate-200 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <Checkbox className="mt-1" />
+                          <div className="flex-1">
+                            <p className="font-medium text-slate-900">New Repayments Added</p>
+                            <p className="text-sm text-slate-600">Daily report of new repayment records</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-4 bg-white border border-slate-200 rounded-lg">
+                        <div className="space-y-3">
+                          <p className="font-medium text-slate-900">Assign Staff Members</p>
+                          <div className="space-y-2">
+                            {staff.length > 0 ? (
+                              staff.slice(0, 5).map((member) => (
+                                <div key={member._id} className="flex items-center gap-2">
+                                  <Checkbox />
+                                  <label className="text-sm text-slate-700">{member.fullName}</label>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-sm text-slate-500">No staff members available</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Weekly Reports */}
+                  <div className="border-t border-slate-200 pt-6">
+                    <h4 className="font-semibold text-slate-900 mb-4">Weekly Reports</h4>
+                    <div className="space-y-3">
+                      <div className="p-4 bg-white border border-slate-200 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <Checkbox className="mt-1" />
+                          <div className="flex-1">
+                            <p className="font-medium text-slate-900">Weekly Summary Report</p>
+                            <p className="text-sm text-slate-600">Comprehensive weekly summary of all loan activities</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-4 bg-white border border-slate-200 rounded-lg">
+                        <div className="space-y-3">
+                          <p className="font-medium text-slate-900">Assign Staff Members</p>
+                          <div className="space-y-2">
+                            {staff.length > 0 ? (
+                              staff.slice(0, 5).map((member) => (
+                                <div key={member._id} className="flex items-center gap-2">
+                                  <Checkbox />
+                                  <label className="text-sm text-slate-700">{member.fullName}</label>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-sm text-slate-500">No staff members available</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Approve Repayments */}
+                  <div className="border-t border-slate-200 pt-6">
+                    <h4 className="font-semibold text-slate-900 mb-4">Approve Repayments</h4>
+                    <div className="space-y-3">
+                      <div className="p-4 bg-white border border-slate-200 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <Checkbox className="mt-1" />
+                          <div className="flex-1">
+                            <p className="font-medium text-slate-900">Send Approval Notifications</p>
+                            <p className="text-sm text-slate-600">Notify staff when repayments require approval</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-4 bg-white border border-slate-200 rounded-lg">
+                        <div className="space-y-3">
+                          <p className="font-medium text-slate-900">Assign Staff Members</p>
+                          <div className="space-y-2">
+                            {staff.length > 0 ? (
+                              staff.slice(0, 5).map((member) => (
+                                <div key={member._id} className="flex items-center gap-2">
+                                  <Checkbox />
+                                  <label className="text-sm text-slate-700">{member.fullName}</label>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-sm text-slate-500">No staff members available</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Approve Savings Transactions */}
+                  <div className="border-t border-slate-200 pt-6">
+                    <h4 className="font-semibold text-slate-900 mb-4">Approve Savings Transactions</h4>
+                    <div className="space-y-3">
+                      <div className="p-4 bg-white border border-slate-200 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <Checkbox className="mt-1" />
+                          <div className="flex-1">
+                            <p className="font-medium text-slate-900">Send Approval Notifications</p>
+                            <p className="text-sm text-slate-600">Notify staff when savings transactions require approval</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-4 bg-white border border-slate-200 rounded-lg">
+                        <div className="space-y-3">
+                          <p className="font-medium text-slate-900">Assign Staff Members</p>
+                          <div className="space-y-2">
+                            {staff.length > 0 ? (
+                              staff.slice(0, 5).map((member) => (
+                                <div key={member._id} className="flex items-center gap-2">
+                                  <Checkbox />
+                                  <label className="text-sm text-slate-700">{member.fullName}</label>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-sm text-slate-500">No staff members available</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Approve Manual Journal */}
+                  <div className="border-t border-slate-200 pt-6">
+                    <h4 className="font-semibold text-slate-900 mb-4">Approve Manual Journal</h4>
+                    <div className="space-y-3">
+                      <div className="p-4 bg-white border border-slate-200 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <Checkbox className="mt-1" />
+                          <div className="flex-1">
+                            <p className="font-medium text-slate-900">Send Approval Notifications</p>
+                            <p className="text-sm text-slate-600">Notify staff when manual journal entries require approval</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-4 bg-white border border-slate-200 rounded-lg">
+                        <div className="space-y-3">
+                          <p className="font-medium text-slate-900">Assign Staff Members</p>
+                          <div className="space-y-2">
+                            {staff.length > 0 ? (
+                              staff.slice(0, 5).map((member) => (
+                                <div key={member._id} className="flex items-center gap-2">
+                                  <Checkbox />
+                                  <label className="text-sm text-slate-700">{member.fullName}</label>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-sm text-slate-500">No staff members available</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Save Button */}
+                  <div className="border-t border-slate-200 pt-6 flex gap-3 justify-end">
+                    <Button
+                      variant="outline"
+                      className="border-slate-300 text-slate-900 hover:bg-slate-100"
+                    >
+                      Cancel
+                    </Button>
+                    <Button className="bg-blue-600 text-white hover:bg-blue-700">
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Email Reminders
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Email Templates Section */}
               <Card className="bg-slate-50 border-slate-300">
                 <CardHeader>
                   <CardTitle className="text-slate-900">Email Templates</CardTitle>
