@@ -396,7 +396,7 @@ export default function SettingsPage() {
           animate={{ opacity: 1, y: 0 }}
         >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-6 bg-slate-200 mb-8">
+            <TabsList className="grid w-full grid-cols-7 bg-slate-200 mb-8">
               <TabsTrigger value="organization" className="text-slate-900 text-xs md:text-sm">
                 <Building2 className="w-4 h-4 mr-2" />
                 Organization
@@ -420,6 +420,10 @@ export default function SettingsPage() {
               <TabsTrigger value="email" className="text-slate-900 text-xs md:text-sm">
                 <Bell className="w-4 h-4 mr-2" />
                 Email
+              </TabsTrigger>
+              <TabsTrigger value="reports" className="text-slate-900 text-xs md:text-sm">
+                <FileText className="w-4 h-4 mr-2" />
+                Reports
               </TabsTrigger>
             </TabsList>
 
@@ -1459,6 +1463,53 @@ export default function SettingsPage() {
                         </Button>
                       </div>
                     ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Customer Reports & Statements Tab */}
+            <TabsContent value="reports" className="space-y-6">
+              <Card className="bg-slate-50 border-slate-300">
+                <CardHeader>
+                  <CardTitle className="text-slate-900">Customer Reports & Statements</CardTitle>
+                  <CardDescription className="text-slate-600">
+                    Download and manage borrower statements and loan schedules
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div
+                      className="p-4 bg-white border border-slate-200 rounded-lg flex items-center justify-between cursor-pointer hover:bg-slate-50 transition"
+                      onClick={() => navigate('/admin/settings/download-statements')}
+                    >
+                      <div>
+                        <p className="font-semibold text-slate-900">Download Statements & Schedules</p>
+                        <p className="text-sm text-slate-600">
+                          Download borrower statements, loan statements, and payment schedules for a branch
+                        </p>
+                      </div>
+                      <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700">
+                        <FileText className="w-4 h-4 mr-2" />
+                        Access
+                      </Button>
+                    </div>
+
+                    <div
+                      className="p-4 bg-white border border-slate-200 rounded-lg flex items-center justify-between cursor-pointer hover:bg-slate-50 transition"
+                      onClick={() => navigate('/admin/settings/report-formatting')}
+                    >
+                      <div>
+                        <p className="font-semibold text-slate-900">Report Formatting</p>
+                        <p className="text-sm text-slate-600">
+                          Customize columns, sections, and formats for your reports
+                        </p>
+                      </div>
+                      <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700">
+                        <Settings className="w-4 h-4 mr-2" />
+                        Configure
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

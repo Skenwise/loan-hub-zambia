@@ -66,6 +66,8 @@ export interface Branches {
   _createdDate?: Date;
   _updatedDate?: Date;
   /** @wixFieldType text */
+  organisationId?: string;
+  /** @wixFieldType text */
   branchName?: string;
   /** @wixFieldType text */
   branchCode?: string;
@@ -96,6 +98,10 @@ export interface BranchHolidays {
   _id: string;
   _createdDate?: Date;
   _updatedDate?: Date;
+  /** @wixFieldType text */
+  branchId?: string;
+  /** @wixFieldType text */
+  organisationId?: string;
   /** @wixFieldType text */
   holidayName?: string;
   /** @wixFieldType date */
@@ -695,62 +701,4 @@ export interface SubscriptionPlans {
   planDescription?: string;
   /** @wixFieldType boolean */
   isActive?: boolean;
-}
-
-
-/**
- * Collection ID: branches
- * Interface for Branches
- */
-export interface Branches {
-  _id: string;
-  _createdDate?: Date;
-  _updatedDate?: Date;
-  /** @wixFieldType text */
-  branchName?: string;
-  /** @wixFieldType text */
-  branchCode?: string;
-  /** @wixFieldType text */
-  organisationId?: string;
-  /** @wixFieldType text */
-  addressLine1?: string;
-  /** @wixFieldType text */
-  city?: string;
-  /** @wixFieldType text */
-  stateProvince?: string;
-  /** @wixFieldType text */
-  postalCode?: string;
-  /** @wixFieldType text */
-  phoneNumber?: string;
-  /** @wixFieldType text */
-  emailAddress?: string;
-  /** @wixFieldType text */
-  managerName?: string;
-  /** @wixFieldType boolean */
-  isActive?: boolean;
-}
-
-
-/**
- * Collection ID: branchholidays
- * Interface for BranchHolidays
- */
-export interface BranchHolidays {
-  _id: string;
-  _createdDate?: Date;
-  _updatedDate?: Date;
-  /** @wixFieldType text */
-  branchId?: string;
-  /** @wixFieldType text */
-  organisationId?: string;
-  /** @wixFieldType text */
-  holidayName?: string;
-  /** @wixFieldType date */
-  holidayDate?: Date | string;
-  /** @wixFieldType boolean */
-  isPublicHoliday?: boolean;
-  /** @wixFieldType boolean */
-  applyToNewLoansByDefault?: boolean;
-  /** @wixFieldType text */
-  description?: string;
 }

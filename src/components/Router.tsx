@@ -51,6 +51,8 @@ import AddEditLoanProductPage from '@/components/pages/AddEditLoanProductPage';
 import LoanPenaltySettingsPage from '@/components/pages/LoanPenaltySettingsPage';
 import LoanFeeConfigurationPage from '@/components/pages/LoanFeeConfigurationPage';
 import BranchManagementPage from '@/components/pages/BranchManagementPage';
+import DownloadStatementsPage from '@/components/pages/DownloadStatementsPage';
+import ReportFormattingPage from '@/components/pages/ReportFormattingPage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -383,6 +385,22 @@ const router = createBrowserRouter([
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to manage branches">
             <BranchManagementPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "settings/download-statements",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to download statements">
+            <DownloadStatementsPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "settings/report-formatting",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to customize report formatting">
+            <ReportFormattingPage />
           </MemberProtectedRoute>
         ),
       },
