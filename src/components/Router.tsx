@@ -58,6 +58,8 @@ import RepaymentMethodsSettingsPage from '@/components/pages/RepaymentMethodsSet
 import CollectorsSettingsPage from '@/components/pages/CollectorsSettingsPage';
 import CollateralTypesPage from '@/components/pages/CollateralTypesPage';
 import AddEditCollateralTypePage from '@/components/pages/AddEditCollateralTypePage';
+import DemoManagementPage from '@/components/pages/DemoManagementPage';
+import SuperAdminSetupWizardPage from '@/components/pages/SuperAdminSetupWizardPage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -134,6 +136,14 @@ const router = createBrowserRouter([
       {
         path: "customer-signup",
         element: <CustomerSignupPage />,
+      },
+      {
+        path: "setup-wizard",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to access setup wizard">
+            <SuperAdminSetupWizardPage />
+          </MemberProtectedRoute>
+        ),
       },
     ],
   },
@@ -454,6 +464,19 @@ const router = createBrowserRouter([
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to edit collateral types">
             <AddEditCollateralTypePage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "demo-management",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to access demo management">
+            <RoleProtectedRoute 
+              requiredRoles={['Super Admin']}
+              messageToSignIn="This page is only accessible to Super Admin users."
+            >
+              <DemoManagementPage />
+            </RoleProtectedRoute>
           </MemberProtectedRoute>
         ),
       },

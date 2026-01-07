@@ -66,6 +66,8 @@ export interface Branches {
   _createdDate?: Date;
   _updatedDate?: Date;
   /** @wixFieldType text */
+  organisationId?: string;
+  /** @wixFieldType text */
   branchName?: string;
   /** @wixFieldType text */
   branchCode?: string;
@@ -96,6 +98,10 @@ export interface BranchHolidays {
   _id: string;
   _createdDate?: Date;
   _updatedDate?: Date;
+  /** @wixFieldType text */
+  branchId?: string;
+  /** @wixFieldType text */
+  organisationId?: string;
   /** @wixFieldType text */
   holidayName?: string;
   /** @wixFieldType date */
@@ -545,6 +551,8 @@ export interface OrganisationSettings {
   zipPostalCode?: string;
   /** @wixFieldType image */
   companyLogo?: string;
+  /** @wixFieldType boolean */
+  isDemoMode?: boolean;
 }
 
 
@@ -629,6 +637,8 @@ export interface StaffMembers {
   _id: string;
   _createdDate?: Date;
   _updatedDate?: Date;
+  /** @wixFieldType text */
+  organisationId?: string;
   /** @wixFieldType datetime */
   lastLoginDate?: Date | string;
   /** @wixFieldType text */
