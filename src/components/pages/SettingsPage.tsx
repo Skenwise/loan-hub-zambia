@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useMember } from '@/integrations';
 import { useOrganisationStore } from '@/store/organisationStore';
 import { BaseCrudService, StaffService, RoleService, AuditService } from '@/services';
@@ -102,6 +102,7 @@ const REPAYMENT_CYCLES = ['Monthly', 'Quarterly', 'Semi-Annual', 'Annual'];
 
 export default function SettingsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { member } = useMember();
   const { currentOrganisation, currentStaff } = useOrganisationStore();
   const [isLoading, setIsLoading] = useState(true);
@@ -109,6 +110,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('organization');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [previousPath, setPreviousPath] = useState('/admin/dashboard');
 
   // Organization settings state
   const [settings, setSettings] = useState<OrganisationSettings | null>(null);
@@ -153,6 +155,29 @@ export default function SettingsPage() {
     
     setFilteredAuditLogs(filtered);
   };
+
+  // Detect previous page on mount
+  useEffect(() => {
+    // Check if there's a previous page in browser history
+    if (window.history.length > 1) {
+      // Try to get the referrer or use a sensible default
+      const referrer = document.referrer;
+      if (referrer && referrer.includes(window.location.hostname)) {
+        // Extract path from referrer
+        try {
+          const referrerUrl = new URL(referrer);
+          const referrerPath = referrerUrl.pathname;
+          // Only set if it's not the settings page itself
+          if (!referrerPath.includes('/settings')) {
+            setPreviousPath(referrerPath);
+          }
+        } catch (e) {
+          // If URL parsing fails, use default
+          setPreviousPath('/admin/dashboard');
+        }
+      }
+    }
+  }, []);
 
   useEffect(() => {
     applyAuditFilters(auditLogs);
@@ -359,14 +384,26 @@ export default function SettingsPage() {
               Manage organization profile, staff, roles, and system configurations
             </p>
           </div>
-          <Button
-            onClick={() => navigate('/admin/dashboard')}
-            variant="outline"
-            className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              onClick={() => navigate(previousPath)}
+              variant="outline"
+              className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10"
+              title="Go back to the previous page"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Previous Menu
+            </Button>
+            <Button
+              onClick={() => navigate('/admin/dashboard')}
+              variant="outline"
+              className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10"
+              title="Go to admin dashboard"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Dashboard
+            </Button>
+          </div>
         </motion.div>
 
         {/* Success/Error Messages */}
