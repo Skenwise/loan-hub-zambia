@@ -162,7 +162,7 @@ export default function SettingsPage() {
         setIsLoading(true);
 
         // Load organisation settings
-        const result = await BaseCrudService.getAll<OrganisationSettings>('organisationsettings', {}, { limit: 1 });
+        const result = await BaseCrudService.getAll<OrganisationSettings>('organisationsettings');
         if (result.items && result.items.length > 0) {
           const existingSettings = result.items[0];
           // Sync company name from organisation if it differs

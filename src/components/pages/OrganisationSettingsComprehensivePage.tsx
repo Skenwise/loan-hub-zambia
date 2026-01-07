@@ -125,7 +125,7 @@ export default function OrganisationSettingsComprehensivePage() {
         setIsLoading(true);
 
         // Load organisation settings
-        const result = await BaseCrudService.getAll<OrganisationSettings>('organisationsettings', {}, { limit: 1 });
+        const result = await BaseCrudService.getAll<OrganisationSettings>('organisationsettings');
         if (result.items && result.items.length > 0) {
           setSettings(result.items[0]);
           if (result.items[0].companyLogo) {

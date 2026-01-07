@@ -206,9 +206,7 @@ export default function LoanSettingsPage() {
         setIsLoading(true);
         if (currentOrganisation?._id) {
           const result = await BaseCrudService.getAll<LoanProductFormData>(
-            'loanproducts',
-            {},
-            { limit: 100 }
+            'loanproducts'
           );
           setProductsList(result.items || []);
         }

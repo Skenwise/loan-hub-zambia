@@ -248,13 +248,13 @@ export default function StaffSettingsPage() {
       try {
         setIsLoading(true);
         if (currentOrganisation?._id) {
-          const result = await BaseCrudService.getAll<StaffFormData>('staffmembers', {}, { limit: 100 });
+          const result = await BaseCrudService.getAll<StaffFormData>('staffmembers');
           setStaffList(result.items || []);
         }
         
         // Load roles
         try {
-          const rolesResult = await BaseCrudService.getAll<Roles>('roles', {}, { limit: 100 });
+          const rolesResult = await BaseCrudService.getAll<Roles>('roles');
           setRoles(rolesResult.items || []);
         } catch (error) {
           console.error('Error loading roles:', error);
@@ -316,10 +316,8 @@ export default function StaffSettingsPage() {
       // Log audit trail
       if (currentOrganisation?._id && member?.loginEmail) {
         await AuditService.logAction({
-          _id: crypto.randomUUID(),
           staffMemberId: staffData._id,
           performedBy: member.loginEmail,
-          timestamp: new Date(),
           actionType: editingId ? 'UPDATE' : 'CREATE',
           actionDetails: `Staff member ${staffData.firstName} ${staffData.lastName}`,
           resourceAffected: 'Staff Member',

@@ -212,7 +212,7 @@ export default function RolesPermissionsPage() {
       try {
         setIsLoading(true);
         if (currentOrganisation?._id) {
-          const result = await BaseCrudService.getAll<RoleFormData>('roles', {}, { limit: 100 });
+          const result = await BaseCrudService.getAll<RoleFormData>('roles');
           setRolesList(result.items || []);
         }
       } catch (error) {
@@ -247,10 +247,10 @@ export default function RolesPermissionsPage() {
 
     try {
       setIsSaving(true);
-      const roleData = {
+      const roleData: RoleFormData = {
         ...formData,
         _id: formData._id || crypto.randomUUID(),
-        permissions: formData.permissions?.join(',') || '',
+        permissions: formData.permissions || [],
       };
 
       if (editingId) {

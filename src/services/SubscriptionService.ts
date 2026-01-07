@@ -127,6 +127,33 @@ export class SubscriptionService {
   }
 
   /**
+   * Check if organisation can create a new branch
+   */
+  static async canCreateBranch(organisationId: string): Promise<boolean> {
+    try {
+      const plan = await this.getOrganisationPlan(organisationId);
+      if (!plan) return false;
+
+      const limits = await this.getPlanLimits(plan._id);
+      const maxBranches = limits['max_branches'];
+
+      // If no limit is set, allow unlimited branches
+      if (!maxBranches || maxBranches === 0) return true;
+
+      // Count existing branches
+      const { items: allBranches } = await BaseCrudService.getAll('branches');
+      const orgBranches = allBranches.filter(
+        (b: any) => b.organisationId === organisationId
+      );
+
+      return orgBranches.length < maxBranches;
+    } catch (error) {
+      console.error('Error checking branch creation limit:', error);
+      return false;
+    }
+  }
+
+  /**
    * Initialize default subscription plans
    */
   static async initializeDefaultPlans(): Promise<void> {
@@ -144,7 +171,7 @@ export class SubscriptionService {
           planName: 'Starter',
           pricePerMonth: 59,
           features: 'basic_reporting,customer_management,loan_management,kyc_verification,loan_origination,payment_processing,basic_analytics,email_support',
-          usageLimits: 'max_users:2,max_loans:100',
+          usageLimits: 'max_users:2,max_loans:100,max_branches:1',
           planDescription: 'Perfect for small lending operations',
           isActive: true,
         },
@@ -152,7 +179,7 @@ export class SubscriptionService {
           planName: 'Professional',
           pricePerMonth: 129,
           features: 'advanced_reporting,customer_management,loan_management,ifrs9_compliance,boz_provisions,write_off_management,priority_support,portfolio_analytics,risk_management',
-          usageLimits: 'max_users:5,max_loans:2000',
+          usageLimits: 'max_users:5,max_loans:2000,max_branches:5',
           planDescription: 'For growing lending institutions',
           isActive: true,
         },
@@ -160,7 +187,7 @@ export class SubscriptionService {
           planName: 'Enterprise',
           pricePerMonth: 346,
           features: 'advanced_reporting,customer_management,loan_management,ifrs9_compliance,boz_provisions,api_access,custom_integrations,white_label,dedicated_support,advanced_compliance,sla_guarantee',
-          usageLimits: 'max_users:unlimited,max_loans:unlimited',
+          usageLimits: 'max_users:unlimited,max_loans:unlimited,max_branches:unlimited',
           planDescription: 'For large-scale operations',
           isActive: true,
         },
