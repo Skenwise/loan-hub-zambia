@@ -257,10 +257,8 @@ export default function LoanSettingsPage() {
       // Log audit trail
       if (currentOrganisation?._id && member?.loginEmail) {
         await AuditService.logAction({
-          _id: crypto.randomUUID(),
           staffMemberId: '',
           performedBy: member.loginEmail,
-          timestamp: new Date(),
           actionType: editingId ? 'UPDATE' : 'CREATE',
           actionDetails: `Loan Product ${formData.productName}`,
           resourceAffected: 'Loan Product',
@@ -596,6 +594,14 @@ export default function LoanSettingsPage() {
                     >
                       <div className="font-semibold mb-1">Penalty Settings</div>
                       <div className="text-xs text-slate-600">Configure penalty parameters</div>
+                    </Button>
+                    <Button
+                      onClick={() => navigate('/admin/settings/loan-fees')}
+                      variant="outline"
+                      className="h-auto p-4 flex flex-col items-start justify-start border-slate-300 text-slate-900 hover:bg-slate-100"
+                    >
+                      <div className="font-semibold mb-1">Loan Fees</div>
+                      <div className="text-xs text-slate-600">Configure loan fees and accounting</div>
                     </Button>
                   </div>
                 </CardContent>

@@ -49,6 +49,7 @@ import LoanSettingsPage from '@/components/pages/LoanSettingsPage';
 import LoanProductsListPage from '@/components/pages/LoanProductsListPage';
 import AddEditLoanProductPage from '@/components/pages/AddEditLoanProductPage';
 import LoanPenaltySettingsPage from '@/components/pages/LoanPenaltySettingsPage';
+import LoanFeeConfigurationPage from '@/components/pages/LoanFeeConfigurationPage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -365,6 +366,14 @@ const router = createBrowserRouter([
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to manage penalty settings">
             <LoanPenaltySettingsPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "settings/loan-fees",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to manage loan fees">
+            <LoanFeeConfigurationPage />
           </MemberProtectedRoute>
         ),
       },

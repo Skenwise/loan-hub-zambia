@@ -175,8 +175,15 @@ const PERMISSION_CATEGORIES = [
   },
 ];
 
-interface RoleFormData extends Roles {
+interface RoleFormData {
+  _id: string;
+  roleName?: string;
+  description?: string;
   permissions?: string[];
+  isSystemRole?: boolean;
+  hierarchyLevel?: number;
+  _createdDate?: Date;
+  _updatedDate?: Date;
 }
 
 export default function RolesPermissionsPage() {
@@ -257,10 +264,8 @@ export default function RolesPermissionsPage() {
       // Log audit trail
       if (currentOrganisation?._id && member?.loginEmail) {
         await AuditService.logAction({
-          _id: crypto.randomUUID(),
           staffMemberId: '',
           performedBy: member.loginEmail,
-          timestamp: new Date(),
           actionType: editingId ? 'UPDATE' : 'CREATE',
           actionDetails: `Role ${formData.roleName}`,
           resourceAffected: 'Role',
@@ -281,7 +286,7 @@ export default function RolesPermissionsPage() {
 
   const handleEditRole = (role: RoleFormData) => {
     const permissions = role.permissions
-      ? (typeof role.permissions === 'string' ? role.permissions.split(',') : role.permissions)
+      ? (typeof role.permissions === 'string' ? (role.permissions as any).split(',') : role.permissions)
       : [];
     setFormData({ ...role, permissions });
     setEditingId(role._id);
@@ -461,7 +466,7 @@ export default function RolesPermissionsPage() {
                               <Badge className="bg-slate-100 text-slate-800 border-slate-300 border">
                                 {role.permissions
                                   ? (typeof role.permissions === 'string'
-                                    ? role.permissions.split(',').length
+                                    ? (role.permissions as any).split(',').length
                                     : role.permissions.length)
                                   : 0} permissions
                               </Badge>

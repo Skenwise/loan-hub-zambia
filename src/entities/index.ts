@@ -108,7 +108,7 @@ export interface CustomerProfiles {
   kycVerificationStatus?: string;
   /** @wixFieldType number */
   creditScore?: number;
-  /** @wixFieldType image - Contains image URL, render with <Image> component, NOT as text */
+  /** @wixFieldType image */
   idDocumentImage?: string;
 }
 
@@ -260,6 +260,37 @@ export interface LoanDocuments {
   uploadedBy?: string;
   /** @wixFieldType number */
   fileSize?: number;
+}
+
+
+/**
+ * Collection ID: loanfees
+ * Interface for LoanFees
+ */
+export interface LoanFees {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  feeName?: string;
+  /** @wixFieldType text */
+  feeCategory?: string;
+  /** @wixFieldType text */
+  feeChargingType?: string;
+  /** @wixFieldType boolean */
+  isOptional?: boolean;
+  /** @wixFieldType text */
+  calculationMethod?: string;
+  /** @wixFieldType number */
+  fixedAmountValue?: number;
+  /** @wixFieldType number */
+  percentageValue?: number;
+  /** @wixFieldType text */
+  percentageBasis?: string;
+  /** @wixFieldType text */
+  accountingBasis?: string;
+  /** @wixFieldType text */
+  accountingFeeType?: string;
 }
 
 
@@ -460,7 +491,7 @@ export interface OrganisationSettings {
   provinceState?: string;
   /** @wixFieldType text */
   zipPostalCode?: string;
-  /** @wixFieldType image - Contains image URL, render with <Image> component, NOT as text */
+  /** @wixFieldType image */
   companyLogo?: string;
 }
 
@@ -612,4 +643,35 @@ export interface SubscriptionPlans {
   planDescription?: string;
   /** @wixFieldType boolean */
   isActive?: boolean;
+}
+
+
+/**
+ * Collection ID: loanfees
+ * Interface for LoanFees
+ */
+export interface LoanFees {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  feeName?: string;
+  /** @wixFieldType text */
+  feeCategory?: string;
+  /** @wixFieldType text */
+  feeChargingType?: string;
+  /** @wixFieldType boolean */
+  isOptional?: boolean;
+  /** @wixFieldType text */
+  calculationMethod?: string;
+  /** @wixFieldType number */
+  fixedAmountValue?: number;
+  /** @wixFieldType number */
+  percentageValue?: number;
+  /** @wixFieldType text */
+  percentageBasis?: string;
+  /** @wixFieldType text */
+  accountingBasis?: string;
+  /** @wixFieldType text */
+  accountingFeeType?: string;
 }
