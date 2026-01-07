@@ -64,9 +64,8 @@ export default function AdminPortalLayout() {
   const isCustomersActive = customersItems.some(item => isActive(item.path));
   const isRepaymentsActive = repaymentsItems.some(item => isActive(item.path));
   const isReportsActive = reportItems.some(item => isActive(item.path));
-  const isSettingsActive = isActive('/admin/settings') || isActive('/admin/settings/verification');
-  const isBranchesActive = isActive('/admin/settings/branches');
-  const isVerificationActive = isActive('/admin/settings/verification');
+  const isSettingsActive = isActive('/admin/settings');
+  const isBranchesActive = isActive('/admin/branches');
 
   return (
     <div className="flex h-screen bg-gray-100 flex-col">
@@ -192,37 +191,21 @@ export default function AdminPortalLayout() {
               <Settings size={20} />
               {sidebarOpen && <span>Settings</span>}
             </Link>
+          </div>
 
-            {/* Settings Sub-items */}
-            {sidebarOpen && (
-              <div className="ml-4 mt-2 space-y-1">
-                {/* Branches Sub-item */}
-                <Link
-                  to="/admin/settings/branches"
-                  className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm transition ${
-                    isBranchesActive
-                      ? 'bg-secondary text-white'
-                      : 'text-white hover:bg-primary/80'
-                  }`}
-                >
-                  <MapPin size={16} />
-                  <span>Branches</span>
-                </Link>
-
-                {/* Verification Sub-item */}
-                <Link
-                  to="/admin/settings/verification"
-                  className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm transition ${
-                    isVerificationActive
-                      ? 'bg-secondary text-white'
-                      : 'text-white hover:bg-primary/80'
-                  }`}
-                >
-                  <Shield size={16} />
-                  <span>Verification</span>
-                </Link>
-              </div>
-            )}
+          {/* Branches Link */}
+          <div className="pt-2">
+            <Link
+              to="/admin/branches"
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+                isBranchesActive
+                  ? 'bg-secondary text-white'
+                  : 'text-white hover:bg-primary/80'
+              }`}
+            >
+              <MapPin size={20} />
+              {sidebarOpen && <span>Branches</span>}
+            </Link>
           </div>
         </nav>
 

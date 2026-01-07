@@ -410,7 +410,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "settings/branches",
+        path: "branches",
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to manage branches">
             <BranchManagementPage />
@@ -491,14 +491,6 @@ const router = createBrowserRouter([
             >
               <DemoManagementPage />
             </RoleProtectedRoute>
-          </MemberProtectedRoute>
-        ),
-      },
-      {
-        path: "settings/verification",
-        element: (
-          <MemberProtectedRoute messageToSignIn="Sign in to access verification settings">
-            <VerificationPage />
           </MemberProtectedRoute>
         ),
       },

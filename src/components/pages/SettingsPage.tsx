@@ -9,6 +9,7 @@ import { useMember } from '@/integrations';
 import { useOrganisationStore } from '@/store/organisationStore';
 import { BaseCrudService, StaffService, RoleService, AuditService } from '@/services';
 import { OrganisationSettings, AuditTrail } from '@/entities';
+import VerificationPage from '@/components/pages/VerificationPage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -435,7 +436,7 @@ export default function SettingsPage() {
           animate={{ opacity: 1, y: 0 }}
         >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-9 bg-slate-200 mb-8">
+            <TabsList className="grid w-full grid-cols-10 bg-slate-200 mb-8">
               <TabsTrigger value="organization" className="text-slate-900 text-xs md:text-sm">
                 <Building2 className="w-4 h-4 mr-2" />
                 Organization
@@ -471,6 +472,10 @@ export default function SettingsPage() {
               <TabsTrigger value="collateral" className="text-slate-900 text-xs md:text-sm">
                 <Shield className="w-4 h-4 mr-2" />
                 Collateral
+              </TabsTrigger>
+              <TabsTrigger value="verification" className="text-slate-900 text-xs md:text-sm">
+                <Shield className="w-4 h-4 mr-2" />
+                Verification
               </TabsTrigger>
             </TabsList>
 
@@ -1638,6 +1643,11 @@ export default function SettingsPage() {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            {/* Verification Tab */}
+            <TabsContent value="verification" className="space-y-6">
+              <VerificationPage />
             </TabsContent>
           </Tabs>
         </motion.div>
