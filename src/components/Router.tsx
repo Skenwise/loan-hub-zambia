@@ -60,6 +60,7 @@ import CollateralTypesPage from '@/components/pages/CollateralTypesPage';
 import AddEditCollateralTypePage from '@/components/pages/AddEditCollateralTypePage';
 import DemoManagementPage from '@/components/pages/DemoManagementPage';
 import SuperAdminSetupWizardPage from '@/components/pages/SuperAdminSetupWizardPage';
+import VerificationPage from '@/components/pages/VerificationPage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -106,6 +107,14 @@ const router = createBrowserRouter([
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to access your profile">
             <ProfilePage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "verification",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to access verification settings">
+            <VerificationPage />
           </MemberProtectedRoute>
         ),
       },

@@ -637,8 +637,6 @@ export interface StaffMembers {
   _id: string;
   _createdDate?: Date;
   _updatedDate?: Date;
-  /** @wixFieldType text */
-  organisationId?: string;
   /** @wixFieldType datetime */
   lastLoginDate?: Date | string;
   /** @wixFieldType text */
@@ -705,4 +703,54 @@ export interface SubscriptionPlans {
   planDescription?: string;
   /** @wixFieldType boolean */
   isActive?: boolean;
+}
+
+
+/**
+ * Collection ID: verificationrecords
+ * Interface for VerificationRecords
+ */
+export interface VerificationRecords {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  memberId?: string;
+  /** @wixFieldType text */
+  recipient?: string;
+  /** @wixFieldType text */
+  verificationCode?: string;
+  /** @wixFieldType text */
+  verificationToken?: string;
+  /** @wixFieldType text */
+  verificationType?: string;
+  /** @wixFieldType text */
+  status?: string;
+  /** @wixFieldType datetime */
+  expiresAt?: Date | string;
+}
+
+
+/**
+ * Collection ID: verificationrecords
+ * Interface for VerificationRecords
+ */
+export interface VerificationRecords {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  verificationCode?: string;
+  /** @wixFieldType text */
+  verificationToken?: string;
+  /** @wixFieldType text */
+  verificationType?: string;
+  /** @wixFieldType text */
+  recipient?: string;
+  /** @wixFieldType text */
+  status?: string;
+  /** @wixFieldType datetime */
+  expiresAt?: Date | string;
+  /** @wixFieldType text */
+  memberId?: string;
 }
