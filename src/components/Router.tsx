@@ -56,6 +56,8 @@ import ReportFormattingPage from '@/components/pages/ReportFormattingPage';
 import RepaymentsSettingsPage from '@/components/pages/RepaymentsSettingsPage';
 import RepaymentMethodsSettingsPage from '@/components/pages/RepaymentMethodsSettingsPage';
 import CollectorsSettingsPage from '@/components/pages/CollectorsSettingsPage';
+import CollateralTypesPage from '@/components/pages/CollateralTypesPage';
+import AddEditCollateralTypePage from '@/components/pages/AddEditCollateralTypePage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -428,6 +430,30 @@ const router = createBrowserRouter([
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to manage collectors">
             <CollectorsSettingsPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "collateral-types",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to manage collateral types">
+            <CollateralTypesPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "collateral-types/add",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to add collateral types">
+            <AddEditCollateralTypePage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "collateral-types/edit/:id",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to edit collateral types">
+            <AddEditCollateralTypePage />
           </MemberProtectedRoute>
         ),
       },

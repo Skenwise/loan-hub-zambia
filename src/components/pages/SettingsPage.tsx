@@ -40,6 +40,7 @@ import {
   RefreshCw,
   Filter,
   CreditCard,
+  Shield,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
@@ -397,7 +398,7 @@ export default function SettingsPage() {
           animate={{ opacity: 1, y: 0 }}
         >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-8 bg-slate-200 mb-8">
+            <TabsList className="grid w-full grid-cols-9 bg-slate-200 mb-8">
               <TabsTrigger value="organization" className="text-slate-900 text-xs md:text-sm">
                 <Building2 className="w-4 h-4 mr-2" />
                 Organization
@@ -429,6 +430,10 @@ export default function SettingsPage() {
               <TabsTrigger value="repayments" className="text-slate-900 text-xs md:text-sm">
                 <CreditCard className="w-4 h-4 mr-2" />
                 Repayments
+              </TabsTrigger>
+              <TabsTrigger value="collateral" className="text-slate-900 text-xs md:text-sm">
+                <Shield className="w-4 h-4 mr-2" />
+                Collateral
               </TabsTrigger>
             </TabsList>
 
@@ -1559,6 +1564,37 @@ export default function SettingsPage() {
                       </div>
                       <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700">
                         <Users className="w-4 h-4 mr-2" />
+                        Manage
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Collateral Settings Tab */}
+            <TabsContent value="collateral" className="space-y-6">
+              <Card className="bg-slate-50 border-slate-300">
+                <CardHeader>
+                  <CardTitle className="text-slate-900">Collateral Management</CardTitle>
+                  <CardDescription className="text-slate-600">
+                    Define and manage collateral types used in loan products and applications
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div
+                      className="p-4 bg-white border border-slate-200 rounded-lg flex items-center justify-between cursor-pointer hover:bg-slate-50 transition"
+                      onClick={() => navigate('/admin/collateral-types')}
+                    >
+                      <div>
+                        <p className="font-semibold text-slate-900">Collateral Types</p>
+                        <p className="text-sm text-slate-600">
+                          Manage collateral types, valuations, insurance requirements, and documentation
+                        </p>
+                      </div>
+                      <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700">
+                        <Shield className="w-4 h-4 mr-2" />
                         Manage
                       </Button>
                     </div>
