@@ -21,7 +21,7 @@ export default function VerificationPage() {
 
   React.useEffect(() => {
     const checkVerificationStatus = async () => {
-      if (!member?._id) return;
+      if (!member?.loginEmail) return;
 
       try {
         const emailIsVerified = await VerificationService.isVerified(
@@ -192,7 +192,7 @@ export default function VerificationPage() {
           setEmailVerified(true);
         }}
         email={email}
-        memberId={member._id}
+        memberId={member.loginEmail || ''}
       />
 
       <PhoneVerificationModal
@@ -203,7 +203,7 @@ export default function VerificationPage() {
           setPhoneVerified(true);
         }}
         phone={phone}
-        memberId={member._id}
+        memberId={member.loginEmail || ''}
       />
     </div>
   );

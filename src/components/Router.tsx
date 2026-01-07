@@ -494,6 +494,14 @@ const router = createBrowserRouter([
           </MemberProtectedRoute>
         ),
       },
+      {
+        path: "verification",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to access verification settings">
+            <VerificationPage />
+          </MemberProtectedRoute>
+        ),
+      },
     ],
   },
   {

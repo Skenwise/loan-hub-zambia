@@ -18,6 +18,8 @@ import {
   X,
   ChevronDown,
   Lock,
+  MapPin,
+  Shield,
 } from 'lucide-react';
 
 export default function AdminPortalLayout() {
@@ -63,6 +65,8 @@ export default function AdminPortalLayout() {
   const isRepaymentsActive = repaymentsItems.some(item => isActive(item.path));
   const isReportsActive = reportItems.some(item => isActive(item.path));
   const isSettingsActive = isActive('/admin/settings');
+  const isBranchesActive = isActive('/admin/settings/branches');
+  const isVerificationActive = isActive('/admin/verification');
 
   return (
     <div className="flex h-screen bg-gray-100 flex-col">
@@ -187,6 +191,36 @@ export default function AdminPortalLayout() {
             >
               <Settings size={20} />
               {sidebarOpen && <span>Settings</span>}
+            </Link>
+          </div>
+
+          {/* Branches Link */}
+          <div className="pt-2">
+            <Link
+              to="/admin/settings/branches"
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+                isBranchesActive
+                  ? 'bg-secondary text-white'
+                  : 'text-white hover:bg-primary/80'
+              }`}
+            >
+              <MapPin size={20} />
+              {sidebarOpen && <span>Branches</span>}
+            </Link>
+          </div>
+
+          {/* Verification Link */}
+          <div className="pt-2">
+            <Link
+              to="/admin/verification"
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+                isVerificationActive
+                  ? 'bg-secondary text-white'
+                  : 'text-white hover:bg-primary/80'
+              }`}
+            >
+              <Shield size={20} />
+              {sidebarOpen && <span>Verification</span>}
             </Link>
           </div>
         </nav>
