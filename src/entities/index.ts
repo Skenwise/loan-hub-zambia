@@ -644,34 +644,3 @@ export interface SubscriptionPlans {
   /** @wixFieldType boolean */
   isActive?: boolean;
 }
-
-
-/**
- * Collection ID: loanfees
- * Interface for LoanFees
- */
-export interface LoanFees {
-  _id: string;
-  _createdDate?: Date;
-  _updatedDate?: Date;
-  /** @wixFieldType text */
-  feeName?: string;
-  /** @wixFieldType text */
-  feeCategory?: string;
-  /** @wixFieldType text */
-  feeChargingType?: string;
-  /** @wixFieldType boolean */
-  isOptional?: boolean;
-  /** @wixFieldType text */
-  calculationMethod?: string;
-  /** @wixFieldType number */
-  fixedAmountValue?: number;
-  /** @wixFieldType number */
-  percentageValue?: number;
-  /** @wixFieldType text */
-  percentageBasis?: string;
-  /** @wixFieldType text */
-  accountingBasis?: string;
-  /** @wixFieldType text */
-  accountingFeeType?: string;
-}
