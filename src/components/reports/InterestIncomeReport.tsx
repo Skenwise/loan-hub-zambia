@@ -3,6 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Download, Printer, FileText } from 'lucide-react';
+import ReportWatermark from '@/components/ReportWatermark';
+import { useDemoMode } from '@/hooks/useDemoMode';
+import { useOrganisationStore } from '@/store/organisationStore';
 import { ReportExportService } from '@/services/ReportExportService';
 import { BaseCrudService } from '@/integrations';
 import { Loans, Repayments } from '@/entities';
@@ -18,6 +21,8 @@ interface InterestIncomeData {
 export default function InterestIncomeReport() {
   const [data, setData] = useState<InterestIncomeData[]>([]);
   const [loading, setLoading] = useState(true);
+  const { currentOrganisation } = useOrganisationStore();
+  const { isDemoMode } = useDemoMode(currentOrganisation?._id);
 
   useEffect(() => {
     fetchInterestIncomeData();
@@ -132,7 +137,8 @@ export default function InterestIncomeReport() {
   const totalVariance = totalActual - totalProjected;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      <ReportWatermark isDemoMode={isDemoMode} position="diagonal" />
       <div className="flex gap-3">
         <Button onClick={() => handleExport('csv')} variant="outline" className="flex items-center gap-2">
           <Download className="w-4 h-4" />
@@ -220,6 +226,7 @@ export default function InterestIncomeReport() {
           </div>
         </CardContent>
       </Card>
+      <ReportWatermark isDemoMode={isDemoMode} position="centered" />
     </div>
   );
 }

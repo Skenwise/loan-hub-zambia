@@ -3,6 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Download, Printer, FileText } from 'lucide-react';
+import ReportWatermark from '@/components/ReportWatermark';
+import { useDemoMode } from '@/hooks/useDemoMode';
+import { useOrganisationStore } from '@/store/organisationStore';
 import { ReportExportService } from '@/services/ReportExportService';
 import { BaseCrudService } from '@/integrations';
 import { Loans } from '@/entities';
@@ -20,6 +23,8 @@ interface WriteOffData {
 export default function WriteOffSummaryReport() {
   const [data, setData] = useState<WriteOffData[]>([]);
   const [loading, setLoading] = useState(true);
+  const { currentOrganisation } = useOrganisationStore();
+  const { isDemoMode } = useDemoMode(currentOrganisation?._id);
 
   useEffect(() => {
     fetchWriteOffData();
@@ -90,7 +95,8 @@ export default function WriteOffSummaryReport() {
   const totalWriteOff = data.reduce((sum, item) => sum + item.writeOffAmount, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      <ReportWatermark isDemoMode={isDemoMode} position="diagonal" />
       <div className="flex gap-3">
         <Button onClick={() => handleExport('csv')} variant="outline" className="flex items-center gap-2">
           <Download className="w-4 h-4" />
@@ -181,6 +187,7 @@ export default function WriteOffSummaryReport() {
           </div>
         </CardContent>
       </Card>
+      <ReportWatermark isDemoMode={isDemoMode} position="centered" />
     </div>
   );
 }
