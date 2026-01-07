@@ -39,6 +39,7 @@ import {
   ArrowLeft,
   RefreshCw,
   Filter,
+  CreditCard,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
@@ -396,7 +397,7 @@ export default function SettingsPage() {
           animate={{ opacity: 1, y: 0 }}
         >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-7 bg-slate-200 mb-8">
+            <TabsList className="grid w-full grid-cols-8 bg-slate-200 mb-8">
               <TabsTrigger value="organization" className="text-slate-900 text-xs md:text-sm">
                 <Building2 className="w-4 h-4 mr-2" />
                 Organization
@@ -424,6 +425,10 @@ export default function SettingsPage() {
               <TabsTrigger value="reports" className="text-slate-900 text-xs md:text-sm">
                 <FileText className="w-4 h-4 mr-2" />
                 Reports
+              </TabsTrigger>
+              <TabsTrigger value="repayments" className="text-slate-900 text-xs md:text-sm">
+                <CreditCard className="w-4 h-4 mr-2" />
+                Repayments
               </TabsTrigger>
             </TabsList>
 
@@ -1508,6 +1513,53 @@ export default function SettingsPage() {
                       <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700">
                         <Settings className="w-4 h-4 mr-2" />
                         Configure
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Repayments Settings Tab */}
+            <TabsContent value="repayments" className="space-y-6">
+              <Card className="bg-slate-50 border-slate-300">
+                <CardHeader>
+                  <CardTitle className="text-slate-900">Repayments Configuration</CardTitle>
+                  <CardDescription className="text-slate-600">
+                    Configure repayment methods and manage collectors
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div
+                      className="p-4 bg-white border border-slate-200 rounded-lg flex items-center justify-between cursor-pointer hover:bg-slate-50 transition"
+                      onClick={() => navigate('/admin/settings/repayments/methods')}
+                    >
+                      <div>
+                        <p className="font-semibold text-slate-900">Loan Repayment Methods</p>
+                        <p className="text-sm text-slate-600">
+                          Manage payment methods available for recording loan repayments
+                        </p>
+                      </div>
+                      <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700">
+                        <CreditCard className="w-4 h-4 mr-2" />
+                        Manage
+                      </Button>
+                    </div>
+
+                    <div
+                      className="p-4 bg-white border border-slate-200 rounded-lg flex items-center justify-between cursor-pointer hover:bg-slate-50 transition"
+                      onClick={() => navigate('/admin/settings/repayments/collectors')}
+                    >
+                      <div>
+                        <p className="font-semibold text-slate-900">Not Registered Collectors</p>
+                        <p className="text-sm text-slate-600">
+                          Add collectors who can be used when adding repayments
+                        </p>
+                      </div>
+                      <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700">
+                        <Users className="w-4 h-4 mr-2" />
+                        Manage
                       </Button>
                     </div>
                   </div>

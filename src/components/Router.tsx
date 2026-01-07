@@ -53,6 +53,9 @@ import LoanFeeConfigurationPage from '@/components/pages/LoanFeeConfigurationPag
 import BranchManagementPage from '@/components/pages/BranchManagementPage';
 import DownloadStatementsPage from '@/components/pages/DownloadStatementsPage';
 import ReportFormattingPage from '@/components/pages/ReportFormattingPage';
+import RepaymentsSettingsPage from '@/components/pages/RepaymentsSettingsPage';
+import RepaymentMethodsSettingsPage from '@/components/pages/RepaymentMethodsSettingsPage';
+import CollectorsSettingsPage from '@/components/pages/CollectorsSettingsPage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -401,6 +404,30 @@ const router = createBrowserRouter([
         element: (
           <MemberProtectedRoute messageToSignIn="Sign in to customize report formatting">
             <ReportFormattingPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "settings/repayments",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to access repayments settings">
+            <RepaymentsSettingsPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "settings/repayments/methods",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to manage repayment methods">
+            <RepaymentMethodsSettingsPage />
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "settings/repayments/collectors",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to manage collectors">
+            <CollectorsSettingsPage />
           </MemberProtectedRoute>
         ),
       },
