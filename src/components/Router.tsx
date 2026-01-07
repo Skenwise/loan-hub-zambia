@@ -61,6 +61,7 @@ import AddEditCollateralTypePage from '@/components/pages/AddEditCollateralTypeP
 import DemoManagementPage from '@/components/pages/DemoManagementPage';
 import SuperAdminSetupWizardPage from '@/components/pages/SuperAdminSetupWizardPage';
 import VerificationPage from '@/components/pages/VerificationPage';
+import BranchesPage from '@/components/pages/BranchesPage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -117,6 +118,10 @@ const router = createBrowserRouter([
             <VerificationPage />
           </MemberProtectedRoute>
         ),
+      },
+      {
+        path: "branches",
+        element: <BranchesPage />,
       },
       {
         path: "customer-portal",

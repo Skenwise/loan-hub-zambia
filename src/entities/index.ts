@@ -66,8 +66,6 @@ export interface Branches {
   _createdDate?: Date;
   _updatedDate?: Date;
   /** @wixFieldType text */
-  organisationId?: string;
-  /** @wixFieldType text */
   branchName?: string;
   /** @wixFieldType text */
   branchCode?: string;
@@ -87,6 +85,8 @@ export interface Branches {
   managerName?: string;
   /** @wixFieldType boolean */
   isActive?: boolean;
+  /** @wixFieldType text */
+  organisationId?: string;
 }
 
 
@@ -99,10 +99,6 @@ export interface BranchHolidays {
   _createdDate?: Date;
   _updatedDate?: Date;
   /** @wixFieldType text */
-  branchId?: string;
-  /** @wixFieldType text */
-  organisationId?: string;
-  /** @wixFieldType text */
   holidayName?: string;
   /** @wixFieldType date */
   holidayDate?: Date | string;
@@ -112,6 +108,10 @@ export interface BranchHolidays {
   applyToNewLoansByDefault?: boolean;
   /** @wixFieldType text */
   description?: string;
+  /** @wixFieldType text */
+  branchId?: string;
+  /** @wixFieldType text */
+  organisationId?: string;
 }
 
 
@@ -657,6 +657,8 @@ export interface StaffMembers {
   phoneNumber?: string;
   /** @wixFieldType date */
   dateHired?: Date | string;
+  /** @wixFieldType text */
+  organisationId?: string;
 }
 
 
@@ -703,31 +705,6 @@ export interface SubscriptionPlans {
   planDescription?: string;
   /** @wixFieldType boolean */
   isActive?: boolean;
-}
-
-
-/**
- * Collection ID: verificationrecords
- * Interface for VerificationRecords
- */
-export interface VerificationRecords {
-  _id: string;
-  _createdDate?: Date;
-  _updatedDate?: Date;
-  /** @wixFieldType text */
-  memberId?: string;
-  /** @wixFieldType text */
-  recipient?: string;
-  /** @wixFieldType text */
-  verificationCode?: string;
-  /** @wixFieldType text */
-  verificationToken?: string;
-  /** @wixFieldType text */
-  verificationType?: string;
-  /** @wixFieldType text */
-  status?: string;
-  /** @wixFieldType datetime */
-  expiresAt?: Date | string;
 }
 
 
