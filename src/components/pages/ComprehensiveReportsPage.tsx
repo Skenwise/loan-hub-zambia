@@ -7,6 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Download, Printer, FileText } from 'lucide-react';
+import ReportWatermark from '@/components/ReportWatermark';
+import { useDemoMode } from '@/hooks/useDemoMode';
+import { useOrganisationStore } from '@/store/organisationStore';
 import { ReportExportService } from '@/services/ReportExportService';
 import { BaseCrudService } from '@/integrations';
 import { Loans, Repayments, CustomerProfiles, LoanProducts, Organizations } from '@/entities';
@@ -44,6 +47,8 @@ export default function ComprehensiveReportsPage() {
   const [reportData, setReportData] = useState<ReportData[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeReport, setActiveReport] = useState('portfolio-summary');
+  const { currentOrganisation } = useOrganisationStore();
+  const { isDemoMode } = useDemoMode(currentOrganisation?._id);
 
   // Fetch data for reports
   const fetchReportData = async (reportType: string) => {
@@ -282,8 +287,9 @@ export default function ComprehensiveReportsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6 relative">
+      <ReportWatermark isDemoMode={isDemoMode} position="diagonal" />
+      <div className="max-w-7xl mx-auto relative z-10">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-slate-900 mb-2">Comprehensive Reports</h1>
@@ -537,6 +543,7 @@ export default function ComprehensiveReportsPage() {
           </Card>
         </div>
       </div>
+      <ReportWatermark isDemoMode={isDemoMode} position="centered" />
     </div>
   );
 }

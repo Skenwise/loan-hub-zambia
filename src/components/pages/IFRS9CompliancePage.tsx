@@ -8,7 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import ReportWatermark from '@/components/ReportWatermark';
 import { useCurrencyStore } from '@/store/currencyStore';
+import { useDemoMode } from '@/hooks/useDemoMode';
+import { useOrganisationStore } from '@/store/organisationStore';
 import { AlertCircle, TrendingDown, TrendingUp, Calendar } from 'lucide-react';
 
 interface ComplianceMetrics {
@@ -31,6 +34,8 @@ export default function IFRS9CompliancePage() {
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [filteredECLResults, setFilteredECLResults] = useState<ECLResults[]>([]);
   const { getCurrencyCode, getCurrencySymbol } = useCurrencyStore();
+  const { currentOrganisation } = useOrganisationStore();
+  const { isDemoMode } = useDemoMode(currentOrganisation?._id);
 
   useEffect(() => {
     loadComplianceData();
@@ -146,9 +151,10 @@ export default function IFRS9CompliancePage() {
   const currencySymbol = getCurrencySymbol();
 
   return (
-    <div className="min-h-screen bg-primary flex flex-col">
+    <div className="min-h-screen bg-primary flex flex-col relative">
+      <ReportWatermark isDemoMode={isDemoMode} position="diagonal" />
       <Header />
-      <main className="flex-1 w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-12">
+      <main className="flex-1 w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-12 relative z-10">
         <div className="mb-8">
           <h1 className="font-heading text-4xl font-bold text-secondary mb-2">IFRS 9 Compliance</h1>
           <p className="font-paragraph text-base text-primary-foreground">
@@ -367,6 +373,7 @@ export default function IFRS9CompliancePage() {
           </div>
         </Card>
       </main>
+      <ReportWatermark isDemoMode={isDemoMode} position="centered" />
       <Footer />
     </div>
   );

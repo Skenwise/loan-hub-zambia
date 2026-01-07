@@ -4,6 +4,9 @@ import { Loans, Repayments, ECLResults } from '@/entities';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import ReportWatermark from '@/components/ReportWatermark';
+import { useDemoMode } from '@/hooks/useDemoMode';
+import { useOrganisationStore } from '@/store/organisationStore';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Download, TrendingUp, TrendingDown } from 'lucide-react';
 
@@ -32,6 +35,8 @@ export default function AdvancedReportsPage() {
   const [ageingData, setAgeingData] = useState<AgeingData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [reportType, setReportType] = useState<'portfolio' | 'ageing' | 'performance'>('portfolio');
+  const { currentOrganisation } = useOrganisationStore();
+  const { isDemoMode } = useDemoMode(currentOrganisation?._id);
 
   useEffect(() => {
     loadReportData();
@@ -163,8 +168,9 @@ export default function AdvancedReportsPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="mb-8 flex justify-between items-start">
+    <div className="max-w-7xl mx-auto relative">
+      <ReportWatermark isDemoMode={isDemoMode} position="diagonal" />
+      <div className="mb-8 flex justify-between items-start relative z-10">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Advanced Reports</h1>
           <p className="text-gray-600 mt-2">Portfolio analysis and performance metrics</p>
@@ -345,11 +351,12 @@ export default function AdvancedReportsPage() {
       )}
 
       {/* Compliance Note */}
-      <Card className="p-6 bg-blue-50 border border-blue-200">
+      <Card className="p-6 bg-blue-50 border border-blue-200 relative z-10">
         <p className="text-sm text-blue-900">
           <strong>Note:</strong> All reports are generated based on current data in the system. For regulatory submissions, ensure all data is verified and approved by compliance team.
         </p>
       </Card>
+      <ReportWatermark isDemoMode={isDemoMode} position="centered" />
     </div>
   );
 }

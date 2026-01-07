@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react';
 import { useMember } from '@/integrations';
 import { useOrganisationStore } from '@/store/organisationStore';
+import { useDemoMode } from '@/hooks/useDemoMode';
 import { LoanService, DisbursementService, AuthorizationService, Permissions } from '@/services';
 import { Loans } from '@/entities';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Badge } from '@/components/ui/badge';
+import ReportWatermark from '@/components/ReportWatermark';
 import {
   AlertCircle,
   BarChart3,
@@ -43,6 +45,7 @@ interface DisbursementReport {
 export default function DisbursementReportsPage() {
   const { member } = useMember();
   const { currentOrganisation, currentStaff } = useOrganisationStore();
+  const { isDemoMode } = useDemoMode(currentOrganisation?._id);
   const [isLoading, setIsLoading] = useState(true);
   const [canView, setCanView] = useState(false);
   const [dateFrom, setDateFrom] = useState(() => {
