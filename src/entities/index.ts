@@ -66,6 +66,8 @@ export interface Branches {
   _createdDate?: Date;
   _updatedDate?: Date;
   /** @wixFieldType text */
+  organisationId?: string;
+  /** @wixFieldType text */
   branchName?: string;
   /** @wixFieldType text */
   branchCode?: string;
@@ -85,8 +87,6 @@ export interface Branches {
   managerName?: string;
   /** @wixFieldType boolean */
   isActive?: boolean;
-  /** @wixFieldType text */
-  organisationId?: string;
 }
 
 
@@ -99,6 +99,10 @@ export interface BranchHolidays {
   _createdDate?: Date;
   _updatedDate?: Date;
   /** @wixFieldType text */
+  branchId?: string;
+  /** @wixFieldType text */
+  organisationId?: string;
+  /** @wixFieldType text */
   holidayName?: string;
   /** @wixFieldType date */
   holidayDate?: Date | string;
@@ -108,10 +112,6 @@ export interface BranchHolidays {
   applyToNewLoansByDefault?: boolean;
   /** @wixFieldType text */
   description?: string;
-  /** @wixFieldType text */
-  branchId?: string;
-  /** @wixFieldType text */
-  organisationId?: string;
 }
 
 
@@ -637,6 +637,8 @@ export interface StaffMembers {
   _id: string;
   _createdDate?: Date;
   _updatedDate?: Date;
+  /** @wixFieldType text */
+  organisationId?: string;
   /** @wixFieldType datetime */
   lastLoginDate?: Date | string;
   /** @wixFieldType text */
@@ -657,8 +659,6 @@ export interface StaffMembers {
   phoneNumber?: string;
   /** @wixFieldType date */
   dateHired?: Date | string;
-  /** @wixFieldType text */
-  organisationId?: string;
 }
 
 
