@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useMember } from '@/integrations';
 import { Button } from '@/components/ui/button';
 import { useOrganisationStore } from '@/store/organisationStore';
 import { useRoleStore } from '@/store/roleStore';
 import { useSubscriptionFeatures } from '@/hooks/useSubscriptionFeatures';
+import { useDemoMode } from '@/hooks/useDemoMode';
+import DemoBanner from '@/components/DemoBanner';
 import {
   LayoutDashboard,
   Users,
@@ -23,6 +25,7 @@ export default function AdminPortalLayout() {
   const { member, actions } = useMember();
   const { currentOrganisation, currentStaff } = useOrganisationStore();
   const { hasFeature, getPlanType } = useSubscriptionFeatures();
+  const { isDemoMode } = useDemoMode(currentOrganisation?._id);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
@@ -62,7 +65,12 @@ export default function AdminPortalLayout() {
   const isSettingsActive = isActive('/admin/settings');
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100 flex-col">
+      {/* Demo Banner - Always at top */}
+      <DemoBanner isDemoMode={isDemoMode} />
+
+      {/* Main Layout */}
+      <div className="flex flex-1 overflow-hidden">
       {/* Sidebar */}
       <div
         className={`${
@@ -268,6 +276,7 @@ export default function AdminPortalLayout() {
             <Outlet />
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

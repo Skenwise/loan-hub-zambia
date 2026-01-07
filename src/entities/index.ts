@@ -521,6 +521,8 @@ export interface OrganisationSettings {
   _updatedDate?: Date;
   /** @wixFieldType text */
   companyName?: string;
+  /** @wixFieldType boolean */
+  isDemoMode?: boolean;
   /** @wixFieldType text */
   country?: string;
   /** @wixFieldType text */
@@ -551,8 +553,6 @@ export interface OrganisationSettings {
   zipPostalCode?: string;
   /** @wixFieldType image */
   companyLogo?: string;
-  /** @wixFieldType boolean */
-  isDemoMode?: boolean;
 }
 
 

@@ -1,13 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertCircle, CheckCircle2, Smartphone, CreditCard, Building2, Loader2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Smartphone, CreditCard, Building2, Loader2, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCurrencyStore } from '@/store/currencyStore';
+import { checkIfDemoMode } from '@/hooks/useDemoMode';
+import { useOrganisationStore } from '@/store/organisationStore';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -21,6 +23,7 @@ type PaymentMethod = 'mobile-money' | 'bank-transfer' | 'card';
 
 export default function PaymentModal({ isOpen, onClose, loanId, loanNumber, outstandingBalance }: PaymentModalProps) {
   const { getCurrencySymbol, formatPrice } = useCurrencyStore();
+  const { currentOrganisation } = useOrganisationStore();
   const currencySymbol = getCurrencySymbol();
   
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('mobile-money');
@@ -30,6 +33,18 @@ export default function PaymentModal({ isOpen, onClose, loanId, loanNumber, outs
   const [phoneNumber, setPhoneNumber] = useState('');
   const [bankAccount, setBankAccount] = useState('');
   const [cardNumber, setCardNumber] = useState('');
+  const [isDemoMode, setIsDemoMode] = useState(false);
+
+  // Check demo mode on mount
+  useEffect(() => {
+    const checkDemo = async () => {
+      if (currentOrganisation?._id) {
+        const isDemo = await checkIfDemoMode(currentOrganisation._id);
+        setIsDemoMode(isDemo);
+      }
+    };
+    checkDemo();
+  }, [currentOrganisation?._id]);
 
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,17 +121,35 @@ export default function PaymentModal({ isOpen, onClose, loanId, loanNumber, outs
               <CheckCircle2 className="w-8 h-8 text-green-400" />
             </div>
             <h3 className="font-heading text-2xl font-bold text-primary-foreground mb-2">
-              Payment Successful!
+              {isDemoMode ? 'Simulated Payment Successful!' : 'Payment Successful!'}
             </h3>
             <p className="text-primary-foreground/70 mb-4">
-              Your payment of {formatPrice(parseFloat(amount))} has been processed successfully.
+              {isDemoMode 
+                ? `Your simulated payment of ${formatPrice(parseFloat(amount))} has been processed.`
+                : `Your payment of ${formatPrice(parseFloat(amount))} has been processed successfully.`
+              }
             </p>
             <p className="text-sm text-primary-foreground/60">
-              You will receive a confirmation email shortly.
+              {isDemoMode 
+                ? 'This is a demonstration transaction only.'
+                : 'You will receive a confirmation email shortly.'
+              }
             </p>
           </motion.div>
         ) : (
           <div className="space-y-6 mt-6">
+            {/* Demo Mode Warning */}
+            {isDemoMode && (
+              <div className="p-4 rounded-lg bg-amber-100 border-2 border-amber-500 flex gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-amber-900 mb-1">Payments are simulated in Demo Mode</p>
+                  <p className="text-sm text-amber-800">
+                    No real transactions will be processed. This is for testing and demonstration purposes only.
+                  </p>
+                </div>
+              </div>
+            )}
             {/* Loan Summary */}
             <Card className="p-4 bg-secondary/10 border-secondary/30">
               <div className="flex justify-between items-center">

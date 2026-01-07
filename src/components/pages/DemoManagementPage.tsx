@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useMember } from '@/integrations';
 import { DemoManagementService } from '@/services/DemoManagementService';
+import { DemoDataGenerationService } from '@/services/DemoDataGenerationService';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { Trash2, RefreshCw } from 'lucide-react';
+import { Trash2, RefreshCw, Zap } from 'lucide-react';
 
 export default function DemoManagementPage() {
   const { member } = useMember();
   const [demoStatuses, setDemoStatuses] = useState<Array<{ organisationId: string; isDemoMode: boolean }>>([]);
   const [loading, setLoading] = useState(true);
   const [resetting, setResetting] = useState<string | null>(null);
+  const [generating, setGenerating] = useState<string | null>(null);
   const [showResetDialog, setShowResetDialog] = useState<string | null>(null);
+  const [showGenerateDialog, setShowGenerateDialog] = useState<string | null>(null);
 
   useEffect(() => {
     loadDemoStatuses();
@@ -46,6 +49,25 @@ export default function DemoManagementPage() {
       alert(`Error resetting organisation: ${error}`);
     } finally {
       setResetting(null);
+    }
+  };
+
+  const handleGenerateDemoData = async (organisationId: string) => {
+    try {
+      setGenerating(organisationId);
+      const result = await DemoDataGenerationService.generateDemoData(organisationId);
+      
+      if (result.success) {
+        alert(`Successfully generated demo data.\n\nCreated:\n${Object.entries(result.generatedCounts)
+          .map(([key, count]) => `${key}: ${count}`)
+          .join('\n')}`);
+        setShowGenerateDialog(null);
+        loadDemoStatuses();
+      }
+    } catch (error) {
+      alert(`Error generating demo data: ${error}`);
+    } finally {
+      setGenerating(null);
     }
   };
 
@@ -91,25 +113,48 @@ export default function DemoManagementPage() {
                       </span>
                     </div>
                   </div>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => setShowResetDialog(status.organisationId)}
-                    disabled={resetting === status.organisationId}
-                    className="flex items-center gap-2"
-                  >
-                    {resetting === status.organisationId ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                        Resetting...
-                      </>
-                    ) : (
-                      <>
-                        <Trash2 className="w-4 h-4" />
-                        Reset Data
-                      </>
+                  <div className="flex gap-2">
+                    {status.isDemoMode && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowGenerateDialog(status.organisationId)}
+                        disabled={generating === status.organisationId}
+                        className="flex items-center gap-2"
+                      >
+                        {generating === status.organisationId ? (
+                          <>
+                            <RefreshCw className="w-4 h-4 animate-spin" />
+                            Generating...
+                          </>
+                        ) : (
+                          <>
+                            <Zap className="w-4 h-4" />
+                            Generate Data
+                          </>
+                        )}
+                      </Button>
                     )}
-                  </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => setShowResetDialog(status.organisationId)}
+                      disabled={resetting === status.organisationId}
+                      className="flex items-center gap-2"
+                    >
+                      {resetting === status.organisationId ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 animate-spin" />
+                          Resetting...
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="w-4 h-4" />
+                          Reset Data
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </Card>
             ))}
@@ -140,6 +185,36 @@ export default function DemoManagementPage() {
                 className="bg-destructive text-destructive-foreground hover:bg-red-700"
               >
                 Reset Data
+              </AlertDialogAction>
+            </div>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Generate Demo Data Confirmation Dialog */}
+        <AlertDialog open={showGenerateDialog !== null} onOpenChange={(open) => !open && setShowGenerateDialog(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Generate Demo Data?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will create sample data for testing including:
+                <ul className="mt-3 ml-4 space-y-1 text-sm list-disc">
+                  <li>3 branches with managers</li>
+                  <li>6 staff members with different roles</li>
+                  <li>5 loan products</li>
+                  <li>5 customer profiles</li>
+                  <li>5 loans with different statuses (active, arrears, closed)</li>
+                  <li>Multiple repayments per loan</li>
+                </ul>
+                <p className="mt-3 text-sm text-gray-600">All data will be tagged as DEMO and can be removed via Reset Data.</p>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="flex gap-3 justify-end">
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => showGenerateDialog && handleGenerateDemoData(showGenerateDialog)}
+                className="bg-secondary hover:bg-blue-600"
+              >
+                Generate Data
               </AlertDialogAction>
             </div>
           </AlertDialogContent>

@@ -7,6 +7,7 @@ import { Image } from '@/components/ui/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import RoleSelectionDialog from '@/components/RoleSelectionDialog';
+import { getOrganisationCount } from '@/hooks/useDemoMode';
 import { 
   Shield, 
   TrendingUp, 
@@ -153,23 +154,35 @@ export default function HomePage() {
   const containerRef = useRef(null);
   const [showRoleDialog, setShowRoleDialog] = useState(false);
 
-  // Redirect authenticated users based on their role/path
+  // Check if setup wizard should be triggered
   useEffect(() => {
-    if (isAuthenticated && member?.loginEmail) {
-      // Check if user is accessing from a specific role context
-      const path = window.location.pathname;
-      if (path === '/') {
-        // Check the stored role from sessionStorage or localStorage
-        const selectedRole = sessionStorage.getItem('selectedRole') || localStorage.getItem('userRole');
+    const checkAndRedirect = async () => {
+      if (isAuthenticated && member?.loginEmail) {
+        const orgCount = await getOrganisationCount();
         
-        if (selectedRole === 'admin') {
-          navigate('/admin/dashboard');
-        } else {
-          // Default to customer portal for customers or if no role is set
-          navigate('/customer-portal');
+        // If no organisations exist, redirect Super Admin to setup wizard
+        if (orgCount === 0) {
+          navigate('/setup-wizard');
+          return;
+        }
+
+        // Check if user is accessing from a specific role context
+        const path = window.location.pathname;
+        if (path === '/') {
+          // Check the stored role from sessionStorage or localStorage
+          const selectedRole = sessionStorage.getItem('selectedRole') || localStorage.getItem('userRole');
+          
+          if (selectedRole === 'admin') {
+            navigate('/admin/dashboard');
+          } else {
+            // Default to customer portal for customers or if no role is set
+            navigate('/customer-portal');
+          }
         }
       }
-    }
+    };
+
+    checkAndRedirect();
   }, [isAuthenticated, member, navigate]);
 
   const handleGetStarted = () => {
