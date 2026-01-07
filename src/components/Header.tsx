@@ -70,9 +70,9 @@ export default function Header() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
-              <span className="text-secondary-foreground font-heading font-bold text-lg">L</span>
+              <span className="text-secondary-foreground font-heading font-bold text-lg">R</span>
             </div>
-            <span className="font-heading text-xl font-bold text-primary-foreground">LendZm</span>
+            <span className="font-heading text-xl font-bold text-primary-foreground">Reliq</span>
           </Link>
 
           {/* Navigation */}

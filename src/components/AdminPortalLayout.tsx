@@ -84,9 +84,9 @@ export default function AdminPortalLayout() {
         <div className="p-6 border-b border-primary/20 flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center font-bold text-white">
-              LD
+              R
             </div>
-            {sidebarOpen && <span className="font-bold text-lg text-white">LendZm</span>}
+            {sidebarOpen && <span className="font-bold text-lg text-white">Reliq</span>}
           </div>
         </div>
 

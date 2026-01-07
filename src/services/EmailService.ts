@@ -90,7 +90,7 @@ export class EmailService {
     const url = portalUrl || `${window.location.origin}/customer-portal`;
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>Welcome to LendZm Customer Portal</h2>
+        <h2>Welcome to Reliq Customer Portal</h2>
         <p>Hello ${firstName},</p>
         <p>Your customer portal account has been created. You can now access your account using the following credentials:</p>
         <div style="background-color: #f0f0f0; padding: 20px; border-radius: 5px; margin: 20px 0;">
@@ -105,15 +105,15 @@ export class EmailService {
           </a>
         </div>
         <p>If you did not expect this invitation, please contact support.</p>
-        <p>Best regards,<br>The LendZm Team</p>
+        <p>Best regards,<br>The Reliq Team</p>
       </div>
     `;
 
     return this.sendEmail({
       to: email,
-      subject: 'Welcome to LendZm Customer Portal',
+      subject: 'Welcome to Reliq Customer Portal',
       html,
-      text: `Welcome to LendZm! Access your portal at ${url} using email: ${email} and temporary password: ${temporaryPassword}. You will be required to change your password on first login.`,
+      text: `Welcome to Reliq! Access your portal at ${url} using email: ${email} and temporary password: ${temporaryPassword}. You will be required to change your password on first login.`,
     });
   }
 

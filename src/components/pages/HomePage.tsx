@@ -365,7 +365,7 @@ export default function HomePage() {
         <div className="max-w-[120rem] mx-auto px-6 lg:px-12 relative z-10">
           <AnimatedReveal className="mb-20 text-center">
             <h2 className="font-heading text-5xl lg:text-7xl font-bold mb-6">
-              Why <span className="text-secondary">LendZm</span> Wins
+              Why <span className="text-secondary">Reliq</span> Wins
             </h2>
             <p className="text-xl text-primary-foreground/70 max-w-2xl mx-auto">
               Purpose-built for modern lending institutions that demand speed, accuracy, and compliance.
@@ -571,7 +571,7 @@ export default function HomePage() {
               <span className="text-secondary">Transformation.</span>
             </h2>
             <p className="text-2xl text-primary-foreground/70 mb-12 max-w-2xl mx-auto">
-              Join the financial institutions that trust LendZm for secure, compliant, and efficient loan management.
+              Join the financial institutions that trust Reliq for secure, compliant, and efficient loan management.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
               <Button 
