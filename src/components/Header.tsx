@@ -11,7 +11,6 @@ import {
 import { User, LogOut, LayoutDashboard, Globe, Settings } from 'lucide-react';
 import RoleSelectionDialog from '@/components/RoleSelectionDialog';
 import { useCurrencyStore, CURRENCY_RATES, type Currency } from '@/store/currencyStore';
-import { OrganisationService } from '@/services';
 
 export default function Header() {
   const { member, isAuthenticated, isLoading, actions } = useMember();
@@ -47,6 +46,7 @@ export default function Header() {
   };
 
   const handleSignIn = () => {
+    // Simply show the role selection dialog without any async operations
     setShowRoleDialog(true);
   };
 
@@ -62,33 +62,6 @@ export default function Header() {
       sessionStorage.setItem('redirectAfterLogin', '/admin/dashboard');
     }
     actions.login();
-  };
-
-  const handleSignInWithExistingOrg = async () => {
-    // Check if user has existing organizations
-    if (member?.loginEmail) {
-      try {
-        const existingOrgs = await OrganisationService.getOrganisationsByEmail(member.loginEmail);
-        
-        if (existingOrgs && existingOrgs.length > 0) {
-          // User has existing organizations - redirect to admin dashboard
-          sessionStorage.setItem('selectedRole', 'admin');
-          localStorage.setItem('userRole', 'admin');
-          sessionStorage.setItem('redirectAfterLogin', '/admin/dashboard');
-          navigate('/admin/dashboard');
-        } else {
-          // No existing organizations - show role selection
-          setShowRoleDialog(true);
-        }
-      } catch (error) {
-        console.error('Error checking organizations:', error);
-        // On error, show role selection dialog instead of hanging
-        setShowRoleDialog(true);
-      }
-    } else {
-      // No member info - show role selection
-      setShowRoleDialog(true);
-    }
   };
 
   return (
@@ -215,7 +188,7 @@ export default function Header() {
               </DropdownMenu>
             ) : (
               <Button 
-                onClick={handleSignInWithExistingOrg}
+                onClick={handleSignIn}
                 className="bg-buttonbackground text-secondary-foreground hover:bg-buttonbackground/90 font-paragraph rounded-lg h-10 px-6"
               >
                 Sign In
