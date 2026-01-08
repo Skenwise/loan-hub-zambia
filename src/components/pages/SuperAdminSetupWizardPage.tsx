@@ -12,6 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useCurrencyStore } from '@/store/currencyStore';
 
 type WizardStep = 'organisation' | 'subscription' | 'admin' | 'demo' | 'complete';
 
@@ -26,6 +27,7 @@ interface WizardData {
 export default function SuperAdminSetupWizardPage() {
   const { member } = useMember();
   const navigate = useNavigate();
+  const { formatPrice } = useCurrencyStore();
   const [step, setStep] = useState<WizardStep>('organisation');
   const [loading, setLoading] = useState(false);
   const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlans[]>([]);
@@ -236,7 +238,7 @@ export default function SuperAdminSetupWizardPage() {
                   <SelectContent className="bg-white border-2 border-slate-300">
                     {subscriptionPlans.map((plan) => (
                       <SelectItem key={plan._id} value={plan._id} className="text-slate-900">
-                        {plan.planName} - ${plan.pricePerMonth}/month
+                        {plan.planName} - {formatPrice(plan.pricePerMonth || 0)}/month
                       </SelectItem>
                     ))}
                   </SelectContent>
