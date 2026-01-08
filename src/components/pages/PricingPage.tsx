@@ -162,7 +162,7 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-primary text-primary-foreground font-paragraph overflow-clip selection:bg-secondary selection:text-primary">
+    <div className="min-h-screen bg-background text-foreground font-paragraph overflow-clip selection:bg-secondary selection:text-primary">
       <Header />
 
       {/* Hero Section */}

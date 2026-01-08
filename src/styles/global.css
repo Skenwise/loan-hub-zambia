@@ -5,33 +5,37 @@
 @tailwind utilities;
 
 /* LinkedIn-Inspired Professional Color Palette */
+:root {
+  /* Primary Colors */
+  --color-primary: #0A66C2;
+  --color-primary-dark: #004182;
+  --color-primary-light: #0A8CFF;
+  
+  /* Secondary Colors */
+  --color-secondary: #0A8CFF;
+  --color-secondary-light: #E7F1FF;
+  
+  /* Neutral Colors */
+  --color-text-primary: #000000;
+  --color-text-secondary: #65676B;
+  --color-text-tertiary: #8A8D91;
+  --color-border: #D5D9E0;
+  --color-background: #FFFFFF;
+  --color-background-light: #F2F2F2;
+  
+  /* Status Colors */
+  --color-success: #0A8617;
+  --color-warning: #F5A623;
+  --color-error: #DC3545;
+  --color-info: #0A66C2;
+}
+
+/* Apply LinkedIn color scheme to common elements */
 @layer base {
-  :root {
-    /* Primary Colors */
-    --color-primary: #0A66C2;
-    --color-primary-dark: #004182;
-    --color-primary-light: #0A8CFF;
-    
-    /* Secondary Colors */
-    --color-secondary: #0A8CFF;
-    --color-secondary-light: #E7F1FF;
-    
-    /* Neutral Colors */
-    --color-text-primary: #000000;
-    --color-text-secondary: #65676B;
-    --color-text-tertiary: #8A8D91;
-    --color-border: #D5D9E0;
-    --color-background: #FFFFFF;
-    --color-background-light: #F2F2F2;
-    
-    /* Status Colors */
-    --color-success: #0A8617;
-    --color-warning: #F5A623;
-    --color-error: #DC3545;
-    --color-info: #0A66C2;
+  body {
+    @apply bg-background text-foreground;
   }
 
-  /* Apply LinkedIn color scheme to common elements */
   a {
     @apply text-primary hover:text-primary-dark transition-colors;
   }
