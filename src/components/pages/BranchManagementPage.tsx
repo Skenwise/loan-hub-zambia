@@ -132,7 +132,11 @@ export default function BranchManagementPage() {
         {
           branchId: selectedBranch._id,
           organisationId: selectedBranch.organisationId || 'default-org',
-          ...holidayForm,
+          holidayName: holidayForm.holidayName,
+          holidayDate: holidayForm.holidayDate,
+          isPublicHoliday: holidayForm.isPublicHoliday,
+          applyToNewLoansByDefault: holidayForm.applyToNewLoansByDefault,
+          description: holidayForm.description,
         },
         member?.loginEmail || 'system'
       );

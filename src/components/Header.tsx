@@ -11,7 +11,6 @@ import {
 import { User, LogOut, LayoutDashboard, Globe, Settings } from 'lucide-react';
 import RoleSelectionDialog from '@/components/RoleSelectionDialog';
 import { useCurrencyStore, CURRENCY_RATES, type Currency } from '@/store/currencyStore';
-import { OrganisationService } from '@/services';
 
 export default function Header() {
   const { member, isAuthenticated, isLoading, actions } = useMember();
@@ -64,31 +63,10 @@ export default function Header() {
     actions.login();
   };
 
-  const handleSignInWithExistingOrg = async () => {
-    // Check if user has existing organizations
-    if (member?.loginEmail) {
-      try {
-        const existingOrgs = await OrganisationService.getOrganisationsByEmail(member.loginEmail);
-        
-        if (existingOrgs && existingOrgs.length > 0) {
-          // User has existing organizations - redirect to admin dashboard
-          sessionStorage.setItem('selectedRole', 'admin');
-          localStorage.setItem('userRole', 'admin');
-          sessionStorage.setItem('redirectAfterLogin', '/admin/dashboard');
-          navigate('/admin/dashboard');
-        } else {
-          // No existing organizations - show role selection
-          setShowRoleDialog(true);
-        }
-      } catch (error) {
-        console.error('Error checking organizations:', error);
-        // On error, show role selection dialog instead of hanging
-        setShowRoleDialog(true);
-      }
-    } else {
-      // No member info - show role selection
-      setShowRoleDialog(true);
-    }
+  const handleSignInWithExistingOrg = () => {
+    // For now, just show the role selection dialog
+    // The organization check will happen after login
+    setShowRoleDialog(true);
   };
 
   return (

@@ -28,7 +28,7 @@ export class AuditService {
       // Get organisation context from store if not provided
       const organisationId = entry.organisationId || useOrganisationStore.getState().organisationId;
 
-      const auditEntry: AuditTrail = {
+      const auditEntry: Partial<AuditTrail> = {
         _id: crypto.randomUUID(),
         actionType: entry.actionType,
         actionDetails: entry.actionDetails,
@@ -40,11 +40,11 @@ export class AuditService {
         timestamp: new Date(),
       };
 
-      await BaseCrudService.create(CollectionIds.AUDIT_TRAIL, auditEntry);
+      await BaseCrudService.create(CollectionIds.AUDIT_TRAIL, auditEntry as AuditTrail);
       
       console.log(`[Audit] ${entry.actionType} on ${entry.resourceAffected} by ${entry.performedBy} (Org: ${organisationId})`);
       
-      return auditEntry;
+      return auditEntry as AuditTrail;
     } catch (error) {
       console.error('Error logging audit action:', error);
       throw error;
