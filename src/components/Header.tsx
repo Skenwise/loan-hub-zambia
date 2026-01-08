@@ -19,6 +19,19 @@ export default function Header() {
   const [showRoleDialog, setShowRoleDialog] = useState(false);
   const [userRole, setUserRole] = useState<'admin' | 'customer' | null>(null);
   const { currency, setCurrency } = useCurrencyStore();
+  const [hasRedirected, setHasRedirected] = useState(false);
+
+  // Handle post-login redirect for existing users
+  useEffect(() => {
+    if (isAuthenticated && !hasRedirected && !isLoading) {
+      const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
+      if (redirectUrl) {
+        sessionStorage.removeItem('redirectAfterLogin');
+        navigate(redirectUrl);
+        setHasRedirected(true);
+      }
+    }
+  }, [isAuthenticated, isLoading, hasRedirected, navigate]);
 
   useEffect(() => {
     // Determine user role based on current path or stored preference
@@ -86,12 +99,12 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-primary border-b-4 border-deep-blue shadow-lg">
+    <header className="bg-primary border-b border-deep-blue/20 shadow-sm">
       <div className="max-w-[120rem] mx-auto px-6 lg:px-12">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-deep-blue flex items-center justify-center shadow-md">
+            <div className="w-8 h-8 rounded-full bg-deep-blue flex items-center justify-center shadow-sm">
               <span className="text-white font-heading font-bold text-lg">L</span>
             </div>
             <span className="font-heading text-xl font-bold text-deep-blue">Lunar</span>
@@ -148,12 +161,12 @@ export default function Header() {
             {/* Currency Selector */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2 text-deep-blue font-semibold hover:bg-blue-50">
+                <Button variant="ghost" className="flex items-center gap-2 text-deep-blue font-semibold hover:bg-contentblockbackground">
                   <Globe className="w-4 h-4" />
                   <span className="hidden md:inline font-paragraph text-sm">{currency}</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-background border-2 border-deep-blue">
+              <DropdownMenuContent align="end" className="bg-background border border-deep-blue/20">
                 {Object.entries(CURRENCY_RATES).map(([code, rate]) => (
                   <DropdownMenuItem 
                     key={code}
@@ -167,18 +180,18 @@ export default function Header() {
             </DropdownMenu>
 
             {isLoading ? (
-              <div className="w-8 h-8 rounded-full bg-deep-blue/20 animate-pulse" />
+              <div className="w-8 h-8 rounded-full bg-deep-blue/10 animate-pulse" />
             ) : isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center gap-2 text-deep-blue font-semibold hover:bg-blue-50">
+                  <Button variant="ghost" className="flex items-center gap-2 text-deep-blue font-semibold hover:bg-contentblockbackground">
                     <User className="w-4 h-4" />
                     <span className="hidden md:inline font-paragraph text-sm">
                       {member?.profile?.nickname || member?.contact?.firstName || 'User'}
                     </span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-background border-2 border-deep-blue">
+                <DropdownMenuContent align="end" className="bg-background border border-deep-blue/20">
                   <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer text-deep-blue font-medium">
                     <User className="w-4 h-4 mr-2" />
                     Profile
@@ -210,7 +223,7 @@ export default function Header() {
             ) : (
               <Button 
                 onClick={handleSignInWithExistingOrg}
-                className="bg-deep-blue text-white hover:bg-deep-blue-light font-paragraph font-semibold rounded-lg h-10 px-6 shadow-md"
+                className="bg-deep-blue text-white hover:bg-deep-blue-light font-paragraph font-semibold rounded-lg h-10 px-6 shadow-sm"
               >
                 Sign In
               </Button>

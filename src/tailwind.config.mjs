@@ -23,47 +23,47 @@ export default {
                 paragraph: ["barlow-extralight"]
             },
             colors: {
-                // Primary: White background (clean, professional)
-                primary: "#FFFFFF",
-                "primary-foreground": "#1F2937",
+                // Primary: Soft off-white background (less bright, more professional)
+                primary: "#F8F9FA",
+                "primary-foreground": "#2D3748",
                 
-                // Secondary: Deep Professional Blue (LinkedIn-style) - now used for accents
-                secondary: "#0A66C2",
+                // Secondary: Professional Blue (less saturated than before)
+                secondary: "#0B5394",
                 "secondary-foreground": "#FFFFFF",
                 
-                // Deep Blue - for high visibility text and buttons
-                "deep-blue": "#003D7A",
-                "deep-blue-light": "#0052A3",
+                // Deep Blue - for high visibility text and buttons (muted)
+                "deep-blue": "#1A3A52",
+                "deep-blue-light": "#2D5A7B",
                 
-                // Very Deep Dark Blue - for panels and sidebars
-                "panel-dark": "#0F1B2E",
-                "panel-dark-light": "#1A2847",
-                "panel-text": "#FFFFFF",
-                "panel-text-secondary": "#E0E7FF",
+                // Very Deep Dark Blue - for panels and sidebars (softer)
+                "panel-dark": "#1F2937",
+                "panel-dark-light": "#374151",
+                "panel-text": "#F3F4F6",
+                "panel-text-secondary": "#D1D5DB",
                 
-                // Background and Card colors
-                background: "#FFFFFF",
+                // Background and Card colors (softer)
+                background: "#F8F9FA",
                 cardbackground: "#FFFFFF",
                 
-                // Text and Foreground colors
-                foreground: "#1F2937",
-                textprimary: "#1F2937",
-                darktext: "#1F2937",
+                // Text and Foreground colors (softer, less harsh)
+                foreground: "#2D3748",
+                textprimary: "#2D3748",
+                darktext: "#2D3748",
                 
-                // Accent colors
-                brandaccent: "#0A66C2",
-                buttonbackground: "#0A66C2",
+                // Accent colors (muted)
+                brandaccent: "#0B5394",
+                buttonbackground: "#0B5394",
                 buttonforeground: "#FFFFFF",
-                buttonoutline: "#0A66C2",
-                buttonborder: "#0A66C2",
+                buttonoutline: "#0B5394",
+                buttonborder: "#0B5394",
                 
-                // Input styling
+                // Input styling (softer)
                 inputbackground: "#FFFFFF",
-                inputborder: "#E5E7EB",
+                inputborder: "#D1D5DB",
                 
-                // Content blocks and panels (light grey for subtle contrast)
-                contentblockbackground: "#F9FAFB",
-                "contentblockbackground-custom": "#F9FAFB",
+                // Content blocks and panels (subtle grey)
+                contentblockbackground: "#F3F4F6",
+                "contentblockbackground-custom": "#F3F4F6",
                 
                 // Icon and UI elements (neutral grey)
                 iconcolor: "#6B7280",
@@ -73,15 +73,15 @@ export default {
                 destructiveforeground: "#FFFFFF",
                 
                 // Success (green for success states)
-                success: "#10B981",
+                success: "#059669",
                 "success-foreground": "#FFFFFF",
                 
                 // Warning (amber for demo mode)
-                warning: "#F59E0B",
+                warning: "#D97706",
                 "warning-foreground": "#FFFFFF",
                 
                 // Info/Highlight (soft blue)
-                info: "#3B82F6",
+                info: "#2563EB",
                 "info-foreground": "#FFFFFF",
                 
                 // Secondary foreground variants (light blue tints)
