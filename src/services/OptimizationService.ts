@@ -7,6 +7,12 @@
 import { BaseCrudService } from './BaseCrudService';
 import { CacheService } from './CacheService';
 
+interface WixDataItem {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+}
+
 export interface PerformanceMetrics {
   queryTime: number;
   cacheHit: boolean;
@@ -66,7 +72,7 @@ class OptimizationService {
   /**
    * Get optimized data with caching
    */
-  static async getOptimizedData<T>(
+  static async getOptimizedData<T extends WixDataItem>(
     collectionId: string,
     organisationId: string,
     filter?: (item: T) => boolean
@@ -77,7 +83,7 @@ class OptimizationService {
 
     try {
       // Try to get from cache first
-      const cachedData = CacheService.get<T[]>(cacheKey);
+      const cachedData = await CacheService.get<T[]>(cacheKey);
       if (cachedData) {
         cacheHit = true;
         const items = filter ? cachedData.filter(filter) : cachedData;
@@ -102,7 +108,7 @@ class OptimizationService {
       // Cache the results
       const strategy = this.strategies.get(collectionId);
       if (strategy?.enabled) {
-        CacheService.set(cacheKey, filtered, strategy.cacheExpiry);
+        await CacheService.set(cacheKey, filtered, strategy.cacheExpiry);
       }
 
       const endTime = performance.now();
@@ -165,15 +171,13 @@ class OptimizationService {
   /**
    * Clear cache for a collection
    */
-  static clearCache(collectionId: string, organisationId?: string): void {
+  static async clearCache(collectionId: string, organisationId?: string): Promise<void> {
     if (organisationId) {
       const cacheKey = `${collectionId}:${organisationId}`;
-      CacheService.remove(cacheKey);
+      await CacheService.delete(cacheKey);
     } else {
       // Clear all caches for this collection
-      const pattern = new RegExp(`^${collectionId}:`);
-      // Note: This would require implementing a pattern-based clear in CacheService
-      CacheService.clear();
+      await CacheService.invalidateByPattern(`${collectionId}:*`);
     }
   }
 

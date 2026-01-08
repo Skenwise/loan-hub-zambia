@@ -40,10 +40,10 @@ export { TestDataGenerationService } from './TestDataGenerationService';
 export { BranchManagementService } from './BranchManagementService';
 export { CacheService } from './CacheService';
 export { PaginationService } from './PaginationService';
-export { AdvancedFilteringService } from './AdvancedFilteringService';
-export { AdminEnhancementsService } from './AdminEnhancementsService';
-export { OptimizationService } from './OptimizationService';
-export { DataValidationService } from './DataValidationService';
+export { default as AdvancedFilteringService } from './AdvancedFilteringService';
+export { default as AdminEnhancementsService } from './AdminEnhancementsService';
+export { default as OptimizationService } from './OptimizationService';
+export { default as DataValidationService } from './DataValidationService';
 
 // Collection IDs
 export const CollectionIds = {
