@@ -300,7 +300,7 @@ class OptimizationService {
   /**
    * Lazy load data
    */
-  static async lazyLoadData<T>(
+  static async lazyLoadData<T extends WixDataItem>(
     collectionId: string,
     organisationId: string,
     page: number = 1,

@@ -12,8 +12,6 @@ export interface AuditTrail {
   _createdDate?: Date;
   _updatedDate?: Date;
   /** @wixFieldType text */
-  organisationId?: string;
-  /** @wixFieldType text */
   staffMemberId?: string;
   /** @wixFieldType text */
   performedBy?: string;
@@ -27,6 +25,8 @@ export interface AuditTrail {
   resourceAffected?: string;
   /** @wixFieldType text */
   resourceId?: string;
+  /** @wixFieldType text */
+  organisationId?: string;
 }
 
 
