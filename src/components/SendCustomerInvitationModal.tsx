@@ -77,7 +77,7 @@ export default function SendCustomerInvitationModal({
     setStatus('idle');
     try {
       // SMS functionality - similar to email
-      const smsMessage = `Welcome to LoanHub! Your account is ready. Visit ${portalUrl} to set your password. Temporary password: ${temporaryPassword}`;
+      const smsMessage = `Welcome to Lunar! Your account is ready. Visit ${portalUrl} to set your password. Temporary password: ${temporaryPassword}`;
       
       // Mock SMS send - in production, integrate with Twilio or similar
       console.log(`📱 SMS sent to ${customer.phoneNumber}`);

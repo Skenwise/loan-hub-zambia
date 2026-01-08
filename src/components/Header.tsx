@@ -72,7 +72,7 @@ export default function Header() {
             <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
               <span className="text-secondary-foreground font-heading font-bold text-lg">L</span>
             </div>
-            <span className="font-heading text-xl font-bold text-primary-foreground">LoanHub</span>
+            <span className="font-heading text-xl font-bold text-primary-foreground">Lunar</span>
           </Link>
 
           {/* Navigation */}
