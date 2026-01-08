@@ -34,28 +34,40 @@ export { ReportingService } from './ReportingService';
 export { OrganisationSettingsService } from './OrganisationSettingsService';
 export { CustomerOnboardingService } from './CustomerOnboardingService';
 export { CustomerInvitationService } from './CustomerInvitationService';
+export { OrganisationFilteringService } from './OrganisationFilteringService';
+export { DataIsolationValidationService } from './DataIsolationValidationService';
+export { TestDataGenerationService } from './TestDataGenerationService';
 
 // Collection IDs
 export const CollectionIds = {
   AUDIT_TRAIL: 'audittrail',
   BOZ_PROVISIONS: 'bozprovisions',
+  BRANCHES: 'branches',
+  BRANCH_HOLIDAYS: 'branchholidays',
   CUSTOMER_ACCOUNTS: 'customeraccounts',
   CUSTOMERS: 'customers',
   CUSTOMER_INVITATIONS: 'customerinvitations',
   CUSTOMER_ACTIVATION_LOG: 'customeractivationlog',
   ECL_RESULTS: 'eclresults',
+  KYC_DOCUMENT_CONFIGURATION: 'kycdocumentconfiguration',
+  KYC_DOCUMENT_SUBMISSIONS: 'kycdocumentsubmissions',
+  KYC_STATUS_TRACKING: 'kycstatustracking',
   KYC_VERIFICATION_HISTORY: 'kycverificationhistory',
   LOAN_DOCUMENTS: 'loandocuments',
+  LOAN_FEES: 'loanfees',
+  LOAN_PENALTY_SETTINGS: 'loanpenaltysettings',
   LOAN_PRODUCTS: 'loanproducts',
   LOANS: 'loans',
   LOAN_WORKFLOW_HISTORY: 'loanworkflowhistory',
   ORGANISATIONS: 'organisations',
   ORGANISATION_SETUP: 'organisationsetup',
+  ORGANISATION_SETTINGS: 'organisationsettings',
   REPAYMENTS: 'repayments',
   ROLES: 'roles',
   STAFF_MEMBERS: 'staffmembers',
   STAFF_ROLE_ASSIGNMENTS: 'staffroleassignments',
   SUBSCRIPTION_PLANS: 'subscriptionplans',
+  VERIFICATION_RECORDS: 'verificationrecords',
 } as const;
 
 // Permission constants

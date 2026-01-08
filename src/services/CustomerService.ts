@@ -1,12 +1,14 @@
 /**
  * Customer Service
  * Handles customer management and KYC verification
+ * Phase 1: Core Data Isolation - Organization-scoped customer access
  */
 
 import { BaseCrudService } from '@/integrations';
 import { CustomerProfiles, KYCVerificationHistory, CustomerAccounts } from '@/entities';
 import { CollectionIds } from './index';
 import { AuditService } from './AuditService';
+import { OrganisationFilteringService } from './OrganisationFilteringService';
 
 export class CustomerService {
   /**
@@ -26,14 +28,14 @@ export class CustomerService {
   }
 
   /**
-   * Get all customers for an organisation
+   * Get all customers for an organisation (Phase 1: Organization-scoped)
    */
-  static async getOrganisationCustomers(organisationId: string): Promise<CustomerProfiles[]> {
+  static async getOrganisationCustomers(organisationId?: string): Promise<CustomerProfiles[]> {
     try {
-      const { items } = await BaseCrudService.getAll<CustomerProfiles>(
-        CollectionIds.CUSTOMERS
+      return await OrganisationFilteringService.getAllByOrganisation<CustomerProfiles>(
+        CollectionIds.CUSTOMERS,
+        { organisationId, logQuery: true }
       );
-      return items || [];
     } catch (error) {
       console.error('Error fetching organisation customers:', error);
       return [];
@@ -41,7 +43,7 @@ export class CustomerService {
   }
 
   /**
-   * Create new customer
+   * Create new customer with automatic organisation assignment (Phase 1)
    */
   static async createCustomer(data: Omit<CustomerProfiles, '_id' | '_createdDate' | '_updatedDate'>): Promise<CustomerProfiles> {
     try {
@@ -53,11 +55,11 @@ export class CustomerService {
       
       await BaseCrudService.create(CollectionIds.CUSTOMERS, newCustomer);
       
-      // Log creation
+      // Log creation with organisation context
       await AuditService.logCustomerCreation(
         newCustomer._id,
         data.emailAddress || 'SYSTEM',
-        undefined
+        data.organisationId
       );
 
       return newCustomer;
@@ -68,20 +70,26 @@ export class CustomerService {
   }
 
   /**
-   * Update customer
+   * Update customer (Phase 1: Verify organisation access)
    */
   static async updateCustomer(customerId: string, data: Partial<CustomerProfiles>): Promise<void> {
     try {
+      // Verify customer belongs to current organisation
+      const customer = await this.getCustomer(customerId);
+      if (customer && !OrganisationFilteringService.validateOrganisationAccess(customer)) {
+        throw new Error('Access denied: Customer does not belong to your organisation');
+      }
+
       await BaseCrudService.update(CollectionIds.CUSTOMERS, {
         _id: customerId,
         ...data,
       });
 
-      // Log update
+      // Log update with organisation context
       await AuditService.logCustomerUpdate(
         customerId,
         data.emailAddress || 'SYSTEM',
-        undefined
+        customer?.organisationId
       );
     } catch (error) {
       console.error('Error updating customer:', error);
@@ -90,12 +98,13 @@ export class CustomerService {
   }
 
   /**
-   * Verify KYC for customer
+   * Verify KYC for customer (Phase 1: Organization-scoped)
    */
   static async verifyKYC(
     customerId: string,
     status: 'APPROVED' | 'REJECTED' | 'PENDING',
     verifierId: string,
+    organisationId?: string,
     notes?: string
   ): Promise<void> {
     try {
@@ -104,10 +113,11 @@ export class CustomerService {
         kycVerificationStatus: status,
       });
 
-      // Log KYC verification
+      // Log KYC verification with organisation context
       const kycRecord: KYCVerificationHistory = {
         _id: crypto.randomUUID(),
         customerId,
+        organisationId,
         verificationStatus: status,
         verificationTimestamp: new Date(),
         verifierId,
@@ -126,14 +136,22 @@ export class CustomerService {
   }
 
   /**
-   * Get KYC verification history for customer
+   * Get KYC verification history for customer (Phase 1: Organization-scoped)
    */
-  static async getKYCHistory(customerId: string): Promise<KYCVerificationHistory[]> {
+  static async getKYCHistory(customerId: string, organisationId?: string): Promise<KYCVerificationHistory[]> {
     try {
       const { items } = await BaseCrudService.getAll<KYCVerificationHistory>(
         CollectionIds.KYC_VERIFICATION_HISTORY
       );
-      return items?.filter(k => k.customerId === customerId) || [];
+      
+      let filtered = items?.filter(k => k.customerId === customerId) || [];
+      
+      // Filter by organisation if provided
+      if (organisationId) {
+        filtered = filtered.filter(k => k.organisationId === organisationId);
+      }
+      
+      return filtered;
     } catch (error) {
       console.error('Error fetching KYC history:', error);
       return [];

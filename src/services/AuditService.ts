@@ -1,11 +1,13 @@
 /**
  * Audit Service
  * Logs all system actions for compliance and audit trail
+ * Phase 1: Core Data Isolation - Organization-scoped audit logging
  */
 
 import { BaseCrudService } from '@/integrations';
 import { AuditTrail } from '@/entities';
 import { CollectionIds } from './index';
+import { useOrganisationStore } from '@/store/organisationStore';
 
 export interface AuditLogEntry {
   actionType: string;
@@ -19,10 +21,13 @@ export interface AuditLogEntry {
 
 export class AuditService {
   /**
-   * Log an action to the audit trail
+   * Log an action to the audit trail (Phase 1: Include organisationId)
    */
   static async logAction(entry: AuditLogEntry): Promise<AuditTrail> {
     try {
+      // Get organisation context from store if not provided
+      const organisationId = entry.organisationId || useOrganisationStore.getState().organisationId;
+
       const auditEntry: AuditTrail = {
         _id: crypto.randomUUID(),
         actionType: entry.actionType,
@@ -30,10 +35,15 @@ export class AuditService {
         resourceAffected: entry.resourceAffected,
         resourceId: entry.resourceId,
         performedBy: entry.performedBy,
+        staffMemberId: entry.staffMemberId,
+        organisationId,
         timestamp: new Date(),
       };
 
       await BaseCrudService.create(CollectionIds.AUDIT_TRAIL, auditEntry);
+      
+      console.log(`[Audit] ${entry.actionType} on ${entry.resourceAffected} by ${entry.performedBy} (Org: ${organisationId})`);
+      
       return auditEntry;
     } catch (error) {
       console.error('Error logging audit action:', error);
@@ -42,15 +52,23 @@ export class AuditService {
   }
 
   /**
-   * Get audit trail for a resource
+   * Get audit trail for a resource (Phase 1: Filter by organisation)
    */
-  static async getResourceAuditTrail(resourceId: string): Promise<AuditTrail[]> {
+  static async getResourceAuditTrail(resourceId: string, organisationId?: string): Promise<AuditTrail[]> {
     try {
       const { items } = await BaseCrudService.getAll<AuditTrail>(
         CollectionIds.AUDIT_TRAIL
       );
 
-      return items?.filter(a => a.resourceId === resourceId) || [];
+      let filtered = items?.filter(a => a.resourceId === resourceId) || [];
+      
+      // Filter by organisation if provided
+      const activeOrgId = organisationId || useOrganisationStore.getState().getActiveOrganisationFilter();
+      if (activeOrgId) {
+        filtered = filtered.filter(a => a.organisationId === activeOrgId);
+      }
+      
+      return filtered;
     } catch (error) {
       console.error('Error fetching resource audit trail:', error);
       return [];
@@ -58,15 +76,23 @@ export class AuditService {
   }
 
   /**
-   * Get audit trail for a staff member
+   * Get audit trail for a staff member (Phase 1: Filter by organisation)
    */
-  static async getStaffAuditTrail(staffMemberId: string): Promise<AuditTrail[]> {
+  static async getStaffAuditTrail(staffMemberId: string, organisationId?: string): Promise<AuditTrail[]> {
     try {
       const { items } = await BaseCrudService.getAll<AuditTrail>(
         CollectionIds.AUDIT_TRAIL
       );
 
-      return items?.filter(a => a.performedBy === staffMemberId) || [];
+      let filtered = items?.filter(a => a.performedBy === staffMemberId) || [];
+      
+      // Filter by organisation if provided
+      const activeOrgId = organisationId || useOrganisationStore.getState().getActiveOrganisationFilter();
+      if (activeOrgId) {
+        filtered = filtered.filter(a => a.organisationId === activeOrgId);
+      }
+      
+      return filtered;
     } catch (error) {
       console.error('Error fetching staff audit trail:', error);
       return [];
@@ -74,18 +100,26 @@ export class AuditService {
   }
 
   /**
-   * Get audit trail for a date range
+   * Get audit trail for a date range (Phase 1: Filter by organisation)
    */
-  static async getAuditTrailByDateRange(startDate: Date, endDate: Date): Promise<AuditTrail[]> {
+  static async getAuditTrailByDateRange(startDate: Date, endDate: Date, organisationId?: string): Promise<AuditTrail[]> {
     try {
       const { items } = await BaseCrudService.getAll<AuditTrail>(
         CollectionIds.AUDIT_TRAIL
       );
 
-      return items?.filter(a => {
+      let filtered = items?.filter(a => {
         const timestamp = a.timestamp ? new Date(a.timestamp) : null;
         return timestamp && timestamp >= startDate && timestamp <= endDate;
       }) || [];
+
+      // Filter by organisation if provided
+      const activeOrgId = organisationId || useOrganisationStore.getState().getActiveOrganisationFilter();
+      if (activeOrgId) {
+        filtered = filtered.filter(a => a.organisationId === activeOrgId);
+      }
+
+      return filtered;
     } catch (error) {
       console.error('Error fetching audit trail by date range:', error);
       return [];
@@ -93,15 +127,23 @@ export class AuditService {
   }
 
   /**
-   * Get all audit trail entries
+   * Get all audit trail entries (Phase 1: Filter by organisation)
    */
-  static async getAllAuditTrail(): Promise<AuditTrail[]> {
+  static async getAllAuditTrail(organisationId?: string): Promise<AuditTrail[]> {
     try {
       const { items } = await BaseCrudService.getAll<AuditTrail>(
         CollectionIds.AUDIT_TRAIL
       );
 
-      return items || [];
+      let filtered = items || [];
+
+      // Filter by organisation if provided
+      const activeOrgId = organisationId || useOrganisationStore.getState().getActiveOrganisationFilter();
+      if (activeOrgId) {
+        filtered = filtered.filter(a => a.organisationId === activeOrgId);
+      }
+
+      return filtered;
     } catch (error) {
       console.error('Error fetching all audit trail:', error);
       return [];
@@ -109,17 +151,22 @@ export class AuditService {
   }
 
   /**
-   * Get audit logs for an organization
+   * Get audit logs for an organization (Phase 1: Enhanced)
    */
-  static async getAuditLogs(organisationId: string): Promise<AuditTrail[]> {
+  static async getAuditLogs(organisationId?: string): Promise<AuditTrail[]> {
     try {
       const { items } = await BaseCrudService.getAll<AuditTrail>(
         CollectionIds.AUDIT_TRAIL
       );
 
-      // Filter by organisation ID if available in the audit trail
-      // Note: AuditTrail entity may not have organisationId field, so we return all for now
-      return items || [];
+      const activeOrgId = organisationId || useOrganisationStore.getState().organisationId;
+      
+      if (!activeOrgId) {
+        console.warn('[Audit] No organisation context for filtering audit logs');
+        return items || [];
+      }
+
+      return items?.filter(a => a.organisationId === activeOrgId) || [];
     } catch (error) {
       console.error('Error fetching audit logs:', error);
       return [];

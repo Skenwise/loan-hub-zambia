@@ -25,6 +25,8 @@ export interface AuditTrail {
   resourceAffected?: string;
   /** @wixFieldType text */
   resourceId?: string;
+  /** @wixFieldType text */
+  organisationId?: string;
 }
 
 
@@ -85,6 +87,8 @@ export interface Branches {
   managerName?: string;
   /** @wixFieldType boolean */
   isActive?: boolean;
+  /** @wixFieldType text */
+  organisationId?: string;
 }
 
 
@@ -96,6 +100,10 @@ export interface BranchHolidays {
   _id: string;
   _createdDate?: Date;
   _updatedDate?: Date;
+  /** @wixFieldType text */
+  branchId?: string;
+  /** @wixFieldType text */
+  organisationId?: string;
   /** @wixFieldType text */
   holidayName?: string;
   /** @wixFieldType date */
@@ -620,6 +628,8 @@ export interface Roles {
   isSystemRole?: boolean;
   /** @wixFieldType number */
   hierarchyLevel?: number;
+  /** @wixFieldType text */
+  organisationId?: string;
 }
 
 
@@ -631,6 +641,8 @@ export interface StaffMembers {
   _id: string;
   _createdDate?: Date;
   _updatedDate?: Date;
+  /** @wixFieldType text */
+  organisationId?: string;
   /** @wixFieldType datetime */
   lastLoginDate?: Date | string;
   /** @wixFieldType text */

@@ -12,6 +12,11 @@ interface OrganisationState {
   currentRole: Roles | null;
   permissions: string[];
 
+  // Data Isolation - Phase 1
+  organisationId: string | null; // Current organization context for filtering
+  isSuperAdminViewAll: boolean; // Super Admin can toggle to view all organizations
+  allowedOrganisations: string[]; // Organizations the user can access
+
   // Actions
   setOrganisation: (org: Organizations) => void;
   setSubscriptionPlan: (plan: SubscriptionPlans) => void;
@@ -19,6 +24,14 @@ interface OrganisationState {
   setStaff: (staff: StaffMembers) => void;
   setRole: (role: Roles) => void;
   setPermissions: (perms: string[]) => void;
+  
+  // Data Isolation Actions
+  setOrganisationId: (orgId: string) => void;
+  setAllowedOrganisations: (orgIds: string[]) => void;
+  toggleSuperAdminViewAll: () => void;
+  setSuperAdminViewAll: (viewAll: boolean) => void;
+  getActiveOrganisationFilter: () => string | null; // Returns org ID to filter by, or null if viewing all
+  
   clearOrganisation: () => void;
 }
 
@@ -29,14 +42,16 @@ export const useOrganisationStore = create<OrganisationState>((set, get) => ({
   currentStaff: null,
   currentRole: null,
   permissions: [],
+  organisationId: null,
+  isSuperAdminViewAll: false,
+  allowedOrganisations: [],
 
   setOrganisation: (org: Organizations) => {
-    set({ currentOrganisation: org });
+    set({ currentOrganisation: org, organisationId: org._id });
   },
 
   setSubscriptionPlan: (plan: SubscriptionPlans) => {
     set({ subscriptionPlan: plan });
-    // Check if subscription is active
     const isValid = plan.isActive === true;
     set({ isSubscriptionValid: isValid });
   },
@@ -60,6 +75,33 @@ export const useOrganisationStore = create<OrganisationState>((set, get) => ({
     set({ permissions: perms });
   },
 
+  setOrganisationId: (orgId: string) => {
+    set({ organisationId: orgId, isSuperAdminViewAll: false });
+  },
+
+  setAllowedOrganisations: (orgIds: string[]) => {
+    set({ allowedOrganisations: orgIds });
+  },
+
+  toggleSuperAdminViewAll: () => {
+    const state = get();
+    set({ isSuperAdminViewAll: !state.isSuperAdminViewAll });
+  },
+
+  setSuperAdminViewAll: (viewAll: boolean) => {
+    set({ isSuperAdminViewAll: viewAll });
+  },
+
+  getActiveOrganisationFilter: () => {
+    const state = get();
+    // If Super Admin is viewing all, return null (no filter)
+    if (state.isSuperAdminViewAll) {
+      return null;
+    }
+    // Otherwise return the current organisation ID
+    return state.organisationId;
+  },
+
   clearOrganisation: () => {
     set({
       currentOrganisation: null,
@@ -68,6 +110,9 @@ export const useOrganisationStore = create<OrganisationState>((set, get) => ({
       currentStaff: null,
       currentRole: null,
       permissions: [],
+      organisationId: null,
+      isSuperAdminViewAll: false,
+      allowedOrganisations: [],
     });
   },
 }));
