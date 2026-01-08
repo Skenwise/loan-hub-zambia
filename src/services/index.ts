@@ -38,6 +38,8 @@ export { OrganisationFilteringService } from './OrganisationFilteringService';
 export { DataIsolationValidationService } from './DataIsolationValidationService';
 export { TestDataGenerationService } from './TestDataGenerationService';
 export { BranchManagementService } from './BranchManagementService';
+export { CacheService } from './CacheService';
+export { PaginationService } from './PaginationService';
 
 // Collection IDs
 export const CollectionIds = {
