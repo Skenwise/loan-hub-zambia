@@ -37,6 +37,18 @@ export default function Header() {
     }
   }, [isAuthenticated]);
 
+  // Handle post-login redirection
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
+      if (redirectUrl && window.location.pathname === '/') {
+        // Only redirect if on home page to avoid redirect loops
+        sessionStorage.removeItem('redirectAfterLogin');
+        navigate(redirectUrl);
+      }
+    }
+  }, [isAuthenticated, isLoading, navigate]);
+
   const handleLogout = async () => {
     // Clear stored role on logout
     sessionStorage.removeItem('selectedRole');
