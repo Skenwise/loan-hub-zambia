@@ -162,7 +162,7 @@ export default function HomePage() {
         
         // If no organisations exist, redirect Super Admin to setup wizard
         if (orgCount === 0) {
-          navigate('/setup-wizard');
+          navigate('/setup');
           return;
         }
 
