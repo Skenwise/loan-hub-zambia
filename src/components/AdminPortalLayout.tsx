@@ -207,6 +207,23 @@ export default function AdminPortalLayout() {
               {sidebarOpen && <span>Branches</span>}
             </Link>
           </div>
+
+          {/* System Reset Link - Super Admin Only */}
+          {currentStaff?.role === 'Super Admin' && (
+            <div className="pt-2">
+              <Link
+                to="/admin/system-reset"
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+                  isActive('/admin/system-reset')
+                    ? 'bg-secondary text-white'
+                    : 'text-white hover:bg-primary/80'
+                }`}
+              >
+                <Shield size={20} />
+                {sidebarOpen && <span>System Reset</span>}
+              </Link>
+            </div>
+          )}
         </nav>
 
         {/* Footer */}

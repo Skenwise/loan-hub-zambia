@@ -62,6 +62,7 @@ import DemoManagementPage from '@/components/pages/DemoManagementPage';
 import SuperAdminSetupWizardPage from '@/components/pages/SuperAdminSetupWizardPage';
 import VerificationPage from '@/components/pages/VerificationPage';
 import BranchesPage from '@/components/pages/BranchesPage';
+import SystemResetPage from '@/components/pages/SystemResetPage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -490,6 +491,19 @@ const router = createBrowserRouter([
               messageToSignIn="This page is only accessible to Super Admin users."
             >
               <DemoManagementPage />
+            </RoleProtectedRoute>
+          </MemberProtectedRoute>
+        ),
+      },
+      {
+        path: "system-reset",
+        element: (
+          <MemberProtectedRoute messageToSignIn="Sign in to access system reset">
+            <RoleProtectedRoute 
+              requiredRoles={['Super Admin']}
+              messageToSignIn="This page is only accessible to Super Admin users."
+            >
+              <SystemResetPage />
             </RoleProtectedRoute>
           </MemberProtectedRoute>
         ),
