@@ -23,30 +23,61 @@ export default {
                 paragraph: ["barlow-extralight"]
             },
             colors: {
-                primary: "#1F2937",
+                // Primary: Deep Professional Blue (LinkedIn-style)
+                primary: "#0A66C2",
                 "primary-foreground": "#FFFFFF",
-                secondary: "#3567fd",
-                "secondary-foreground": "#EEF2FF",
+                
+                // Secondary: White backgrounds and light grey panels
+                secondary: "#FFFFFF",
+                "secondary-foreground": "#F5F7FA",
+                
+                // Background and Card colors
                 background: "#FFFFFF",
-                brandaccent: "#3567fd",
-                buttonbackground: "#3567fd",
-                foreground: "#1F2937",
-                destructive: "#DF3131",
-                destructiveforeground: "#ffffff",
-                iconcolor: "#6B7280",
-                contentblockbackground: "#F3F4F6",
-                buttonoutline: "#3567fd",
                 cardbackground: "#FFFFFF",
+                
+                // Text and Foreground colors
+                foreground: "#1F2937",
                 textprimary: "#1F2937",
+                darktext: "#1F2937",
+                
+                // Accent colors
+                brandaccent: "#0A66C2",
+                buttonbackground: "#0A66C2",
+                buttonforeground: "#FFFFFF",
+                buttonoutline: "#0A66C2",
+                buttonborder: "#0A66C2",
+                
+                // Input styling
                 inputbackground: "#FFFFFF",
                 inputborder: "#D1D5DB",
-                buttonforeground: "#FFFFFF",
-                darktext: "#1F2937",
-                buttonborder: "#3567fd",
-                "contentblockbackground-custom": "#F3F4F6",
-                "secondary-foreground-new": "#EEF2FF",
-                "secondary-foreground-old": "#EEF2FF",
-                "secondary-foreground-token": "#EEF2FF"
+                
+                // Content blocks and panels
+                contentblockbackground: "#F5F7FA",
+                "contentblockbackground-custom": "#F5F7FA",
+                
+                // Icon and UI elements
+                iconcolor: "#6B7280",
+                
+                // Status colors
+                destructive: "#DC2626",
+                destructiveforeground: "#FFFFFF",
+                
+                // Success (green for success states)
+                success: "#10B981",
+                "success-foreground": "#FFFFFF",
+                
+                // Warning (amber for demo mode)
+                warning: "#F59E0B",
+                "warning-foreground": "#FFFFFF",
+                
+                // Info/Highlight (soft blue)
+                info: "#3B82F6",
+                "info-foreground": "#FFFFFF",
+                
+                // Secondary foreground variants (light blue tints)
+                "secondary-foreground-new": "#EFF6FF",
+                "secondary-foreground-old": "#EFF6FF",
+                "secondary-foreground-token": "#EFF6FF"
             },
         },
     },
