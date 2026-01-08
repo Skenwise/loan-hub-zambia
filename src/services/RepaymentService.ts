@@ -1,10 +1,13 @@
 /**
  * Repayment Service
  * Handles all repayment operations including allocation, penalties, IFRS 9 updates
+ * Phase 1: Core Data Isolation - Organization-scoped repayment access
  */
 
 import { BaseCrudService } from './BaseCrudService';
 import { Loans, Repayments, LoanProducts } from '@/entities';
+import { CollectionIds } from './index';
+import { OrganisationFilteringService } from './OrganisationFilteringService';
 
 export interface RepaymentAllocation {
   penalties: number;
@@ -35,14 +38,16 @@ export interface LoanRepaymentStatus {
 
 export class RepaymentService {
   /**
-   * Get active loans ready for repayment
+   * Get active loans ready for repayment (Phase 1: Organization-scoped)
    */
-  static async getActiveLoansForRepayment(organisationId: string): Promise<Loans[]> {
-    const { items } = await BaseCrudService.getAll<Loans>('loans');
-    return items.filter(
+  static async getActiveLoansForRepayment(organisationId?: string): Promise<Loans[]> {
+    const loans = await OrganisationFilteringService.getAllByOrganisation<Loans>(
+      CollectionIds.LOANS,
+      { organisationId, logQuery: true }
+    );
+    return loans.filter(
       (loan) =>
-        loan.organisationId === organisationId &&
-        (loan.loanStatus === 'ACTIVE' || loan.loanStatus === 'OVERDUE')
+        loan.loanStatus === 'ACTIVE' || loan.loanStatus === 'OVERDUE'
     );
   }
 

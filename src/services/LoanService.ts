@@ -1,12 +1,14 @@
 /**
  * Loan Service
  * Handles loan operations, calculations, and workflow management
+ * Phase 1: Core Data Isolation - Organization-scoped loan access
  */
 
 import { BaseCrudService } from '@/integrations';
 import { Loans, LoanProducts, Repayments, LoanWorkflowHistory } from '@/entities';
 import { CollectionIds } from './index';
 import { AuditService } from './AuditService';
+import { OrganisationFilteringService } from './OrganisationFilteringService';
 
 export class LoanService {
   /**
@@ -39,12 +41,14 @@ export class LoanService {
   }
 
   /**
-   * Get all loans for an organisation
+   * Get all loans for an organisation (Phase 1: Organization-scoped)
    */
-  static async getOrganisationLoans(organisationId: string): Promise<Loans[]> {
+  static async getOrganisationLoans(organisationId?: string): Promise<Loans[]> {
     try {
-      const { items } = await BaseCrudService.getAll<Loans>(CollectionIds.LOANS);
-      return items?.filter(l => l.organisationId === organisationId) || [];
+      return await OrganisationFilteringService.getAllByOrganisation<Loans>(
+        CollectionIds.LOANS,
+        { organisationId, logQuery: true }
+      );
     } catch (error) {
       console.error('Error fetching organisation loans:', error);
       return [];
@@ -100,14 +104,15 @@ export class LoanService {
   }
 
   /**
-   * Get all loan products for an organisation
+   * Get all loan products for an organisation (Phase 1: Organization-scoped)
    */
-  static async getOrganisationLoanProducts(organisationId: string): Promise<LoanProducts[]> {
+  static async getOrganisationLoanProducts(organisationId?: string): Promise<LoanProducts[]> {
     try {
-      const { items } = await BaseCrudService.getAll<LoanProducts>(
-        CollectionIds.LOAN_PRODUCTS
+      const products = await OrganisationFilteringService.getAllByOrganisation<LoanProducts>(
+        CollectionIds.LOAN_PRODUCTS,
+        { organisationId, logQuery: true }
       );
-      return items?.filter(p => p.isActive) || [];
+      return products.filter(p => p.isActive) || [];
     } catch (error) {
       console.error('Error fetching loan products:', error);
       return [];
@@ -156,21 +161,22 @@ export class LoanService {
   }
 
   /**
-   * Update loan status
+   * Update loan status (Phase 1: Include organisation context)
    */
   static async updateLoanStatus(
     loanId: string,
     status: string,
     performedBy: string,
+    organisationId?: string,
     staffMemberId?: string
   ): Promise<void> {
     try {
       await this.updateLoan(loanId, { loanStatus: status });
       
-      // Log workflow change
-      await this.logWorkflowChange(loanId, status, performedBy, staffMemberId);
+      // Log workflow change with organisation context
+      await this.logWorkflowChange(loanId, status, performedBy, organisationId, staffMemberId);
       
-      // Audit log
+      // Audit log with organisation context
       await AuditService.logAction({
         actionType: 'UPDATE',
         actionDetails: `Loan status updated to ${status}`,
@@ -178,6 +184,7 @@ export class LoanService {
         resourceId: loanId,
         performedBy,
         staffMemberId,
+        organisationId,
       });
     } catch (error) {
       console.error('Error updating loan status:', error);
@@ -186,21 +193,24 @@ export class LoanService {
   }
 
   /**
-   * Log workflow change
+   * Log workflow change (Phase 1: Include organisation context)
    */
   static async logWorkflowChange(
     loanId: string,
     stage: string,
     changedBy: string,
+    organisationId?: string,
     staffMemberId?: string
   ): Promise<void> {
     try {
       const workflowEntry: LoanWorkflowHistory = {
         _id: crypto.randomUUID(),
         loanId,
+        organisationId,
         stage,
         timestamp: new Date(),
         changedBy,
+        staffMemberId,
       };
 
       await BaseCrudService.create(CollectionIds.LOAN_WORKFLOW_HISTORY, workflowEntry);

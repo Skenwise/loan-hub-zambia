@@ -89,27 +89,30 @@ export default function RepaymentsPage() {
       try {
         setIsLoading(true);
 
-        // Get active loans
-        const activeLoans = await LoanService.getActiveLoansByOrganisation(currentOrganisation._id);
+        // Get active loans for organisation (Phase 1: Organization-scoped)
+        const activeLoans = await LoanService.getOrganisationLoans(currentOrganisation._id);
+        const filteredLoans = activeLoans.filter(
+          loan => loan.loanStatus === 'ACTIVE' || loan.loanStatus === 'OVERDUE'
+        );
 
         // Enrich with customer data and repayment history
         const enrichedLoans = await Promise.all(
-          activeLoans.map(async (loan) => {
+          filteredLoans.map(async (loan) => {
             const customer = loan.customerId ? await CustomerService.getCustomer(loan.customerId) : undefined;
             const monthlyPayment = LoanService.calculateMonthlyPayment(
               loan.principalAmount || 0,
               loan.interestRate || 0,
               loan.loanTermMonths || 0
             );
-            const daysOverdue = LoanService.calculateDaysOverdue(loan.nextPaymentDate);
-            const repaymentHistory = await LoanService.getLoanRepayments(loan._id || '');
+            const daysOverdue = loan.nextPaymentDate 
+              ? Math.floor((new Date().getTime() - new Date(loan.nextPaymentDate).getTime()) / (1000 * 60 * 60 * 24))
+              : 0;
 
             return {
               ...loan,
               customer,
               monthlyPayment,
               daysOverdue,
-              repaymentHistory,
             };
           })
         );

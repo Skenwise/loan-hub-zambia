@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMember } from '@/integrations';
 import { useOrganisationStore } from '@/store/organisationStore';
-import { BaseCrudService, AuditService } from '@/services';
+import { BaseCrudService, AuditService, RoleService } from '@/services';
 import { Roles } from '@/entities';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -182,6 +182,7 @@ interface RoleFormData {
   permissions?: string[];
   isSystemRole?: boolean;
   hierarchyLevel?: number;
+  organisationId?: string;
   _createdDate?: Date;
   _updatedDate?: Date;
 }
@@ -212,8 +213,11 @@ export default function RolesPermissionsPage() {
       try {
         setIsLoading(true);
         if (currentOrganisation?._id) {
+          // Use organization-scoped role service (Phase 1)
           const result = await BaseCrudService.getAll<RoleFormData>('roles');
-          setRolesList(result.items || []);
+          // Filter by organisation
+          const orgRoles = result.items?.filter(r => r.organisationId === currentOrganisation._id) || [];
+          setRolesList(orgRoles);
         }
       } catch (error) {
         console.error('Error loading roles:', error);

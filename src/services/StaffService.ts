@@ -1,11 +1,13 @@
 /**
  * Staff Service
  * Manages staff members and their role assignments
+ * Phase 1: Core Data Isolation - Organization-scoped staff access
  */
 
 import { BaseCrudService } from '@/integrations';
 import { StaffMembers, StaffRoleAssignments } from '@/entities';
 import { CollectionIds } from './index';
+import { OrganisationFilteringService } from './OrganisationFilteringService';
 
 export class StaffService {
   /**
@@ -25,42 +27,16 @@ export class StaffService {
   }
 
   /**
-   * Get all staff members for an organisation
+   * Get all staff members for an organisation (Phase 1: Organization-scoped)
    */
-  static async getOrganisationStaff(organisationId: string): Promise<StaffMembers[]> {
+  static async getOrganisationStaff(organisationId?: string): Promise<StaffMembers[]> {
     try {
-      const { items } = await BaseCrudService.getAll<StaffMembers>(
-        CollectionIds.STAFF_MEMBERS
+      return await OrganisationFilteringService.getAllByOrganisation<StaffMembers>(
+        CollectionIds.STAFF_MEMBERS,
+        { organisationId, logQuery: true }
       );
-      
-      // Filter by organisation through role assignments
-      if (!items) return [];
-      
-      const staffIds = await this.getOrganisationStaffIds(organisationId);
-      return items.filter(staff => staffIds.includes(staff._id));
     } catch (error) {
       console.error('Error fetching organisation staff:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Get staff IDs for an organisation
-   */
-  private static async getOrganisationStaffIds(organisationId: string): Promise<string[]> {
-    try {
-      const { items } = await BaseCrudService.getAll<StaffRoleAssignments>(
-        CollectionIds.STAFF_ROLE_ASSIGNMENTS
-      );
-      
-      if (!items) return [];
-      
-      return items
-        .filter(assignment => assignment.organizationId === organisationId && assignment.status === 'ACTIVE')
-        .map(assignment => assignment.staffMemberId || '')
-        .filter(Boolean);
-    } catch (error) {
-      console.error('Error fetching organisation staff IDs:', error);
       return [];
     }
   }

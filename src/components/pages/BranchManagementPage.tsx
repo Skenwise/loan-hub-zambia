@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useMember } from '@/integrations';
-import { BranchManagementService } from '@/services/BranchManagementService';
+import { useOrganisationStore } from '@/store/organisationStore';
+import { BranchManagementService, BaseCrudService } from '@/services';
 import { Branches, BranchHolidays } from '@/entities';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function BranchManagementPage() {
   const { member } = useMember();
+  const { organisationId } = useOrganisationStore();
   const { toast } = useToast();
 
   const [branches, setBranches] = useState<Branches[]>([]);
@@ -65,13 +67,12 @@ export default function BranchManagementPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      // In a real app, get organisationId from member or context
-      const organisationId = member?.profile?.nickname || 'default-org';
-      const branchesData = await BranchManagementService.getBranchesByOrganisation(organisationId);
+      // Use organization-scoped branch service (Phase 1)
+      const branchesData = await BranchManagementService.getBranchesByOrganisation(organisationId || 'default-org');
       setBranches(branchesData);
 
       // Load all holidays
-      const { items: allHolidays } = await (window as any).BaseCrudService?.getAll?.('branchholidays') || { items: [] };
+      const { items: allHolidays } = await BaseCrudService.getAll<BranchHolidays>('branchholidays') || { items: [] };
       setHolidays(allHolidays || []);
     } catch (error) {
       toast({

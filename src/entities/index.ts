@@ -68,6 +68,8 @@ export interface Branches {
   _createdDate?: Date;
   _updatedDate?: Date;
   /** @wixFieldType text */
+  organisationId?: string;
+  /** @wixFieldType text */
   branchName?: string;
   /** @wixFieldType text */
   branchCode?: string;
@@ -87,8 +89,6 @@ export interface Branches {
   managerName?: string;
   /** @wixFieldType boolean */
   isActive?: boolean;
-  /** @wixFieldType text */
-  organisationId?: string;
 }
 
 
@@ -226,6 +226,8 @@ export interface KYCDocumentSubmissions {
   _createdDate?: Date;
   _updatedDate?: Date;
   /** @wixFieldType text */
+  organisationId?: string;
+  /** @wixFieldType text */
   documentType?: string;
   /** @wixFieldType url */
   documentFile?: string;
@@ -258,6 +260,8 @@ export interface KYCStatusTracking {
   _updatedDate?: Date;
   /** @wixFieldType text */
   customerId?: string;
+  /** @wixFieldType text */
+  organisationId?: string;
   /** @wixFieldType text */
   loanApplicationId?: string;
   /** @wixFieldType text */
@@ -332,6 +336,8 @@ export interface LoanFees {
   _createdDate?: Date;
   _updatedDate?: Date;
   /** @wixFieldType text */
+  organisationId?: string;
+  /** @wixFieldType text */
   feeName?: string;
   /** @wixFieldType text */
   feeCategory?: string;
@@ -364,6 +370,8 @@ export interface LoanPenaltySettings {
   _updatedDate?: Date;
   /** @wixFieldType text */
   loanProductId?: string;
+  /** @wixFieldType text */
+  organisationId?: string;
   /** @wixFieldType boolean */
   enableLatePaymentPenalty?: boolean;
   /** @wixFieldType number */
@@ -621,6 +629,8 @@ export interface Roles {
   /** @wixFieldType text */
   roleName?: string;
   /** @wixFieldType text */
+  organisationId?: string;
+  /** @wixFieldType text */
   description?: string;
   /** @wixFieldType text */
   permissions?: string;
@@ -628,8 +638,6 @@ export interface Roles {
   isSystemRole?: boolean;
   /** @wixFieldType number */
   hierarchyLevel?: number;
-  /** @wixFieldType text */
-  organisationId?: string;
 }
 
 

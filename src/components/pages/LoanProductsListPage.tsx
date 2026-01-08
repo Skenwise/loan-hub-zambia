@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BaseCrudService } from '@/services';
+import { LoanService } from '@/services';
+import { useOrganisationStore } from '@/store/organisationStore';
 import { LoanProducts } from '@/entities';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -9,19 +10,21 @@ import { Plus, Edit2, Settings } from 'lucide-react';
 
 export default function LoanProductsListPage() {
   const navigate = useNavigate();
+  const { organisationId } = useOrganisationStore();
   const [products, setProducts] = useState<LoanProducts[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadProducts();
-  }, []);
+  }, [organisationId]);
 
   const loadProducts = async () => {
     try {
       setIsLoading(true);
-      const result = await BaseCrudService.getAll<LoanProducts>('loanproducts');
-      setProducts(result.items);
+      // Use organization-scoped loan service (Phase 1)
+      const result = await LoanService.getOrganisationLoanProducts(organisationId || undefined);
+      setProducts(result);
       setError(null);
     } catch (err) {
       setError('Failed to load loan products');

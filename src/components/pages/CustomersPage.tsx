@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { BaseCrudService, EmailService } from '@/services';
+import { BaseCrudService, EmailService, CustomerService } from '@/services';
 import { CustomerProfiles } from '@/entities';
+import { useOrganisationStore } from '@/store/organisationStore';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -60,7 +61,11 @@ export default function CustomersPage() {
 
   const loadCustomers = async () => {
     try {
-      const { items } = await BaseCrudService.getAll<CustomerProfiles>('customers');
+      const organisationStore = useOrganisationStore.getState();
+      const organisationId = organisationStore.organisationId;
+      
+      // Use organization-scoped customer service
+      const items = await CustomerService.getOrganisationCustomers(organisationId || undefined);
       setCustomers(items);
       setFilteredCustomers(items);
     } catch (error) {

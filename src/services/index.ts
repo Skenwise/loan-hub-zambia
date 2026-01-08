@@ -37,6 +37,7 @@ export { CustomerInvitationService } from './CustomerInvitationService';
 export { OrganisationFilteringService } from './OrganisationFilteringService';
 export { DataIsolationValidationService } from './DataIsolationValidationService';
 export { TestDataGenerationService } from './TestDataGenerationService';
+export { BranchManagementService } from './BranchManagementService';
 
 // Collection IDs
 export const CollectionIds = {

@@ -92,7 +92,7 @@ export class OrganisationFilteringService {
   /**
    * Create an item with automatic organisation assignment
    */
-  static async createWithOrganisation<T extends { organisationId?: string }>(
+  static async createWithOrganisation<T extends WixDataItem & { organisationId?: string }>(
     collectionId: string,
     data: Omit<T, '_id' | '_createdDate' | '_updatedDate'>,
     options: FilterOptions = {}
@@ -114,10 +114,10 @@ export class OrganisationFilteringService {
         ...data,
         organisationId: activeOrgId,
         _id: crypto.randomUUID(),
-      } as T;
+      } as unknown as T;
 
       const result = await BaseCrudService.create(collectionId, itemWithOrg);
-      return result as T;
+      return result as unknown as T;
     } catch (error) {
       console.error(`Error creating ${collectionId}:`, error);
       return null;
@@ -127,7 +127,7 @@ export class OrganisationFilteringService {
   /**
    * Update an item, verifying it belongs to the organisation
    */
-  static async updateWithOrganisation<T extends { organisationId?: string }>(
+  static async updateWithOrganisation<T extends WixDataItem & { organisationId?: string }>(
     collectionId: string,
     data: Partial<T> & { _id: string },
     options: FilterOptions = {}
@@ -143,7 +143,7 @@ export class OrganisationFilteringService {
 
     try {
       // Verify item belongs to organisation before updating
-      const existingItem = await BaseCrudService.getById<T>(collectionId, data._id);
+      const existingItem = await BaseCrudService.getById<T & WixDataItem>(collectionId, data._id);
       
       if (existingItem && activeOrgId && existingItem.organisationId !== activeOrgId) {
         console.warn(
@@ -153,7 +153,7 @@ export class OrganisationFilteringService {
       }
 
       const result = await BaseCrudService.update(collectionId, data);
-      return result as T;
+      return result as unknown as T;
     } catch (error) {
       console.error(`Error updating ${collectionId}/${data._id}:`, error);
       return null;
@@ -179,7 +179,7 @@ export class OrganisationFilteringService {
 
     try {
       // Verify item belongs to organisation before deleting
-      const existingItem = await BaseCrudService.getById<{ organisationId?: string }>(
+      const existingItem = await BaseCrudService.getById<WixDataItem & { organisationId?: string }>(
         collectionId,
         itemId
       );

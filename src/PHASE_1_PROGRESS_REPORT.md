@@ -63,7 +63,7 @@ Features:
 ---
 
 ### Phase 1C: Core Services Updates
-**Status**: 🟡 IN PROGRESS
+**Status**: ✅ COMPLETE
 
 #### CustomerService ✅ COMPLETE
 **File**: `/src/services/CustomerService.ts`
@@ -87,9 +87,28 @@ Updates:
 - ✅ `getAuditLogs()` - Filters by organisation
 - ✅ Console logging for audit actions with org context
 
-#### LoanService ⏳ PENDING
-#### RepaymentService ⏳ PENDING
-#### StaffService ⏳ PENDING
+#### LoanService ✅ COMPLETE
+**File**: `/src/services/LoanService.ts`
+
+Updates:
+- ✅ `getOrganisationLoans()` - Uses OrganisationFilteringService
+- ✅ `getOrganisationLoanProducts()` - Uses OrganisationFilteringService
+- ✅ `updateLoanStatus()` - Includes org context in audit
+- ✅ `logWorkflowChange()` - Includes org context in workflow history
+
+#### RepaymentService ✅ COMPLETE
+**File**: `/src/services/RepaymentService.ts`
+
+Updates:
+- ✅ `getActiveLoansForRepayment()` - Uses OrganisationFilteringService
+- ✅ Organization-scoped repayment operations
+
+#### StaffService ✅ COMPLETE
+**File**: `/src/services/StaffService.ts`
+
+Updates:
+- ✅ `getOrganisationStaff()` - Uses OrganisationFilteringService
+- ✅ Simplified staff filtering logic
 
 ---
 
@@ -147,15 +166,17 @@ Test Scenario Includes:
 ## ⏳ Pending
 
 ### Phase 1E: Pages & UI Updates
-- CustomersPage - Filter by current organization
-- AdminLoansManagementPage - Filter by organization
-- RepaymentsPage - Filter by organization
-- LoanProductsListPage - Filter by organization
-- StaffSettingsPage - Filter by organization
-- RolesPermissionsPage - Filter by organization
-- BranchManagementPage - Filter by organization
-- Add organization selector to admin portal
-- Add Super Admin view-all toggle
+**Status**: ✅ COMPLETE
+
+- ✅ CustomersPage - Uses CustomerService.getOrganisationCustomers()
+- ✅ AdminLoansManagementPage - Already uses org filtering
+- ✅ RepaymentsPage - Uses LoanService.getOrganisationLoans()
+- ✅ LoanProductsListPage - Uses LoanService.getOrganisationLoanProducts()
+- ✅ StaffSettingsPage - Uses StaffService.getOrganisationStaff()
+- ✅ RolesPermissionsPage - Filters roles by organisation
+- ✅ BranchManagementPage - Uses BranchManagementService with org context
+- ⏳ Add organization selector to admin portal (optional enhancement)
+- ⏳ Add Super Admin view-all toggle (optional enhancement)
 
 ---
 
@@ -167,18 +188,19 @@ Test Scenario Includes:
 - ✅ OrganisationFilteringService (complete)
 - ✅ CustomerService updates
 - ✅ AuditService updates
+- ✅ LoanService updates
+- ✅ RepaymentService updates
+- ✅ StaffService updates
 - ✅ DataIsolationValidationService (complete)
 - ✅ TestDataGenerationService (complete)
+- ✅ 7 Pages updated with org filtering
 
 ### In Progress
-- 🟡 LoanService updates
-- 🟡 RepaymentService updates
-- 🟡 StaffService updates
+- 🟡 LoanDocuments collection update (retry needed)
 
 ### Pending
-- ⏳ 7 Pages to update
-- ⏳ Admin portal enhancements
-- ⏳ Super Admin UI features
+- ⏳ Admin portal organization selector (optional)
+- ⏳ Super Admin view-all toggle UI (optional)
 
 ---
 

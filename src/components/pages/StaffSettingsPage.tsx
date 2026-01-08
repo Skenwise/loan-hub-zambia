@@ -248,8 +248,9 @@ export default function StaffSettingsPage() {
       try {
         setIsLoading(true);
         if (currentOrganisation?._id) {
-          const result = await BaseCrudService.getAll<StaffFormData>('staffmembers');
-          setStaffList(result.items || []);
+          // Use organization-scoped staff service (Phase 1)
+          const staffResult = await StaffService.getOrganisationStaff(currentOrganisation._id);
+          setStaffList(staffResult || []);
         }
         
         // Load roles
