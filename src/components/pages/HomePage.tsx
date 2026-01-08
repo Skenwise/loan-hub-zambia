@@ -270,7 +270,7 @@ export default function HomePage() {
               </div>
             </motion.div>
 
-            {/* Right: Abstract Visual (The "Eye" Motif) */}
+            {/* Right: Dynamic Solar System */}
             <div className="relative h-[600px] w-full hidden lg:flex items-center justify-center perspective-1000">
               <motion.div 
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -278,56 +278,198 @@ export default function HomePage() {
                 transition={{ duration: 1.5, ease: "easeOut" }}
                 className="relative w-[500px] h-[500px]"
               >
-                {/* Concentric Circles Animation */}
-                {[...Array(5)].map((_, i) => (
+                {/* Outer Glow Ring */}
+                <motion.div 
+                  className="absolute top-1/2 left-1/2 rounded-full border-2 border-transparent -translate-x-1/2 -translate-y-1/2"
+                  style={{
+                    width: "520px",
+                    height: "520px",
+                    background: "conic-gradient(from 0deg, rgba(11, 83, 148, 0.4), rgba(185, 229, 79, 0.3), rgba(11, 83, 148, 0.4))"
+                  }}
+                  animate={{
+                    rotate: 360,
+                    boxShadow: [
+                      "0 0 40px rgba(11, 83, 148, 0.4), inset 0 0 40px rgba(185, 229, 79, 0.15)",
+                      "0 0 100px rgba(11, 83, 148, 0.8), inset 0 0 80px rgba(185, 229, 79, 0.3)",
+                      "0 0 40px rgba(11, 83, 148, 0.4), inset 0 0 40px rgba(185, 229, 79, 0.15)"
+                    ]
+                  }}
+                  transition={{ 
+                    rotate: { duration: 30, repeat: Infinity, ease: "linear" },
+                    boxShadow: { duration: 4, repeat: Infinity, ease: "easeInOut" }
+                  }}
+                />
+
+                {/* Orbital Rings with Planets - Enhanced */}
+                {[
+                  { size: 180, duration: 18, delay: 0, planetSize: 14, color: "from-cyan-400 via-blue-500 to-blue-700" },
+                  { size: 280, duration: 28, delay: 8, planetSize: 16, color: "from-orange-300 via-orange-500 to-red-600" },
+                  { size: 380, duration: 42, delay: 15, planetSize: 12, color: "from-purple-400 via-pink-500 to-purple-700" }
+                ].map((orbit, idx) => (
+                  <div key={idx} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                    {/* Orbit Ring */}
+                    <motion.div
+                      className="rounded-full border-2"
+                      style={{
+                        width: `${orbit.size}px`,
+                        height: `${orbit.size}px`,
+                        borderColor: `rgba(185, 229, 79, 0.3)`,
+                      }}
+                      animate={{
+                        opacity: [0.2, 0.8, 0.2],
+                        boxShadow: [
+                          `0 0 15px rgba(185, 229, 79, 0.2), inset 0 0 15px rgba(185, 229, 79, 0.1)`,
+                          `0 0 50px rgba(185, 229, 79, 0.6), inset 0 0 30px rgba(185, 229, 79, 0.3)`,
+                          `0 0 15px rgba(185, 229, 79, 0.2), inset 0 0 15px rgba(185, 229, 79, 0.1)`
+                        ]
+                      }}
+                      transition={{
+                        duration: 6,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    />
+
+                    {/* Orbiting Planet */}
+                    <motion.div
+                      className={`absolute top-0 left-1/2 rounded-full bg-gradient-to-br ${orbit.color} shadow-2xl`}
+                      style={{
+                        width: `${orbit.planetSize}px`,
+                        height: `${orbit.planetSize}px`,
+                        marginLeft: `-${orbit.planetSize / 2}px`,
+                        marginTop: `-${orbit.size / 2}px`
+                      }}
+                      animate={{
+                        rotate: 360
+                      }}
+                      transition={{
+                        duration: orbit.duration,
+                        repeat: Infinity,
+                        ease: "linear",
+                        delay: orbit.delay
+                      }}
+                    >
+                      <motion.div
+                        className="w-full h-full rounded-full"
+                        animate={{
+                          boxShadow: [
+                            `0 0 ${orbit.planetSize * 2}px rgba(185, 229, 79, 0.3), inset -2px -2px 4px rgba(0,0,0,0.3)`,
+                            `0 0 ${orbit.planetSize * 3.5}px rgba(185, 229, 79, 1), inset -2px -2px 4px rgba(0,0,0,0.3)`,
+                            `0 0 ${orbit.planetSize * 2}px rgba(185, 229, 79, 0.3), inset -2px -2px 4px rgba(0,0,0,0.3)`
+                          ]
+                        }}
+                        transition={{
+                          duration: 3,
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                      />
+                    </motion.div>
+                  </div>
+                ))}
+                
+                {/* Core Sun - Multi-layer */}
+                <motion.div 
+                  className="absolute top-1/2 left-1/2 w-48 h-48 bg-gradient-to-br from-brandaccent via-yellow-300 to-secondary rounded-full blur-3xl opacity-80 -translate-x-1/2 -translate-y-1/2"
+                  animate={{ 
+                    scale: [1, 1.2, 1],
+                    opacity: [0.7, 0.95, 0.7]
+                  }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                />
+                
+                {/* Inner Sun Core - Rotating */}
+                <motion.div 
+                  className="absolute top-1/2 left-1/2 w-32 h-32 bg-gradient-to-br from-brandaccent via-secondary to-yellow-300 rounded-full -translate-x-1/2 -translate-y-1/2 shadow-[0_0_100px_rgba(185,229,79,0.8)]"
+                  animate={{ 
+                    scale: [1, 1.15, 1],
+                    rotate: 360
+                  }}
+                  transition={{ 
+                    scale: { duration: 5, repeat: Infinity, ease: "easeInOut" },
+                    rotate: { duration: 15, repeat: Infinity, ease: "linear" }
+                  }}
+                />
+
+                {/* Pulsing Center */}
+                <motion.div 
+                  className="absolute top-1/2 left-1/2 w-20 h-20 bg-white rounded-full -translate-x-1/2 -translate-y-1/2 shadow-[0_0_60px_rgba(255,255,255,1)]"
+                  animate={{ 
+                    scale: [0.7, 1.3, 0.7],
+                    opacity: [0.5, 1, 0.5]
+                  }}
+                  transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+                />
+                
+                {/* Floating Data Nodes - Enhanced */}
+                {[
+                  { top: "10%", right: "8%", icon: Shield, delay: 0 },
+                  { top: "80%", left: "10%", icon: Activity, delay: 1.2 },
+                  { top: "45%", right: "-5%", icon: BarChart3, delay: 0.6 }
+                ].map((node, idx) => {
+                  const Icon = node.icon;
+                  return (
+                    <motion.div 
+                      key={idx}
+                      className="absolute p-3 bg-primary/95 backdrop-blur-xl border-2 border-secondary/40 rounded-lg shadow-2xl hover:border-secondary transition-colors"
+                      style={{ top: node.top, right: node.right, left: node.left }}
+                      animate={{ 
+                        y: [0, -20, 0],
+                        scale: [1, 1.15, 1],
+                        rotate: [0, 5, -5, 0]
+                      }}
+                      transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: node.delay }}
+                    >
+                      <Icon className="w-7 h-7 text-secondary" />
+                    </motion.div>
+                  );
+                })}
+
+                {/* Ambient Particles - More Dynamic */}
+                {[...Array(12)].map((_, i) => (
                   <motion.div
-                    key={i}
-                    className="absolute top-1/2 left-1/2 rounded-full border border-primary-foreground/10"
+                    key={`particle-${i}`}
+                    className="absolute w-1.5 h-1.5 bg-secondary rounded-full"
                     style={{
-                      width: `${(i + 1) * 20}%`,
-                      height: `${(i + 1) * 20}%`,
-                      x: "-50%",
-                      y: "-50%",
-                      zIndex: 5 - i
+                      top: `${Math.random() * 100}%`,
+                      left: `${Math.random() * 100}%`,
                     }}
                     animate={{
-                      scale: [1, 1.05, 1],
-                      opacity: [0.3, 0.6, 0.3],
-                      rotate: i % 2 === 0 ? 360 : -360
+                      y: [0, -40, 0],
+                      x: [0, Math.random() * 20 - 10, 0],
+                      opacity: [0, 1, 0],
+                      scale: [0, 1.5, 0]
                     }}
                     transition={{
-                      duration: 15 + i * 5,
+                      duration: 4 + Math.random() * 3,
                       repeat: Infinity,
-                      ease: "linear"
+                      ease: "easeInOut",
+                      delay: i * 0.25
                     }}
                   />
                 ))}
-                
-                {/* Core Sphere */}
-                <motion.div 
-                  className="absolute top-1/2 left-1/2 w-32 h-32 bg-gradient-to-br from-brandaccent to-secondary rounded-full blur-2xl opacity-60"
-                  style={{ x: "-50%", y: "-50%" }}
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                />
-                <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-gradient-to-br from-brandaccent to-secondary rounded-full -translate-x-1/2 -translate-y-1/2 shadow-[0_0_60px_rgba(185,229,79,0.4)]" />
-                
-                {/* Floating Elements */}
-                <motion.div 
-                  className="absolute top-[20%] right-[10%] p-4 bg-primary/80 backdrop-blur-md border border-primary-foreground/10 rounded-xl shadow-xl"
-                  animate={{ y: [0, -20, 0] }}
-                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <Shield className="w-8 h-8 text-secondary" />
-                </motion.div>
-                
-                <motion.div 
-                  className="absolute bottom-[20%] left-[10%] p-4 bg-primary/80 backdrop-blur-md border border-primary-foreground/10 rounded-xl shadow-xl"
-                  animate={{ y: [0, 20, 0] }}
-                  transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                >
-                  <Activity className="w-8 h-8 text-brandaccent" />
-                </motion.div>
+
+                {/* Energy Waves */}
+                {[...Array(3)].map((_, i) => (
+                  <motion.div
+                    key={`wave-${i}`}
+                    className="absolute top-1/2 left-1/2 rounded-full border border-secondary/30 -translate-x-1/2 -translate-y-1/2"
+                    style={{
+                      width: "100px",
+                      height: "100px"
+                    }}
+                    animate={{
+                      scale: [1, 5, 8],
+                      opacity: [0.8, 0.4, 0]
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeOut",
+                      delay: i * 1
+                    }}
+                  />
+                ))}
               </motion.div>
             </div>
           </div>
