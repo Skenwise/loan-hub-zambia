@@ -31,6 +31,10 @@ export default {
                 secondary: "#0A66C2",
                 "secondary-foreground": "#FFFFFF",
                 
+                // Deep Blue - for high visibility text and buttons
+                "deep-blue": "#003D7A",
+                "deep-blue-light": "#0052A3",
+                
                 // Background and Card colors
                 background: "#FFFFFF",
                 cardbackground: "#FFFFFF",
