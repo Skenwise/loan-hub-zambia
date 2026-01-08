@@ -23,13 +23,13 @@ export default {
                 paragraph: ["barlow-extralight"]
             },
             colors: {
-                // Primary: Deep Professional Blue (LinkedIn-style)
-                primary: "#0A66C2",
-                "primary-foreground": "#FFFFFF",
+                // Primary: White background (clean, professional)
+                primary: "#FFFFFF",
+                "primary-foreground": "#1F2937",
                 
-                // Secondary: White backgrounds and light grey panels
-                secondary: "#FFFFFF",
-                "secondary-foreground": "#F5F7FA",
+                // Secondary: Deep Professional Blue (LinkedIn-style) - now used for accents
+                secondary: "#0A66C2",
+                "secondary-foreground": "#FFFFFF",
                 
                 // Background and Card colors
                 background: "#FFFFFF",
@@ -49,13 +49,13 @@ export default {
                 
                 // Input styling
                 inputbackground: "#FFFFFF",
-                inputborder: "#D1D5DB",
+                inputborder: "#E5E7EB",
                 
-                // Content blocks and panels
-                contentblockbackground: "#F5F7FA",
-                "contentblockbackground-custom": "#F5F7FA",
+                // Content blocks and panels (light grey for subtle contrast)
+                contentblockbackground: "#F9FAFB",
+                "contentblockbackground-custom": "#F9FAFB",
                 
-                // Icon and UI elements
+                // Icon and UI elements (neutral grey)
                 iconcolor: "#6B7280",
                 
                 // Status colors
