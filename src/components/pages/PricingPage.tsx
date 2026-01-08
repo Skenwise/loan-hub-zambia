@@ -178,10 +178,10 @@ export default function PricingPage() {
               <div className="w-12 h-[1px] bg-secondary" />
               <span className="text-secondary font-medium tracking-wider uppercase text-sm">Transparent Pricing</span>
             </div>
-            <h1 className="font-heading text-6xl lg:text-7xl font-bold leading-tight mb-6">
+            <h1 className="font-heading text-6xl lg:text-7xl font-bold leading-tight mb-6 text-foreground">
               Simple, Transparent <span className="text-secondary">Pricing</span>
             </h1>
-            <p className="text-xl text-primary-foreground/80 max-w-2xl">
+            <p className="text-xl text-foreground/70 max-w-2xl">
               Choose the plan that fits your lending operation. Scale up anytime as you grow.
             </p>
           </AnimatedReveal>
