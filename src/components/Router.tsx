@@ -16,7 +16,7 @@ import CustomersPage from '@/components/pages/CustomersPage';
 import LoansPage from '@/components/pages/LoansPage';
 import RepaymentsPage from '@/components/pages/RepaymentsPage';
 import ReportsPage from '@/components/pages/ReportsPage';
-import OrganisationSetupPage from '@/components/pages/OrganisationSetupPage';
+
 import AdminPortalLayout from '@/components/AdminPortalLayout';
 import { SubscriptionGuard } from '@/components/SubscriptionGuard';
 import LoanApplicationPage from '@/components/pages/LoanApplicationPage';
@@ -96,14 +96,7 @@ const router = createBrowserRouter([
         path: "compliance",
         element: <CompliancePage />,
       },
-      {
-        path: "setup",
-        element: (
-          <MemberProtectedRoute messageToSignIn="Sign in to set up your organization">
-            <OrganisationSetupPage />
-          </MemberProtectedRoute>
-        ),
-      },
+
       {
         path: "profile",
         element: (
@@ -153,9 +146,9 @@ const router = createBrowserRouter([
         element: <CustomerSignupPage />,
       },
       {
-        path: "setup-wizard",
+        path: "setup",
         element: (
-          <MemberProtectedRoute messageToSignIn="Sign in to access setup wizard">
+          <MemberProtectedRoute messageToSignIn="Sign in to set up your organization">
             <SuperAdminSetupWizardPage />
           </MemberProtectedRoute>
         ),

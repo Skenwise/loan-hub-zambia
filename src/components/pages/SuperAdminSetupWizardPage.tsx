@@ -12,6 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useCurrencyStore } from '@/store/currencyStore';
 
 type WizardStep = 'organisation' | 'subscription' | 'admin' | 'demo' | 'complete';
 
@@ -26,6 +27,7 @@ interface WizardData {
 export default function SuperAdminSetupWizardPage() {
   const { member } = useMember();
   const navigate = useNavigate();
+  const { formatPrice } = useCurrencyStore();
   const [step, setStep] = useState<WizardStep>('organisation');
   const [loading, setLoading] = useState(false);
   const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlans[]>([]);
@@ -156,14 +158,14 @@ export default function SuperAdminSetupWizardPage() {
 
   if (step === 'complete' && loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background to-primary flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 text-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md p-8 text-center bg-white shadow-xl border-0">
           <div className="mb-6">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md">
               <CheckCircle2 className="w-8 h-8 text-green-600" />
             </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Setup Complete!</h2>
-            <p className="text-secondary-foreground">
+            <h2 className="text-3xl font-bold text-slate-900 mb-3">Setup Complete!</h2>
+            <p className="text-slate-600 text-lg">
               Your organisation has been created successfully. Redirecting to dashboard...
             </p>
           </div>
@@ -174,12 +176,12 @@ export default function SuperAdminSetupWizardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-primary flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl p-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <Card className="w-full max-w-2xl p-8 bg-white shadow-xl border-0">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">{stepTitles[step]}</h1>
-          <p className="text-secondary-foreground">{stepDescriptions[step]}</p>
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">{stepTitles[step]}</h1>
+          <p className="text-slate-600 text-lg">{stepDescriptions[step]}</p>
         </div>
 
         {/* Progress Indicator */}
@@ -187,10 +189,10 @@ export default function SuperAdminSetupWizardPage() {
           {(['organisation', 'subscription', 'admin', 'demo'] as const).map((s, idx) => (
             <div
               key={s}
-              className={`flex-1 h-2 rounded-full transition-colors ${
+              className={`flex-1 h-3 rounded-full transition-all duration-300 ${
                 ['organisation', 'subscription', 'admin', 'demo'].indexOf(step) >= idx
-                  ? 'bg-buttonbackground'
-                  : 'bg-contentblockbackground'
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-md'
+                  : 'bg-slate-200'
               }`}
             />
           ))}
@@ -198,18 +200,18 @@ export default function SuperAdminSetupWizardPage() {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-3">
+          <div className="mb-6 p-4 bg-red-50 border border-red-300 rounded-lg flex gap-3">
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-red-700">{error}</p>
+            <p className="text-sm text-red-700 font-medium">{error}</p>
           </div>
         )}
 
         {/* Step Content */}
         <div className="mb-8">
           {step === 'organisation' && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <Label htmlFor="orgName" className="text-foreground mb-2 block">
+                <Label htmlFor="orgName" className="text-slate-900 font-semibold mb-3 block text-base">
                   Organisation Name
                 </Label>
                 <Input
@@ -217,26 +219,26 @@ export default function SuperAdminSetupWizardPage() {
                   placeholder="e.g., Acme Microfinance"
                   value={wizardData.organisationName}
                   onChange={(e) => setWizardData({ ...wizardData, organisationName: e.target.value })}
-                  className="bg-primary border-contentblockbackground text-foreground"
+                  className="bg-white border-2 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base h-12 rounded-lg transition-all"
                 />
               </div>
             </div>
           )}
 
           {step === 'subscription' && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <Label htmlFor="plan" className="text-foreground mb-2 block">
+                <Label htmlFor="plan" className="text-slate-900 font-semibold mb-3 block text-base">
                   Subscription Plan
                 </Label>
                 <Select value={wizardData.subscriptionPlanId} onValueChange={(value) => setWizardData({ ...wizardData, subscriptionPlanId: value })}>
-                  <SelectTrigger className="bg-primary border-contentblockbackground text-foreground">
+                  <SelectTrigger className="bg-white border-2 border-slate-300 text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 h-12 rounded-lg text-base">
                     <SelectValue placeholder="Select a plan" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white border-2 border-slate-300">
                     {subscriptionPlans.map((plan) => (
-                      <SelectItem key={plan._id} value={plan._id}>
-                        {plan.planName} - ${plan.pricePerMonth}/month
+                      <SelectItem key={plan._id} value={plan._id} className="text-slate-900">
+                        {plan.planName} - {formatPrice(plan.pricePerMonth || 0)}/month
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -246,9 +248,9 @@ export default function SuperAdminSetupWizardPage() {
           )}
 
           {step === 'admin' && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <Label htmlFor="adminName" className="text-foreground mb-2 block">
+                <Label htmlFor="adminName" className="text-slate-900 font-semibold mb-3 block text-base">
                   Admin Full Name
                 </Label>
                 <Input
@@ -256,11 +258,11 @@ export default function SuperAdminSetupWizardPage() {
                   placeholder="e.g., John Doe"
                   value={wizardData.adminName}
                   onChange={(e) => setWizardData({ ...wizardData, adminName: e.target.value })}
-                  className="bg-primary border-contentblockbackground text-foreground"
+                  className="bg-white border-2 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base h-12 rounded-lg transition-all"
                 />
               </div>
               <div>
-                <Label htmlFor="adminEmail" className="text-foreground mb-2 block">
+                <Label htmlFor="adminEmail" className="text-slate-900 font-semibold mb-3 block text-base">
                   Admin Email
                 </Label>
                 <Input
@@ -269,16 +271,16 @@ export default function SuperAdminSetupWizardPage() {
                   placeholder="e.g., admin@acme.com"
                   value={wizardData.adminEmail}
                   onChange={(e) => setWizardData({ ...wizardData, adminEmail: e.target.value })}
-                  className="bg-primary border-contentblockbackground text-foreground"
+                  className="bg-white border-2 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base h-12 rounded-lg transition-all"
                 />
               </div>
             </div>
           )}
 
           {step === 'demo' && (
-            <div className="space-y-4">
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-sm text-yellow-900 mb-4">
+            <div className="space-y-6">
+              <div className="p-6 bg-gradient-to-br from-amber-50 to-yellow-50 border-2 border-amber-300 rounded-lg">
+                <p className="text-base text-amber-900 mb-5 font-medium">
                   Demo mode allows you to test the system with simulated transactions without affecting real data.
                 </p>
                 <div className="flex items-center gap-3">
@@ -286,8 +288,9 @@ export default function SuperAdminSetupWizardPage() {
                     id="demoMode"
                     checked={wizardData.enableDemoMode}
                     onCheckedChange={(checked) => setWizardData({ ...wizardData, enableDemoMode: checked as boolean })}
+                    className="w-5 h-5"
                   />
-                  <Label htmlFor="demoMode" className="text-foreground cursor-pointer">
+                  <Label htmlFor="demoMode" className="text-slate-900 cursor-pointer font-medium text-base">
                     Enable Demo Mode for this organisation
                   </Label>
                 </div>
@@ -297,16 +300,21 @@ export default function SuperAdminSetupWizardPage() {
         </div>
 
         {/* Navigation Buttons */}
-        <div className="flex gap-4 justify-end">
+        <div className="flex gap-4 justify-end pt-6 border-t border-slate-200">
           {step !== 'organisation' && (
-            <Button variant="outline" onClick={handleBack} disabled={loading}>
+            <Button 
+              variant="outline" 
+              onClick={handleBack} 
+              disabled={loading}
+              className="border-2 border-slate-300 text-slate-700 hover:bg-slate-100 font-semibold h-11 px-6 rounded-lg transition-all"
+            >
               Back
             </Button>
           )}
           <Button
             onClick={handleNext}
             disabled={loading}
-            className="bg-buttonbackground hover:bg-blue-600 text-white"
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold h-11 px-8 rounded-lg shadow-lg transition-all"
           >
             {step === 'demo' ? 'Complete Setup' : 'Next'}
           </Button>
