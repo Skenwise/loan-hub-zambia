@@ -5,11 +5,13 @@ import { Organizations, SubscriptionPlans, OrganisationSetup, StaffMembers, Role
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useOrganisationStore } from '@/store/organisationStore';
 import { useCurrencyStore, CURRENCY_RATES } from '@/store/currencyStore';
 import { useNavigate } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { StaffService, RoleService, InitializationService } from '@/services';
+import { StaffService, RoleService, InitializationService, OrganisationService } from '@/services';
+import { AlertCircle, CheckCircle } from 'lucide-react';
 
 type SetupStep = 'organisation-info' | 'subscription-plan' | 'confirmation';
 
@@ -22,6 +24,8 @@ export default function OrganisationSetupPage() {
   const [currentStep, setCurrentStep] = useState<SetupStep>('organisation-info');
   const [isLoading, setIsLoading] = useState(false);
   const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlans[]>([]);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [existingOrganisations, setExistingOrganisations] = useState<Organizations[]>([]);
 
   // Form state
   const [orgName, setOrgName] = useState('');
@@ -80,7 +84,18 @@ export default function OrganisationSetupPage() {
     }
 
     setIsLoading(true);
+    setEmailError(null);
+    
     try {
+      // Check if organization with this email already exists
+      const existingOrg = await OrganisationService.organizationExistsByEmail(contactEmail);
+      
+      if (existingOrg) {
+        setEmailError(`An organization with the email "${contactEmail}" already exists. Please use a different email address or sign in to your existing organization.`);
+        setIsLoading(false);
+        return;
+      }
+
       // Initialize system roles and plans if not already done
       const isInitialized = await InitializationService.isSystemInitialized();
       if (!isInitialized) {
@@ -166,7 +181,7 @@ export default function OrganisationSetupPage() {
       setCurrentStep('confirmation');
     } catch (error) {
       console.error('Failed to create organisation:', error);
-      alert('Failed to create organisation. Please try again.');
+      setEmailError('Failed to create organisation. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -201,6 +216,24 @@ export default function OrganisationSetupPage() {
           {/* Step 1: Organisation Info */}
           {currentStep === 'organisation-info' && (
             <div className="space-y-6">
+              {emailError && (
+                <Alert className="bg-red-50 border-red-200">
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                  <AlertDescription className="text-red-800 ml-2">
+                    {emailError}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {existingOrganisations.length > 0 && (
+                <Alert className="bg-blue-50 border-blue-200">
+                  <CheckCircle className="h-4 w-4 text-blue-600" />
+                  <AlertDescription className="text-blue-800 ml-2">
+                    You have {existingOrganisations.length} existing organization(s). Sign in to access them instead of creating a new one.
+                  </AlertDescription>
+                </Alert>
+              )}
+
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">
                   Organization Name *

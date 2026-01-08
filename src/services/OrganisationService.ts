@@ -136,4 +136,52 @@ export class OrganisationService {
       return null;
     }
   }
+
+  /**
+   * Check if an organization with the given email already exists
+   */
+  static async organizationExistsByEmail(email: string): Promise<Organizations | null> {
+    try {
+      const { items } = await BaseCrudService.getAll<Organizations>(
+        CollectionIds.ORGANISATIONS
+      );
+      
+      if (!items || items.length === 0) {
+        return null;
+      }
+
+      // Find organization with matching contact email (case-insensitive)
+      const existingOrg = items.find(
+        org => org.contactEmail && org.contactEmail.toLowerCase() === email.toLowerCase()
+      );
+
+      return existingOrg || null;
+    } catch (error) {
+      console.error('Error checking for existing organization:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get organizations by contact email
+   */
+  static async getOrganisationsByEmail(email: string): Promise<Organizations[]> {
+    try {
+      const { items } = await BaseCrudService.getAll<Organizations>(
+        CollectionIds.ORGANISATIONS
+      );
+      
+      if (!items || items.length === 0) {
+        return [];
+      }
+
+      // Find all organizations with matching contact email (case-insensitive)
+      return items.filter(
+        org => org.contactEmail && org.contactEmail.toLowerCase() === email.toLowerCase()
+      );
+    } catch (error) {
+      console.error('Error fetching organisations by email:', error);
+      return [];
+    }
+  }
 }
