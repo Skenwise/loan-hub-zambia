@@ -33,6 +33,55 @@ export class DataCleanupService {
   }
 
   /**
+   * Export data to JSON format
+   */
+  static async exportDataAsJSON(dataType: 'all' | 'customer' | 'transaction' | 'kyc' | 'audit') {
+    const exportData: Record<string, any[]> = {};
+    const timestamp = new Date().toISOString();
+
+    try {
+      if (dataType === 'all' || dataType === 'customer') {
+        exportData.customers = await this.getAllItems('customers');
+        exportData.customerAccounts = await this.getAllItems('customeraccounts');
+      }
+
+      if (dataType === 'all' || dataType === 'transaction') {
+        exportData.loans = await this.getAllItems('loans');
+        exportData.repayments = await this.getAllItems('repayments');
+        exportData.loanDocuments = await this.getAllItems('loandocuments');
+        exportData.loanWorkflowHistory = await this.getAllItems('loanworkflowhistory');
+      }
+
+      if (dataType === 'all' || dataType === 'kyc') {
+        exportData.kycDocumentSubmissions = await this.getAllItems('kycdocumentsubmissions');
+        exportData.kycStatusTracking = await this.getAllItems('kycstatustracking');
+        exportData.kycVerificationHistory = await this.getAllItems('kycverificationhistory');
+      }
+
+      if (dataType === 'all' || dataType === 'audit') {
+        exportData.auditTrail = await this.getAllItems('audittrail');
+        exportData.eclResults = await this.getAllItems('eclresults');
+        exportData.bozProvisions = await this.getAllItems('bozprovisions');
+      }
+
+      return {
+        success: true,
+        timestamp,
+        dataType,
+        data: exportData,
+        recordCount: Object.values(exportData).reduce((sum, arr) => sum + arr.length, 0),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        timestamp,
+        dataType,
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+  }
+
+  /**
    * Clean up all customer-related data
    * Returns a report of what was deleted
    */
@@ -152,6 +201,45 @@ export class DataCleanupService {
   }
 
   /**
+   * Clean up specific data type
+   */
+  static async cleanupByType(dataType: 'customer' | 'transaction' | 'kyc' | 'audit') {
+    const report = {
+      timestamp: new Date().toISOString(),
+      status: 'in_progress',
+      dataType,
+      deletedCount: 0,
+      errors: [] as string[],
+    };
+
+    try {
+      const collections: Record<string, string[]> = {
+        customer: ['customers', 'customeraccounts'],
+        transaction: ['loans', 'repayments', 'loanDocuments', 'loanworkflowhistory'],
+        kyc: ['kycdocumentsubmissions', 'kycstatustracking', 'kycverificationhistory'],
+        audit: ['audittrail', 'eclresults', 'bozprovisions'],
+      };
+
+      const targetCollections = collections[dataType] || [];
+
+      for (const collectionId of targetCollections) {
+        const items = await this.getAllItems(collectionId);
+        for (const item of items) {
+          const deleted = await this.deleteItem(collectionId, item._id);
+          if (deleted) report.deletedCount++;
+        }
+      }
+
+      report.status = 'completed';
+    } catch (error) {
+      report.status = 'failed';
+      report.errors.push(`Error during ${dataType} cleanup: ${error instanceof Error ? error.message : String(error)}`);
+    }
+
+    return report;
+  }
+
+  /**
    * Reset demo data by clearing demo-specific records
    */
   static async resetDemoData() {
@@ -229,5 +317,99 @@ export class DataCleanupService {
     }
 
     return summary;
+  }
+
+  /**
+   * Schedule automatic cleanup tasks
+   * Stores schedule in localStorage for persistence
+   */
+  static scheduleCleanup(frequency: 'daily' | 'weekly' | 'monthly', dataType: 'all' | 'customer' | 'transaction' | 'kyc' | 'audit') {
+    const schedule = {
+      id: crypto.randomUUID(),
+      frequency,
+      dataType,
+      enabled: true,
+      createdAt: new Date().toISOString(),
+      lastRun: null as string | null,
+      nextRun: this.calculateNextRun(frequency),
+    };
+
+    try {
+      const schedules = JSON.parse(localStorage.getItem('cleanup_schedules') || '[]');
+      schedules.push(schedule);
+      localStorage.setItem('cleanup_schedules', JSON.stringify(schedules));
+      return { success: true, schedule };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : String(error) };
+    }
+  }
+
+  /**
+   * Get all scheduled cleanup tasks
+   */
+  static getScheduledCleanups() {
+    try {
+      const schedules = JSON.parse(localStorage.getItem('cleanup_schedules') || '[]');
+      return schedules;
+    } catch (error) {
+      return [];
+    }
+  }
+
+  /**
+   * Update scheduled cleanup task
+   */
+  static updateSchedule(scheduleId: string, updates: Partial<any>) {
+    try {
+      const schedules = JSON.parse(localStorage.getItem('cleanup_schedules') || '[]');
+      const index = schedules.findIndex((s: any) => s.id === scheduleId);
+      if (index !== -1) {
+        schedules[index] = { ...schedules[index], ...updates };
+        localStorage.setItem('cleanup_schedules', JSON.stringify(schedules));
+        return { success: true, schedule: schedules[index] };
+      }
+      return { success: false, error: 'Schedule not found' };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : String(error) };
+    }
+  }
+
+  /**
+   * Delete scheduled cleanup task
+   */
+  static deleteSchedule(scheduleId: string) {
+    try {
+      const schedules = JSON.parse(localStorage.getItem('cleanup_schedules') || '[]');
+      const filtered = schedules.filter((s: any) => s.id !== scheduleId);
+      localStorage.setItem('cleanup_schedules', JSON.stringify(filtered));
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : String(error) };
+    }
+  }
+
+  /**
+   * Calculate next run time based on frequency
+   */
+  private static calculateNextRun(frequency: 'daily' | 'weekly' | 'monthly'): string {
+    const now = new Date();
+    let nextRun = new Date(now);
+
+    switch (frequency) {
+      case 'daily':
+        nextRun.setDate(nextRun.getDate() + 1);
+        nextRun.setHours(2, 0, 0, 0); // 2 AM
+        break;
+      case 'weekly':
+        nextRun.setDate(nextRun.getDate() + 7);
+        nextRun.setHours(2, 0, 0, 0);
+        break;
+      case 'monthly':
+        nextRun.setMonth(nextRun.getMonth() + 1);
+        nextRun.setHours(2, 0, 0, 0);
+        break;
+    }
+
+    return nextRun.toISOString();
   }
 }
