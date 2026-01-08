@@ -35,6 +35,12 @@ export default {
                 "deep-blue": "#003D7A",
                 "deep-blue-light": "#0052A3",
                 
+                // Very Deep Dark Blue - for panels and sidebars
+                "panel-dark": "#0F1B2E",
+                "panel-dark-light": "#1A2847",
+                "panel-text": "#FFFFFF",
+                "panel-text-secondary": "#E0E7FF",
+                
                 // Background and Card colors
                 background: "#FFFFFF",
                 cardbackground: "#FFFFFF",
