@@ -2,6 +2,7 @@
  * Loan Service
  * Handles loan operations, calculations, and workflow management
  * Phase 1: Core Data Isolation - Organization-scoped loan access
+ * Phase 2A: Performance Optimization - Caching integration
  */
 
 import { BaseCrudService } from '@/integrations';
@@ -9,17 +10,33 @@ import { Loans, LoanProducts, Repayments, LoanWorkflowHistory } from '@/entities
 import { CollectionIds } from './index';
 import { AuditService } from './AuditService';
 import { OrganisationFilteringService } from './OrganisationFilteringService';
+import { CacheService } from './CacheService';
 
 export class LoanService {
   /**
-   * Get loan by ID
+   * Get loan by ID (with caching)
+   * Phase 2A: Cached for 5 minutes
    */
   static async getLoan(loanId: string): Promise<Loans | null> {
     try {
+      // Try to get from cache first
+      const cacheKey = `loan:${loanId}`;
+      const cached = await CacheService.get<Loans>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+
+      // Fetch from database
       const loan = await BaseCrudService.getById<Loans>(
         CollectionIds.LOANS,
         loanId
       );
+
+      // Cache the result
+      if (loan) {
+        await CacheService.set(cacheKey, loan, CacheService.DEFAULT_TTL);
+      }
+
       return loan || null;
     } catch (error) {
       console.error('Error fetching loan:', error);
@@ -42,12 +59,21 @@ export class LoanService {
 
   /**
    * Get all loans for an organisation (Phase 1: Organization-scoped)
+   * Phase 2A: Cached for 5 minutes with organization scope
    */
   static async getOrganisationLoans(organisationId?: string): Promise<Loans[]> {
     try {
-      return await OrganisationFilteringService.getAllByOrganisation<Loans>(
-        CollectionIds.LOANS,
-        { organisationId, logQuery: true }
+      // Use organization-scoped caching
+      return await CacheService.getOrSetOrgScoped(
+        organisationId || 'default',
+        'loans',
+        async () => {
+          return await OrganisationFilteringService.getAllByOrganisation<Loans>(
+            CollectionIds.LOANS,
+            { organisationId, logQuery: true }
+          );
+        },
+        CacheService.DEFAULT_TTL
       );
     } catch (error) {
       console.error('Error fetching organisation loans:', error);
@@ -57,6 +83,7 @@ export class LoanService {
 
   /**
    * Create new loan
+   * Phase 2A: Invalidate cache on create
    */
   static async createLoan(data: Omit<Loans, '_id' | '_createdDate' | '_updatedDate'>): Promise<Loans> {
     try {
@@ -65,6 +92,12 @@ export class LoanService {
         _id: crypto.randomUUID(),
       };
       await BaseCrudService.create(CollectionIds.LOANS, newLoan);
+
+      // Invalidate organization-scoped cache
+      if (data.organisationId) {
+        await CacheService.invalidateOrgCache(data.organisationId);
+      }
+
       return newLoan;
     } catch (error) {
       console.error('Error creating loan:', error);
@@ -74,6 +107,7 @@ export class LoanService {
 
   /**
    * Update loan
+   * Phase 2A: Invalidate cache on update
    */
   static async updateLoan(loanId: string, data: Partial<Loans>): Promise<void> {
     try {
@@ -81,6 +115,14 @@ export class LoanService {
         _id: loanId,
         ...data,
       });
+
+      // Invalidate loan cache
+      await CacheService.delete(`loan:${loanId}`);
+
+      // Invalidate organization-scoped cache if organisationId is provided
+      if (data.organisationId) {
+        await CacheService.invalidateOrgCache(data.organisationId);
+      }
     } catch (error) {
       console.error('Error updating loan:', error);
       throw error;
@@ -88,14 +130,29 @@ export class LoanService {
   }
 
   /**
-   * Get loan product
+   * Get loan product (with caching)
+   * Phase 2A: Cached for 1 hour (reference data)
    */
   static async getLoanProduct(productId: string): Promise<LoanProducts | null> {
     try {
+      // Try to get from cache first
+      const cacheKey = `loanproduct:${productId}`;
+      const cached = await CacheService.get<LoanProducts>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+
+      // Fetch from database
       const product = await BaseCrudService.getById<LoanProducts>(
         CollectionIds.LOAN_PRODUCTS,
         productId
       );
+
+      // Cache the result with longer TTL for reference data
+      if (product) {
+        await CacheService.set(cacheKey, product, CacheService.REFERENCE_DATA_TTL);
+      }
+
       return product || null;
     } catch (error) {
       console.error('Error fetching loan product:', error);
@@ -105,14 +162,23 @@ export class LoanService {
 
   /**
    * Get all loan products for an organisation (Phase 1: Organization-scoped)
+   * Phase 2A: Cached for 1 hour with organization scope
    */
   static async getOrganisationLoanProducts(organisationId?: string): Promise<LoanProducts[]> {
     try {
-      const products = await OrganisationFilteringService.getAllByOrganisation<LoanProducts>(
-        CollectionIds.LOAN_PRODUCTS,
-        { organisationId, logQuery: true }
+      // Use organization-scoped caching with longer TTL for reference data
+      return await CacheService.getOrSetOrgScoped(
+        organisationId || 'default',
+        'loanproducts',
+        async () => {
+          const products = await OrganisationFilteringService.getAllByOrganisation<LoanProducts>(
+            CollectionIds.LOAN_PRODUCTS,
+            { organisationId, logQuery: true }
+          );
+          return products.filter(p => p.isActive) || [];
+        },
+        CacheService.REFERENCE_DATA_TTL
       );
-      return products.filter(p => p.isActive) || [];
     } catch (error) {
       console.error('Error fetching loan products:', error);
       return [];
@@ -221,14 +287,28 @@ export class LoanService {
   }
 
   /**
-   * Get loan workflow history
+   * Get loan workflow history (with caching)
+   * Phase 2A: Cached for 5 minutes
    */
   static async getLoanWorkflowHistory(loanId: string): Promise<LoanWorkflowHistory[]> {
     try {
+      // Try to get from cache first
+      const cacheKey = `loanworkflow:${loanId}`;
+      const cached = await CacheService.get<LoanWorkflowHistory[]>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+
+      // Fetch from database
       const { items } = await BaseCrudService.getAll<LoanWorkflowHistory>(
         CollectionIds.LOAN_WORKFLOW_HISTORY
       );
-      return items?.filter(h => h.loanId === loanId) || [];
+      const history = items?.filter(h => h.loanId === loanId) || [];
+
+      // Cache the result
+      await CacheService.set(cacheKey, history, CacheService.DEFAULT_TTL);
+
+      return history;
     } catch (error) {
       console.error('Error fetching loan workflow history:', error);
       return [];
@@ -237,6 +317,7 @@ export class LoanService {
 
   /**
    * Record repayment
+   * Phase 2A: Invalidate cache on repayment
    */
   static async recordRepayment(data: Omit<Repayments, '_id' | '_createdDate' | '_updatedDate'>): Promise<Repayments> {
     try {
@@ -255,6 +336,9 @@ export class LoanService {
           outstandingBalance: newBalance,
           loanStatus: newBalance === 0 ? 'CLOSED' : 'ACTIVE',
         });
+
+        // Invalidate loan workflow cache
+        await CacheService.delete(`loanworkflow:${data.loanId}`);
       }
 
       return repayment;
@@ -265,14 +349,28 @@ export class LoanService {
   }
 
   /**
-   * Get loan repayments
+   * Get loan repayments (with caching)
+   * Phase 2A: Cached for 5 minutes
    */
   static async getLoanRepayments(loanId: string): Promise<Repayments[]> {
     try {
+      // Try to get from cache first
+      const cacheKey = `loanrepayments:${loanId}`;
+      const cached = await CacheService.get<Repayments[]>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+
+      // Fetch from database
       const { items } = await BaseCrudService.getAll<Repayments>(
         CollectionIds.REPAYMENTS
       );
-      return items?.filter(r => r.loanId === loanId) || [];
+      const repayments = items?.filter(r => r.loanId === loanId) || [];
+
+      // Cache the result
+      await CacheService.set(cacheKey, repayments, CacheService.DEFAULT_TTL);
+
+      return repayments;
     } catch (error) {
       console.error('Error fetching loan repayments:', error);
       return [];
@@ -316,12 +414,21 @@ export class LoanService {
   }
 
   /**
-   * Get pending loans for an organisation
+   * Get pending loans for an organisation (with caching)
+   * Phase 2A: Cached for 5 minutes with organization scope
    */
   static async getPendingLoans(organisationId: string): Promise<Loans[]> {
     try {
-      const { items } = await BaseCrudService.getAll<Loans>(CollectionIds.LOANS);
-      return items?.filter(l => l.organisationId === organisationId && l.loanStatus === 'PENDING') || [];
+      // Use organization-scoped caching
+      return await CacheService.getOrSetOrgScoped(
+        organisationId,
+        'loans:pending',
+        async () => {
+          const { items } = await BaseCrudService.getAll<Loans>(CollectionIds.LOANS);
+          return items?.filter(l => l.organisationId === organisationId && l.loanStatus === 'PENDING') || [];
+        },
+        CacheService.DEFAULT_TTL
+      );
     } catch (error) {
       console.error('Error fetching pending loans:', error);
       return [];
@@ -329,12 +436,21 @@ export class LoanService {
   }
 
   /**
-   * Get approved loans for an organisation
+   * Get approved loans for an organisation (with caching)
+   * Phase 2A: Cached for 5 minutes with organization scope
    */
   static async getApprovedLoans(organisationId: string): Promise<Loans[]> {
     try {
-      const { items } = await BaseCrudService.getAll<Loans>(CollectionIds.LOANS);
-      return items?.filter(l => l.organisationId === organisationId && l.loanStatus === 'APPROVED') || [];
+      // Use organization-scoped caching
+      return await CacheService.getOrSetOrgScoped(
+        organisationId,
+        'loans:approved',
+        async () => {
+          const { items } = await BaseCrudService.getAll<Loans>(CollectionIds.LOANS);
+          return items?.filter(l => l.organisationId === organisationId && l.loanStatus === 'APPROVED') || [];
+        },
+        CacheService.DEFAULT_TTL
+      );
     } catch (error) {
       console.error('Error fetching approved loans:', error);
       return [];
@@ -342,12 +458,21 @@ export class LoanService {
   }
 
   /**
-   * Get active loans for an organisation
+   * Get active loans for an organisation (with caching)
+   * Phase 2A: Cached for 5 minutes with organization scope
    */
   static async getActiveLoansByOrganisation(organisationId: string): Promise<Loans[]> {
     try {
-      const { items } = await BaseCrudService.getAll<Loans>(CollectionIds.LOANS);
-      return items?.filter(l => l.organisationId === organisationId && l.loanStatus === 'ACTIVE') || [];
+      // Use organization-scoped caching
+      return await CacheService.getOrSetOrgScoped(
+        organisationId,
+        'loans:active',
+        async () => {
+          const { items } = await BaseCrudService.getAll<Loans>(CollectionIds.LOANS);
+          return items?.filter(l => l.organisationId === organisationId && l.loanStatus === 'ACTIVE') || [];
+        },
+        CacheService.DEFAULT_TTL
+      );
     } catch (error) {
       console.error('Error fetching active loans:', error);
       return [];
