@@ -25,8 +25,6 @@ export interface AuditTrail {
   resourceAffected?: string;
   /** @wixFieldType text */
   resourceId?: string;
-  /** @wixFieldType text */
-  organisationId?: string;
 }
 
 
@@ -100,10 +98,6 @@ export interface BranchHolidays {
   _id: string;
   _createdDate?: Date;
   _updatedDate?: Date;
-  /** @wixFieldType text */
-  branchId?: string;
-  /** @wixFieldType text */
-  organisationId?: string;
   /** @wixFieldType text */
   holidayName?: string;
   /** @wixFieldType date */
