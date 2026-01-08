@@ -13,6 +13,7 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCurrencyStore } from '@/store/currencyStore';
+import { useOrganisationStore } from '@/store/organisationStore';
 
 type WizardStep = 'organisation' | 'subscription' | 'admin' | 'demo' | 'complete';
 
@@ -28,6 +29,7 @@ export default function SuperAdminSetupWizardPage() {
   const { member } = useMember();
   const navigate = useNavigate();
   const { formatPrice } = useCurrencyStore();
+  const { setOrganisation } = useOrganisationStore();
   const [step, setStep] = useState<WizardStep>('organisation');
   const [loading, setLoading] = useState(false);
   const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlans[]>([]);
@@ -87,7 +89,7 @@ export default function SuperAdminSetupWizardPage() {
 
       // 1. Create organisation
       const organisationId = crypto.randomUUID();
-      await BaseCrudService.create('organisations', {
+      const newOrganisation: Organizations = {
         _id: organisationId,
         organizationName: wizardData.organisationName,
         subscriptionPlanId: wizardData.subscriptionPlanId,
@@ -95,7 +97,9 @@ export default function SuperAdminSetupWizardPage() {
         organizationStatus: 'ACTIVE',
         creationDate: new Date(),
         contactEmail: wizardData.adminEmail,
-      });
+      };
+
+      await BaseCrudService.create('organisations', newOrganisation);
 
       // 2. Create organisation settings
       await BaseCrudService.create('organisationsettings', {
@@ -113,6 +117,7 @@ export default function SuperAdminSetupWizardPage() {
         role: 'Organisation Admin',
         status: 'ACTIVE',
         employeeId: `ADMIN-${organisationId.slice(0, 8)}`,
+        organisationId: organisationId,
       });
 
       // 4. Enable demo mode if selected
@@ -120,13 +125,14 @@ export default function SuperAdminSetupWizardPage() {
         await DemoManagementService.enableDemoMode(organisationId);
       }
 
+      // 5. Store the new organisation in the store
+      setOrganisation(newOrganisation);
+
       // Wait a moment for data to be written
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Redirect to admin dashboard
-      setTimeout(() => {
-        navigate('/admin/dashboard');
-      }, 2000);
+      navigate('/admin/dashboard');
     } catch (error) {
       console.error('Error completing setup:', error);
       setError(`Failed to complete setup: ${error}`);
