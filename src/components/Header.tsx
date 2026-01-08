@@ -11,6 +11,7 @@ import {
 import { User, LogOut, LayoutDashboard, Globe, Settings } from 'lucide-react';
 import RoleSelectionDialog from '@/components/RoleSelectionDialog';
 import { useCurrencyStore, CURRENCY_RATES, type Currency } from '@/store/currencyStore';
+import { OrganisationService } from '@/services';
 
 export default function Header() {
   const { member, isAuthenticated, isLoading, actions } = useMember();
@@ -36,18 +37,6 @@ export default function Header() {
       setUserRole('customer');
     }
   }, [isAuthenticated]);
-
-  // Handle post-login redirection
-  useEffect(() => {
-    if (isAuthenticated && !isLoading) {
-      const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
-      if (redirectUrl && window.location.pathname === '/') {
-        // Only redirect if on home page to avoid redirect loops
-        sessionStorage.removeItem('redirectAfterLogin');
-        navigate(redirectUrl);
-      }
-    }
-  }, [isAuthenticated, isLoading, navigate]);
 
   const handleLogout = async () => {
     // Clear stored role on logout
@@ -75,10 +64,25 @@ export default function Header() {
     actions.login();
   };
 
-  const handleSignInWithExistingOrg = () => {
-    // For now, just show the role selection dialog
-    // The organization check will happen after login
-    setShowRoleDialog(true);
+  const handleSignInWithExistingOrg = async () => {
+    // Check if user has existing organizations
+    if (member?.loginEmail) {
+      const existingOrgs = await OrganisationService.getOrganisationsByEmail(member.loginEmail);
+      
+      if (existingOrgs.length > 0) {
+        // User has existing organizations - redirect to admin dashboard
+        sessionStorage.setItem('selectedRole', 'admin');
+        localStorage.setItem('userRole', 'admin');
+        sessionStorage.setItem('redirectAfterLogin', '/admin/dashboard');
+        navigate('/admin/dashboard');
+      } else {
+        // No existing organizations - show role selection
+        setShowRoleDialog(true);
+      }
+    } else {
+      // No member info - show role selection
+      setShowRoleDialog(true);
+    }
   };
 
   return (

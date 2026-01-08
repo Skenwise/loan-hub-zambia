@@ -223,7 +223,7 @@ export class BranchManagementService {
       // Copy holidays from source to target
       for (const sourceHoliday of sourceHolidays) {
         const newHolidayId = crypto.randomUUID();
-        const newHoliday: Partial<BranchHolidays> = {
+        const newHoliday: BranchHolidays = {
           _id: newHolidayId,
           branchId: targetBranchId,
           organisationId: sourceHoliday.organisationId,
@@ -234,7 +234,7 @@ export class BranchManagementService {
           description: sourceHoliday.description,
         };
 
-        await BaseCrudService.create('branchholidays', newHoliday as BranchHolidays);
+        await BaseCrudService.create('branchholidays', newHoliday);
       }
     }
 
