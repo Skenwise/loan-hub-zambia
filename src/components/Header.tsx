@@ -67,16 +67,22 @@ export default function Header() {
   const handleSignInWithExistingOrg = async () => {
     // Check if user has existing organizations
     if (member?.loginEmail) {
-      const existingOrgs = await OrganisationService.getOrganisationsByEmail(member.loginEmail);
-      
-      if (existingOrgs.length > 0) {
-        // User has existing organizations - redirect to admin dashboard
-        sessionStorage.setItem('selectedRole', 'admin');
-        localStorage.setItem('userRole', 'admin');
-        sessionStorage.setItem('redirectAfterLogin', '/admin/dashboard');
-        navigate('/admin/dashboard');
-      } else {
-        // No existing organizations - show role selection
+      try {
+        const existingOrgs = await OrganisationService.getOrganisationsByEmail(member.loginEmail);
+        
+        if (existingOrgs && existingOrgs.length > 0) {
+          // User has existing organizations - redirect to admin dashboard
+          sessionStorage.setItem('selectedRole', 'admin');
+          localStorage.setItem('userRole', 'admin');
+          sessionStorage.setItem('redirectAfterLogin', '/admin/dashboard');
+          navigate('/admin/dashboard');
+        } else {
+          // No existing organizations - show role selection
+          setShowRoleDialog(true);
+        }
+      } catch (error) {
+        console.error('Error checking organizations:', error);
+        // On error, show role selection dialog instead of hanging
         setShowRoleDialog(true);
       }
     } else {
