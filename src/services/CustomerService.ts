@@ -2,6 +2,7 @@
  * Customer Service
  * Handles customer management and KYC verification
  * Phase 1: Core Data Isolation - Organization-scoped customer access
+ * Phase 2A: Performance Optimization - Caching integration
  */
 
 import { BaseCrudService } from '@/integrations';
@@ -9,17 +10,33 @@ import { CustomerProfiles, KYCVerificationHistory, CustomerAccounts } from '@/en
 import { CollectionIds } from './index';
 import { AuditService } from './AuditService';
 import { OrganisationFilteringService } from './OrganisationFilteringService';
+import { CacheService } from './CacheService';
 
 export class CustomerService {
   /**
-   * Get customer by ID
+   * Get customer by ID (with caching)
+   * Phase 2A: Cached for 5 minutes
    */
   static async getCustomer(customerId: string): Promise<CustomerProfiles | null> {
     try {
+      // Try to get from cache first
+      const cacheKey = `customer:${customerId}`;
+      const cached = await CacheService.get<CustomerProfiles>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+
+      // Fetch from database
       const customer = await BaseCrudService.getById<CustomerProfiles>(
         CollectionIds.CUSTOMERS,
         customerId
       );
+
+      // Cache the result
+      if (customer) {
+        await CacheService.set(cacheKey, customer, CacheService.DEFAULT_TTL);
+      }
+
       return customer || null;
     } catch (error) {
       console.error('Error fetching customer:', error);
@@ -29,12 +46,21 @@ export class CustomerService {
 
   /**
    * Get all customers for an organisation (Phase 1: Organization-scoped)
+   * Phase 2A: Cached for 5 minutes with organization scope
    */
   static async getOrganisationCustomers(organisationId?: string): Promise<CustomerProfiles[]> {
     try {
-      return await OrganisationFilteringService.getAllByOrganisation<CustomerProfiles>(
-        CollectionIds.CUSTOMERS,
-        { organisationId, logQuery: true }
+      // Use organization-scoped caching
+      return await CacheService.getOrSetOrgScoped(
+        organisationId || 'default',
+        'customers',
+        async () => {
+          return await OrganisationFilteringService.getAllByOrganisation<CustomerProfiles>(
+            CollectionIds.CUSTOMERS,
+            { organisationId, logQuery: true }
+          );
+        },
+        CacheService.DEFAULT_TTL
       );
     } catch (error) {
       console.error('Error fetching organisation customers:', error);
@@ -44,6 +70,7 @@ export class CustomerService {
 
   /**
    * Create new customer with automatic organisation assignment (Phase 1)
+   * Phase 2A: Invalidate cache on create
    */
   static async createCustomer(data: Omit<CustomerProfiles, '_id' | '_createdDate' | '_updatedDate'>): Promise<CustomerProfiles> {
     try {
@@ -62,6 +89,11 @@ export class CustomerService {
         data.organisationId
       );
 
+      // Invalidate organization-scoped cache
+      if (data.organisationId) {
+        await CacheService.invalidateOrgCache(data.organisationId);
+      }
+
       return newCustomer;
     } catch (error) {
       console.error('Error creating customer:', error);
@@ -71,6 +103,7 @@ export class CustomerService {
 
   /**
    * Update customer (Phase 1: Verify organisation access)
+   * Phase 2A: Invalidate cache on update
    */
   static async updateCustomer(customerId: string, data: Partial<CustomerProfiles>): Promise<void> {
     try {
@@ -91,6 +124,16 @@ export class CustomerService {
         data.emailAddress || 'SYSTEM',
         customer?.organisationId
       );
+
+      // Invalidate customer cache
+      await CacheService.delete(`customer:${customerId}`);
+
+      // Invalidate organization-scoped cache if organisationId is provided
+      if (data.organisationId) {
+        await CacheService.invalidateOrgCache(data.organisationId);
+      } else if (customer?.organisationId) {
+        await CacheService.invalidateOrgCache(customer.organisationId);
+      }
     } catch (error) {
       console.error('Error updating customer:', error);
       throw error;
@@ -137,9 +180,18 @@ export class CustomerService {
 
   /**
    * Get KYC verification history for customer (Phase 1: Organization-scoped)
+   * Phase 2A: Cached for 5 minutes
    */
   static async getKYCHistory(customerId: string, organisationId?: string): Promise<KYCVerificationHistory[]> {
     try {
+      // Try to get from cache first
+      const cacheKey = `kychistory:${customerId}`;
+      const cached = await CacheService.get<KYCVerificationHistory[]>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+
+      // Fetch from database
       const { items } = await BaseCrudService.getAll<KYCVerificationHistory>(
         CollectionIds.KYC_VERIFICATION_HISTORY
       );
@@ -150,7 +202,10 @@ export class CustomerService {
       if (organisationId) {
         filtered = filtered.filter(k => k.organisationId === organisationId);
       }
-      
+
+      // Cache the result
+      await CacheService.set(cacheKey, filtered, CacheService.DEFAULT_TTL);
+
       return filtered;
     } catch (error) {
       console.error('Error fetching KYC history:', error);
@@ -160,6 +215,7 @@ export class CustomerService {
 
   /**
    * Create customer account
+   * Phase 2A: Invalidate cache on create
    */
   static async createCustomerAccount(data: Omit<CustomerAccounts, '_id' | '_createdDate' | '_updatedDate'>): Promise<CustomerAccounts> {
     try {
@@ -171,6 +227,12 @@ export class CustomerService {
       };
 
       await BaseCrudService.create(CollectionIds.CUSTOMER_ACCOUNTS, account);
+
+      // Invalidate customer cache
+      if (data.customerProfileId) {
+        await CacheService.delete(`customer:${data.customerProfileId}`);
+      }
+
       return account;
     } catch (error) {
       console.error('Error creating customer account:', error);
@@ -179,14 +241,28 @@ export class CustomerService {
   }
 
   /**
-   * Get customer accounts
+   * Get customer accounts (with caching)
+   * Phase 2A: Cached for 5 minutes
    */
   static async getCustomerAccounts(customerId: string): Promise<CustomerAccounts[]> {
     try {
+      // Try to get from cache first
+      const cacheKey = `customeraccounts:${customerId}`;
+      const cached = await CacheService.get<CustomerAccounts[]>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+
+      // Fetch from database
       const { items } = await BaseCrudService.getAll<CustomerAccounts>(
         CollectionIds.CUSTOMER_ACCOUNTS
       );
-      return items?.filter(a => a.customerProfileId === customerId) || [];
+      const accounts = items?.filter(a => a.customerProfileId === customerId) || [];
+
+      // Cache the result
+      await CacheService.set(cacheKey, accounts, CacheService.DEFAULT_TTL);
+
+      return accounts;
     } catch (error) {
       console.error('Error fetching customer accounts:', error);
       return [];
@@ -234,15 +310,30 @@ export class CustomerService {
   }
 
   /**
-   * Get customer by email
+   * Get customer by email (with caching)
+   * Phase 2A: Cached for 5 minutes
    */
   static async getCustomerByEmail(email: string): Promise<CustomerProfiles | null> {
     try {
+      // Try to get from cache first
+      const cacheKey = `customer:email:${email}`;
+      const cached = await CacheService.get<CustomerProfiles>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+
+      // Fetch from database
       const { items } = await BaseCrudService.getAll<CustomerProfiles>(
         CollectionIds.CUSTOMERS
       );
       
       const customer = items?.find(c => c.emailAddress === email);
+
+      // Cache the result
+      if (customer) {
+        await CacheService.set(cacheKey, customer, CacheService.DEFAULT_TTL);
+      }
+
       return customer || null;
     } catch (error) {
       console.error('Error fetching customer by email:', error);
@@ -251,15 +342,30 @@ export class CustomerService {
   }
 
   /**
-   * Get customer by national ID
+   * Get customer by national ID (with caching)
+   * Phase 2A: Cached for 5 minutes
    */
   static async getCustomerByNationalId(nationalId: string): Promise<CustomerProfiles | null> {
     try {
+      // Try to get from cache first
+      const cacheKey = `customer:nationalid:${nationalId}`;
+      const cached = await CacheService.get<CustomerProfiles>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+
+      // Fetch from database
       const { items } = await BaseCrudService.getAll<CustomerProfiles>(
         CollectionIds.CUSTOMERS
       );
       
       const customer = items?.find(c => c.nationalIdNumber === nationalId);
+
+      // Cache the result
+      if (customer) {
+        await CacheService.set(cacheKey, customer, CacheService.DEFAULT_TTL);
+      }
+
       return customer || null;
     } catch (error) {
       console.error('Error fetching customer by national ID:', error);
