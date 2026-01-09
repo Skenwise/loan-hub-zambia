@@ -24,10 +24,20 @@ export default function Header() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
 
   // Handle post-login authentication and routing
+  // CRITICAL: Only run this effect once when user first authenticates
   useEffect(() => {
     console.log('[Header] Auth state changed:', { isAuthenticated, isLoading, hasRedirected, email: member?.loginEmail });
     
+    // Only check membership once per session - prevent redirect loops
     if (isAuthenticated && !hasRedirected && !isLoading && member?.loginEmail) {
+      // Check if we've already processed this user in this session
+      const processedEmail = sessionStorage.getItem('processedAuthEmail');
+      if (processedEmail === member.loginEmail) {
+        console.log('[Header] User already processed in this session, skipping membership check');
+        setHasRedirected(true);
+        return;
+      }
+      
       console.log('[Header] Triggering post-login membership check');
       handlePostLoginMembershipCheck();
     }
@@ -55,7 +65,8 @@ export default function Header() {
       
       setMembershipContext(context);
 
-      // Handle routing based on membership status
+      // CRITICAL FIX: Only redirect if user is an organisation member
+      // Never redirect existing members to setup page
       if (context.isOrganisationMember && context.redirectPath) {
         // Existing organisation member - redirect directly to role-specific dashboard
         console.log('[Header] Existing member found - redirecting to:', context.redirectPath);
@@ -73,22 +84,27 @@ export default function Header() {
           localStorage.setItem('userRole', context.userType === 'admin' || context.userType === 'staff' ? 'admin' : 'customer');
         }
         
+        // Mark this user as processed to prevent re-checking
+        sessionStorage.setItem('processedAuthEmail', member.loginEmail);
+        
         navigate(context.redirectPath);
         setHasRedirected(true);
-      } else if (context.canCreateOrganisation) {
-        // New user with no membership - redirect to organisation setup
+      } else if (context.canCreateOrganisation && !context.isOrganisationMember) {
+        // New user with no membership - redirect to organisation setup ONLY if they can create
         console.log('[Header] New user detected - redirecting to organisation setup');
+        sessionStorage.setItem('processedAuthEmail', member.loginEmail);
         navigate('/setup');
         setHasRedirected(true);
       } else {
+        // User is not a member and cannot create - this shouldn't happen in normal flow
         console.log('[Header] Unexpected state - user is not member and cannot create org');
+        console.log('[Header] Keeping user on current page to prevent redirect loop');
         setHasRedirected(true);
       }
     } catch (error) {
       console.error('[Header] Error during membership check:', error);
-      // On error, redirect to setup as fallback for new users
-      console.log('[Header] Error occurred, redirecting to setup page');
-      navigate('/setup');
+      // On error, don't redirect - let user stay on current page
+      console.log('[Header] Error occurred, not redirecting to prevent loops');
       setHasRedirected(true);
     } finally {
       setIsCheckingAuth(false);

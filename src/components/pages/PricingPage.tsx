@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useMember } from '@/integrations';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import Header from '@/components/Header';
@@ -142,14 +143,35 @@ export default function PricingPage() {
   };
 
   const handleStartTrial = () => {
+    // CRITICAL FIX: Only redirect to setup if user is NOT authenticated
+    // Authenticated users should not be redirected to setup page
+    const { isAuthenticated } = useMember();
+    if (isAuthenticated) {
+      // User is already logged in - don't redirect to setup
+      // They should stay on pricing page or go to their dashboard
+      console.log('[PricingPage] Authenticated user clicked trial - not redirecting to setup');
+      return;
+    }
     navigate('/setup');
   };
 
   const handleContactSales = () => {
+    // CRITICAL FIX: Only redirect to setup if user is NOT authenticated
+    const { isAuthenticated } = useMember();
+    if (isAuthenticated) {
+      console.log('[PricingPage] Authenticated user clicked contact sales - not redirecting to setup');
+      return;
+    }
     navigate('/setup');
   };
 
   const handleLearnMore = () => {
+    // CRITICAL FIX: Only redirect to setup if user is NOT authenticated
+    const { isAuthenticated } = useMember();
+    if (isAuthenticated) {
+      console.log('[PricingPage] Authenticated user clicked learn more - not redirecting to setup');
+      return;
+    }
     navigate('/setup');
   };
 

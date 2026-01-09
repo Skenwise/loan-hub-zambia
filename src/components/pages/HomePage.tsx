@@ -158,27 +158,10 @@ export default function HomePage() {
   useEffect(() => {
     const checkAndRedirect = async () => {
       if (isAuthenticated && member?.loginEmail) {
-        const orgCount = await getOrganisationCount();
-        
-        // If no organisations exist, redirect Super Admin to setup wizard
-        if (orgCount === 0) {
-          navigate('/setup');
-          return;
-        }
-
-        // Check if user is accessing from a specific role context
-        const path = window.location.pathname;
-        if (path === '/') {
-          // Check the stored role from sessionStorage or localStorage
-          const selectedRole = sessionStorage.getItem('selectedRole') || localStorage.getItem('userRole');
-          
-          if (selectedRole === 'admin') {
-            navigate('/admin/dashboard');
-          } else {
-            // Default to customer portal for customers or if no role is set
-            navigate('/customer-portal');
-          }
-        }
+        // Don't redirect from home page - let Header component handle auth routing
+        // This prevents redirect loops when user is already authenticated
+        console.log('[HomePage] User is authenticated, Header will handle routing');
+        return;
       }
     };
 

@@ -26,11 +26,14 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
 
   const loadOrganisationData = async () => {
     try {
-      // In a real app, you'd get the organisation ID from the authenticated user
-      // For now, we'll check if there's a current organisation in the store
+      // CRITICAL FIX: Don't redirect to setup if no organisation in store
+      // The Header component handles membership checks and routing
+      // SubscriptionGuard should only validate existing organisation subscriptions
       if (!currentOrganisation) {
-        // Redirect to setup if no organisation is selected
-        navigate('/setup');
+        console.log('[SubscriptionGuard] No organisation in store - Header should have routed user');
+        // Don't redirect - let the user stay on their current page
+        // The Header component will handle proper routing based on membership
+        setIsLoading(false);
         return;
       }
 
