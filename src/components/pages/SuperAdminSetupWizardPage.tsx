@@ -187,7 +187,7 @@ export default function SuperAdminSetupWizardPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-slate-900 mb-2">{stepTitles[step]}</h1>
-          <p className="text-slate-800 text-lg font-medium">{stepDescriptions[step]}</p>
+          <p className="text-slate-600 text-lg">{stepDescriptions[step]}</p>
         </div>
 
         {/* Progress Indicator */}

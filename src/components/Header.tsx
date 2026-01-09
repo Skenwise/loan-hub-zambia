@@ -19,19 +19,6 @@ export default function Header() {
   const [showRoleDialog, setShowRoleDialog] = useState(false);
   const [userRole, setUserRole] = useState<'admin' | 'customer' | null>(null);
   const { currency, setCurrency } = useCurrencyStore();
-  const [hasRedirected, setHasRedirected] = useState(false);
-
-  // Handle post-login redirect for existing users
-  useEffect(() => {
-    if (isAuthenticated && !hasRedirected && !isLoading) {
-      const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
-      if (redirectUrl) {
-        sessionStorage.removeItem('redirectAfterLogin');
-        navigate(redirectUrl);
-        setHasRedirected(true);
-      }
-    }
-  }, [isAuthenticated, isLoading, hasRedirected, navigate]);
 
   useEffect(() => {
     // Determine user role based on current path or stored preference
@@ -99,57 +86,57 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-primary border-b border-deep-blue/20 shadow-sm">
+    <header className="bg-primary border-b border-primary-foreground/10">
       <div className="max-w-[120rem] mx-auto px-6 lg:px-12">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-deep-blue flex items-center justify-center shadow-sm">
-              <span className="text-white font-heading font-bold text-lg">L</span>
+            <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
+              <span className="text-secondary-foreground font-heading font-bold text-lg">L</span>
             </div>
-            <span className="font-heading text-xl font-bold text-deep-blue">Lunar</span>
+            <span className="font-heading text-xl font-bold text-primary-foreground">Lunar</span>
           </Link>
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-8">
             {!isAuthenticated && (
               <>
-                <Link to="/" className="text-deep-blue font-semibold hover:text-deep-blue-light transition-colors font-paragraph text-sm">
+                <Link to="/" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
                   Home
                 </Link>
-                <Link to="/features" className="text-deep-blue font-semibold hover:text-deep-blue-light transition-colors font-paragraph text-sm">
+                <Link to="/features" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
                   Features
                 </Link>
-                <Link to="/pricing" className="text-deep-blue font-semibold hover:text-deep-blue-light transition-colors font-paragraph text-sm">
+                <Link to="/pricing" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
                   Pricing
                 </Link>
-                <Link to="/compliance" className="text-deep-blue font-semibold hover:text-deep-blue-light transition-colors font-paragraph text-sm">
+                <Link to="/compliance" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
                   Compliance
                 </Link>
               </>
             )}
             {isAuthenticated && userRole === 'admin' && (
               <>
-                <Link to="/admin/dashboard" className="text-deep-blue font-semibold hover:text-deep-blue-light transition-colors font-paragraph text-sm">
+                <Link to="/admin/dashboard" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
                   Dashboard
                 </Link>
-                <Link to="/admin/loans" className="text-deep-blue font-semibold hover:text-deep-blue-light transition-colors font-paragraph text-sm">
+                <Link to="/admin/loans" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
                   Loans
                 </Link>
-                <Link to="/admin/customers" className="text-deep-blue font-semibold hover:text-deep-blue-light transition-colors font-paragraph text-sm">
+                <Link to="/admin/customers" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
                   Customers
                 </Link>
-                <Link to="/admin/reports" className="text-deep-blue font-semibold hover:text-deep-blue-light transition-colors font-paragraph text-sm">
+                <Link to="/admin/reports" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
                   Reports
                 </Link>
               </>
             )}
             {isAuthenticated && userRole === 'customer' && (
               <>
-                <Link to="/customer-portal" className="text-deep-blue font-semibold hover:text-deep-blue-light transition-colors font-paragraph text-sm">
+                <Link to="/customer-portal" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
                   Dashboard
                 </Link>
-                <Link to="/customer-portal/loans" className="text-deep-blue font-semibold hover:text-deep-blue-light transition-colors font-paragraph text-sm">
+                <Link to="/customer-portal/loans" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors font-paragraph text-sm">
                   My Loans
                 </Link>
               </>
@@ -161,17 +148,17 @@ export default function Header() {
             {/* Currency Selector */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2 text-deep-blue font-semibold hover:bg-contentblockbackground">
+                <Button variant="ghost" className="flex items-center gap-2 text-primary-foreground hover:bg-primary-foreground/10">
                   <Globe className="w-4 h-4" />
                   <span className="hidden md:inline font-paragraph text-sm">{currency}</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-background border border-deep-blue/20">
+              <DropdownMenuContent align="end" className="bg-background border-primary-foreground/20">
                 {Object.entries(CURRENCY_RATES).map(([code, rate]) => (
                   <DropdownMenuItem 
                     key={code}
                     onClick={() => setCurrency(code as Currency)}
-                    className="cursor-pointer text-deep-blue font-medium"
+                    className="cursor-pointer"
                   >
                     {rate.symbol} {code} - {rate.name}
                   </DropdownMenuItem>
@@ -180,41 +167,41 @@ export default function Header() {
             </DropdownMenu>
 
             {isLoading ? (
-              <div className="w-8 h-8 rounded-full bg-deep-blue/10 animate-pulse" />
+              <div className="w-8 h-8 rounded-full bg-primary-foreground/10 animate-pulse" />
             ) : isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center gap-2 text-deep-blue font-semibold hover:bg-contentblockbackground">
+                  <Button variant="ghost" className="flex items-center gap-2 text-primary-foreground hover:bg-primary-foreground/10">
                     <User className="w-4 h-4" />
                     <span className="hidden md:inline font-paragraph text-sm">
                       {member?.profile?.nickname || member?.contact?.firstName || 'User'}
                     </span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-background border border-deep-blue/20">
-                  <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer text-deep-blue font-medium">
+                <DropdownMenuContent align="end" className="bg-background border-primary-foreground/20">
+                  <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
                     <User className="w-4 h-4 mr-2" />
                     Profile
                   </DropdownMenuItem>
                   {userRole === 'admin' && (
-                    <DropdownMenuItem onClick={() => navigate('/admin/dashboard')} className="cursor-pointer text-deep-blue font-medium">
+                    <DropdownMenuItem onClick={() => navigate('/admin/dashboard')} className="cursor-pointer">
                       <LayoutDashboard className="w-4 h-4 mr-2" />
                       Admin Dashboard
                     </DropdownMenuItem>
                   )}
                   {userRole === 'customer' && (
-                    <DropdownMenuItem onClick={() => navigate('/customer-portal')} className="cursor-pointer text-deep-blue font-medium">
+                    <DropdownMenuItem onClick={() => navigate('/customer-portal')} className="cursor-pointer">
                       <LayoutDashboard className="w-4 h-4 mr-2" />
                       My Dashboard
                     </DropdownMenuItem>
                   )}
                   {userRole === 'admin' && (
-                    <DropdownMenuItem onClick={() => navigate('/admin/settings/currency')} className="cursor-pointer text-deep-blue font-medium">
+                    <DropdownMenuItem onClick={() => navigate('/admin/settings/currency')} className="cursor-pointer">
                       <Settings className="w-4 h-4 mr-2" />
                       Currency Settings
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive font-medium">
+                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive">
                     <LogOut className="w-4 h-4 mr-2" />
                     Logout
                   </DropdownMenuItem>
@@ -223,7 +210,7 @@ export default function Header() {
             ) : (
               <Button 
                 onClick={handleSignInWithExistingOrg}
-                className="bg-deep-blue text-white hover:bg-deep-blue-light font-paragraph font-semibold rounded-lg h-10 px-6 shadow-sm"
+                className="bg-buttonbackground text-secondary-foreground hover:bg-buttonbackground/90 font-paragraph rounded-lg h-10 px-6"
               >
                 Sign In
               </Button>

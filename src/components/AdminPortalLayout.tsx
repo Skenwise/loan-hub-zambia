@@ -78,15 +78,15 @@ export default function AdminPortalLayout() {
       <div
         className={`${
           sidebarOpen ? 'w-64' : 'w-20'
-        } bg-panel-dark text-panel-text transition-all duration-300 flex flex-col overflow-hidden`}
+        } bg-primary text-white transition-all duration-300 flex flex-col overflow-hidden`}
       >
         {/* Logo */}
-        <div className="p-6 border-b border-panel-dark-light flex-shrink-0">
+        <div className="p-6 border-b border-primary/20 flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center font-bold text-white">
               L
             </div>
-            {sidebarOpen && <span className="font-bold text-lg text-panel-text">Lunar</span>}
+            {sidebarOpen && <span className="font-bold text-lg text-white">Lunar</span>}
           </div>
         </div>
 
@@ -105,7 +105,7 @@ export default function AdminPortalLayout() {
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
                       isActive(item.path)
                         ? 'bg-secondary text-white'
-                        : 'text-panel-text hover:bg-panel-dark-light'
+                        : 'text-white hover:bg-primary/80'
                     }`}
                   >
                     <Icon size={20} />
@@ -113,7 +113,7 @@ export default function AdminPortalLayout() {
                   </Link>
                 ) : (
                   <div
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-panel-text/50 cursor-not-allowed"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/50 cursor-not-allowed"
                     title={`Not available in ${getPlanType()} plan`}
                   >
                     <Icon size={20} />
@@ -134,7 +134,7 @@ export default function AdminPortalLayout() {
                       className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
                         isActive('/admin/customers')
                           ? 'bg-secondary text-white'
-                          : 'text-panel-text hover:bg-panel-dark-light'
+                          : 'text-white hover:bg-primary/80'
                       }`}
                     >
                       <Users size={20} />
@@ -153,7 +153,7 @@ export default function AdminPortalLayout() {
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
                 isActive('/admin/collateral-register')
                   ? 'bg-secondary text-white'
-                  : 'text-panel-text hover:bg-panel-dark-light'
+                  : 'text-white hover:bg-primary/80'
               }`}
             >
               <FileText size={20} />
@@ -169,7 +169,7 @@ export default function AdminPortalLayout() {
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
                   isReportsActive
                     ? 'bg-secondary text-white'
-                    : 'text-panel-text hover:bg-panel-dark-light'
+                    : 'text-white hover:bg-primary/80'
                 }`}
               >
                 <BarChart3 size={20} />
@@ -185,7 +185,7 @@ export default function AdminPortalLayout() {
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
                 isSettingsActive
                   ? 'bg-secondary text-white'
-                  : 'text-panel-text hover:bg-panel-dark-light'
+                  : 'text-white hover:bg-primary/80'
               }`}
             >
               <Settings size={20} />
@@ -200,7 +200,7 @@ export default function AdminPortalLayout() {
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
                 isBranchesActive
                   ? 'bg-secondary text-white'
-                  : 'text-panel-text hover:bg-panel-dark-light'
+                  : 'text-white hover:bg-primary/80'
               }`}
             >
               <MapPin size={20} />
@@ -216,7 +216,7 @@ export default function AdminPortalLayout() {
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
                   isActive('/admin/system-reset')
                     ? 'bg-secondary text-white'
-                    : 'text-panel-text hover:bg-panel-dark-light'
+                    : 'text-white hover:bg-primary/80'
                 }`}
               >
                 <Shield size={20} />
@@ -227,13 +227,13 @@ export default function AdminPortalLayout() {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-panel-dark-light space-y-2 flex-shrink-0">
+        <div className="p-4 border-t border-primary/20 space-y-2 flex-shrink-0">
           <Link
             to="/profile"
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
               isActive('/profile')
                 ? 'bg-secondary text-white'
-                : 'text-panel-text hover:bg-panel-dark-light'
+                : 'text-white hover:bg-primary/80'
             }`}
           >
             <Settings size={20} />
@@ -241,7 +241,7 @@ export default function AdminPortalLayout() {
           </Link>
           <button
             onClick={() => actions.logout()}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-panel-text hover:bg-panel-dark-light transition"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white hover:bg-primary/80 transition"
           >
             <LogOut size={20} />
             {sidebarOpen && <span>Logout</span>}
