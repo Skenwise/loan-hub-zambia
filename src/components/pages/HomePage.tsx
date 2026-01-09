@@ -244,10 +244,10 @@ export default function HomePage() {
                 <span className="text-secondary font-medium tracking-wider uppercase text-sm">Next Gen Lending</span>
               </div>
               
-              <h1 className="font-heading text-6xl lg:text-8xl font-bold leading-[0.95] tracking-tight">
+              <h1 className="font-heading text-7xl lg:text-9xl font-black leading-[0.92] tracking-tighter text-white drop-shadow-lg">
                 Protecting Your <br />
-                <span className="text-secondary">Capital</span> and <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-brandaccent to-secondary">Compliance.</span>
+                <span className="text-secondary drop-shadow-[0_0_20px_rgba(53,103,253,0.5)]">Capital</span> and <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-secondary to-cyan-400 drop-shadow-lg">Compliance.</span>
               </h1>
               
               <p className="text-xl text-primary-foreground max-w-xl leading-relaxed border-l-2 border-primary-foreground/20 pl-6">
@@ -302,9 +302,9 @@ export default function HomePage() {
 
                 {/* Orbital Rings with Planets - Enhanced */}
                 {[
-                  { size: 180, duration: 18, delay: 0, planetSize: 14, color: "from-cyan-400 via-blue-500 to-blue-700" },
-                  { size: 280, duration: 28, delay: 8, planetSize: 16, color: "from-orange-300 via-orange-500 to-red-600" },
-                  { size: 380, duration: 42, delay: 15, planetSize: 12, color: "from-purple-400 via-pink-500 to-purple-700" }
+                  { size: 180, duration: 18, delay: 0, planetSize: 14, color: "from-cyan-400 via-blue-500 to-blue-700", rotationSpeed: 20 },
+                  { size: 280, duration: 28, delay: 8, planetSize: 16, color: "from-orange-300 via-orange-500 to-red-600", rotationSpeed: 15 },
+                  { size: 380, duration: 42, delay: 15, planetSize: 12, color: "from-purple-400 via-pink-500 to-purple-700", rotationSpeed: 10 }
                 ].map((orbit, idx) => (
                   <div key={idx} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                     {/* Orbit Ring */}
@@ -337,7 +337,8 @@ export default function HomePage() {
                         width: `${orbit.planetSize}px`,
                         height: `${orbit.planetSize}px`,
                         marginLeft: `-${orbit.planetSize / 2}px`,
-                        marginTop: `-${orbit.size / 2}px`
+                        marginTop: `-${orbit.size / 2}px`,
+                        filter: "drop-shadow(0 0 8px rgba(185, 229, 79, 0.4))"
                       }}
                       animate={{
                         rotate: 360
@@ -349,19 +350,68 @@ export default function HomePage() {
                         delay: orbit.delay
                       }}
                     >
+                      {/* Planet Rotation for Texture Effect */}
                       <motion.div
-                        className="w-full h-full rounded-full"
+                        className="w-full h-full rounded-full relative"
                         animate={{
-                          boxShadow: [
-                            `0 0 ${orbit.planetSize * 2}px rgba(185, 229, 79, 0.3), inset -2px -2px 4px rgba(0,0,0,0.3)`,
-                            `0 0 ${orbit.planetSize * 3.5}px rgba(185, 229, 79, 1), inset -2px -2px 4px rgba(0,0,0,0.3)`,
-                            `0 0 ${orbit.planetSize * 2}px rgba(185, 229, 79, 0.3), inset -2px -2px 4px rgba(0,0,0,0.3)`
-                          ]
+                          rotateY: 360
                         }}
                         transition={{
-                          duration: 3,
+                          duration: orbit.rotationSpeed,
                           repeat: Infinity,
-                          ease: "easeInOut"
+                          ease: "linear"
+                        }}
+                        style={{
+                          background: `linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%, rgba(0,0,0,0.3) 100%)`
+                        }}
+                      >
+                        {/* Atmospheric Glow */}
+                        <motion.div
+                          className="w-full h-full rounded-full absolute inset-0"
+                          animate={{
+                            boxShadow: [
+                              `0 0 ${orbit.planetSize * 2}px rgba(185, 229, 79, 0.3), inset -2px -2px 4px rgba(0,0,0,0.4)`,
+                              `0 0 ${orbit.planetSize * 3.5}px rgba(185, 229, 79, 0.8), inset -2px -2px 4px rgba(0,0,0,0.4)`,
+                              `0 0 ${orbit.planetSize * 2}px rgba(185, 229, 79, 0.3), inset -2px -2px 4px rgba(0,0,0,0.4)`
+                            ]
+                          }}
+                          transition={{
+                            duration: 3,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }}
+                        />
+                      </motion.div>
+                    </motion.div>
+
+                    {/* Planet Satellite/Moon */}
+                    <motion.div
+                      className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                      animate={{
+                        rotate: 360
+                      }}
+                      transition={{
+                        duration: orbit.duration * 0.4,
+                        repeat: Infinity,
+                        ease: "linear",
+                        delay: orbit.delay
+                      }}
+                      style={{
+                        width: `${orbit.size}px`,
+                        height: `${orbit.size}px`,
+                        marginLeft: `-${orbit.size / 2}px`,
+                        marginTop: `-${orbit.size / 2}px`
+                      }}
+                    >
+                      <div
+                        className="absolute rounded-full bg-white/40"
+                        style={{
+                          width: `${orbit.planetSize * 0.4}px`,
+                          height: `${orbit.planetSize * 0.4}px`,
+                          top: `${orbit.size * 0.35}px`,
+                          left: `50%`,
+                          marginLeft: `-${orbit.planetSize * 0.2}px`,
+                          boxShadow: `0 0 ${orbit.planetSize}px rgba(255,255,255,0.5)`
                         }}
                       />
                     </motion.div>
