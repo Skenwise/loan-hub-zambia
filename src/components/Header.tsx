@@ -41,9 +41,9 @@ export default function Header() {
 
     try {
       setIsCheckingAuth(true);
-      console.log('[Header] Starting membership check for:', member.loginEmail);
+      console.log('[Header] Starting membership check for email:', member.loginEmail);
 
-      // Check user's organisation membership from database
+      // Check user's organisation membership from database by email
       const context = await OrganisationMembershipService.checkUserMembership(member.loginEmail);
       console.log('[Header] Membership context received:', {
         userType: context.userType,
@@ -56,16 +56,16 @@ export default function Header() {
 
       // Handle routing based on membership status
       if (context.isOrganisationMember && context.redirectPath) {
-        // Existing organisation member - redirect directly
-        console.log('[Header] Redirecting existing member to:', context.redirectPath);
+        // Existing organisation member - redirect directly to role-specific dashboard
+        console.log('[Header] Existing member found - redirecting to:', context.redirectPath);
         sessionStorage.setItem('selectedRole', context.userType === 'admin' ? 'admin' : 'customer');
         localStorage.setItem('userRole', context.userType === 'admin' ? 'admin' : 'customer');
         navigate(context.redirectPath);
         setHasRedirected(true);
       } else if (context.canCreateOrganisation) {
-        // New user - show role selection
-        console.log('[Header] New user - showing role selection dialog');
-        setShowRoleDialog(true);
+        // New user with no membership - redirect to organisation setup
+        console.log('[Header] New user detected - redirecting to organisation setup');
+        navigate('/setup');
         setHasRedirected(true);
       } else {
         console.log('[Header] Unexpected state - user is not member and cannot create org');
@@ -73,8 +73,9 @@ export default function Header() {
       }
     } catch (error) {
       console.error('[Header] Error during membership check:', error);
-      // On error, show role selection as fallback
-      setShowRoleDialog(true);
+      // On error, redirect to setup as fallback for new users
+      console.log('[Header] Error occurred, redirecting to setup page');
+      navigate('/setup');
       setHasRedirected(true);
     } finally {
       setIsCheckingAuth(false);

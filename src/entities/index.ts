@@ -592,6 +592,35 @@ export interface OrganisationSetup {
 
 
 /**
+ * Collection ID: organisationmemberships
+ * Interface for OrganisationMemberships
+ */
+export interface OrganisationMemberships {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  userEmail?: string;
+  /** @wixFieldType text */
+  userId?: string;
+  /** @wixFieldType text */
+  organisationId?: string;
+  /** @wixFieldType text */
+  membershipType?: string;
+  /** @wixFieldType text */
+  role?: string;
+  /** @wixFieldType text */
+  status?: string;
+  /** @wixFieldType datetime */
+  joinedDate?: Date | string;
+  /** @wixFieldType text */
+  invitedBy?: string;
+  /** @wixFieldType boolean */
+  isActive?: boolean;
+}
+
+
+/**
  * Collection ID: repayments
  * Interface for Repayments
  */
@@ -742,34 +771,4 @@ export interface VerificationRecords {
   expiresAt?: Date | string;
   /** @wixFieldType text */
   memberId?: string;
-}
-
-
-/**
- * Collection ID: organisationmemberships
- * Interface for OrganisationMemberships
- * Unified membership collection for admins and invited staff
- */
-export interface OrganisationMemberships {
-  _id: string;
-  _createdDate?: Date;
-  _updatedDate?: Date;
-  /** @wixFieldType text */
-  userId?: string;
-  /** @wixFieldType text */
-  userEmail?: string;
-  /** @wixFieldType text */
-  organisationId?: string;
-  /** @wixFieldType text */
-  role?: string;
-  /** @wixFieldType text */
-  membershipType?: 'admin' | 'staff' | 'viewer';
-  /** @wixFieldType text */
-  status?: string;
-  /** @wixFieldType datetime */
-  joinedDate?: Date | string;
-  /** @wixFieldType text */
-  invitedBy?: string;
-  /** @wixFieldType boolean */
-  isActive?: boolean;
 }
