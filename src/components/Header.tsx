@@ -80,16 +80,22 @@ export default function Header() {
   const handleSignInWithExistingOrg = async () => {
     // Check if user has existing organizations
     if (member?.loginEmail) {
-      const existingOrgs = await OrganisationService.getOrganisationsByEmail(member.loginEmail);
-      
-      if (existingOrgs.length > 0) {
-        // User has existing organizations - redirect to admin dashboard
-        sessionStorage.setItem('selectedRole', 'admin');
-        localStorage.setItem('userRole', 'admin');
-        sessionStorage.setItem('redirectAfterLogin', '/admin/dashboard');
-        navigate('/admin/dashboard');
-      } else {
-        // No existing organizations - show role selection
+      try {
+        const existingOrgs = await OrganisationService.getOrganisationsByEmail(member.loginEmail);
+        
+        if (existingOrgs.length > 0) {
+          // User has existing organizations - redirect to admin dashboard
+          sessionStorage.setItem('selectedRole', 'admin');
+          localStorage.setItem('userRole', 'admin');
+          sessionStorage.setItem('redirectAfterLogin', '/admin/dashboard');
+          navigate('/admin/dashboard');
+        } else {
+          // No existing organizations - show role selection for new user
+          setShowRoleDialog(true);
+        }
+      } catch (error) {
+        console.error('Error checking organizations:', error);
+        // On error, show role selection dialog
         setShowRoleDialog(true);
       }
     } else {
@@ -104,10 +110,10 @@ export default function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-deep-blue flex items-center justify-center shadow-sm">
-              <span className="text-white font-heading font-bold text-lg">L</span>
+            <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shadow-sm">
+              <span className="text-primary font-heading font-bold text-lg">L</span>
             </div>
-            <span className="font-heading text-xl font-bold text-deep-blue">Lunar</span>
+            <span className="font-heading text-xl font-bold text-white">Lunar</span>
           </Link>
 
           {/* Navigation */}
