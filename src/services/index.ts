@@ -8,6 +8,7 @@ export { RoleService } from './RoleService';
 export { StaffService } from './StaffService';
 export { SubscriptionService } from './SubscriptionService';
 export { AuthorizationService } from './AuthorizationService';
+export { AuthenticationService } from './AuthenticationService';
 export { AuditService } from './AuditService';
 export { LoanService } from './LoanService';
 export { CustomerService } from './CustomerService';

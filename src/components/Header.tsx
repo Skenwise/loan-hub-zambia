@@ -11,7 +11,7 @@ import {
 import { User, LogOut, LayoutDashboard, Globe, Settings } from 'lucide-react';
 import RoleSelectionDialog from '@/components/RoleSelectionDialog';
 import { useCurrencyStore, CURRENCY_RATES, type Currency } from '@/store/currencyStore';
-import { OrganisationService } from '@/services';
+import { AuthenticationService, type UserOrganisationContext } from '@/services/AuthenticationService';
 
 export default function Header() {
   const { member, isAuthenticated, isLoading, actions } = useMember();
@@ -20,18 +20,50 @@ export default function Header() {
   const [userRole, setUserRole] = useState<'admin' | 'customer' | null>(null);
   const { currency, setCurrency } = useCurrencyStore();
   const [hasRedirected, setHasRedirected] = useState(false);
+  const [authContext, setAuthContext] = useState<UserOrganisationContext | null>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(false);
 
-  // Handle post-login redirect for existing users
+  // Handle post-login authentication and routing
   useEffect(() => {
-    if (isAuthenticated && !hasRedirected && !isLoading) {
-      const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
-      if (redirectUrl) {
-        sessionStorage.removeItem('redirectAfterLogin');
-        navigate(redirectUrl);
+    if (isAuthenticated && !hasRedirected && !isLoading && member?.loginEmail) {
+      handlePostLoginAuthentication();
+    }
+  }, [isAuthenticated, isLoading, hasRedirected, member?.loginEmail]);
+
+  const handlePostLoginAuthentication = async () => {
+    if (!member?.loginEmail) return;
+
+    try {
+      setIsCheckingAuth(true);
+
+      // Check user's organisation context
+      const context = await AuthenticationService.checkUserOrganisationContext(member.loginEmail);
+      setAuthContext(context);
+
+      // Store context for quick access
+      AuthenticationService.storeAuthContext(context);
+
+      // Handle routing based on user type
+      if (context.isOrganisationMember && context.redirectPath) {
+        // Existing organisation member - redirect directly
+        sessionStorage.setItem('selectedRole', context.userType === 'admin' ? 'admin' : 'customer');
+        localStorage.setItem('userRole', context.userType === 'admin' ? 'admin' : 'customer');
+        navigate(context.redirectPath);
+        setHasRedirected(true);
+      } else if (context.canCreateOrganisation) {
+        // New user - show role selection
+        setShowRoleDialog(true);
         setHasRedirected(true);
       }
+    } catch (error) {
+      console.error('Error during post-login authentication:', error);
+      // On error, show role selection as fallback
+      setShowRoleDialog(true);
+      setHasRedirected(true);
+    } finally {
+      setIsCheckingAuth(false);
     }
-  }, [isAuthenticated, isLoading, hasRedirected, navigate]);
+  };
 
   useEffect(() => {
     // Determine user role based on current path or stored preference
@@ -52,9 +84,10 @@ export default function Header() {
   }, [isAuthenticated]);
 
   const handleLogout = async () => {
-    // Clear stored role on logout
+    // Clear stored authentication data on logout
     sessionStorage.removeItem('selectedRole');
     localStorage.removeItem('userRole');
+    AuthenticationService.clearAuthContext();
     await actions.logout();
     navigate('/');
   };
@@ -75,33 +108,6 @@ export default function Header() {
       sessionStorage.setItem('redirectAfterLogin', '/admin/dashboard');
     }
     actions.login();
-  };
-
-  const handleSignInWithExistingOrg = async () => {
-    // Check if user has existing organizations
-    if (member?.loginEmail) {
-      try {
-        const existingOrgs = await OrganisationService.getOrganisationsByEmail(member.loginEmail);
-        
-        if (existingOrgs.length > 0) {
-          // User has existing organizations - redirect to admin dashboard
-          sessionStorage.setItem('selectedRole', 'admin');
-          localStorage.setItem('userRole', 'admin');
-          sessionStorage.setItem('redirectAfterLogin', '/admin/dashboard');
-          navigate('/admin/dashboard');
-        } else {
-          // No existing organizations - show role selection for new user
-          setShowRoleDialog(true);
-        }
-      } catch (error) {
-        console.error('Error checking organizations:', error);
-        // On error, show role selection dialog
-        setShowRoleDialog(true);
-      }
-    } else {
-      // No member info - show role selection
-      setShowRoleDialog(true);
-    }
   };
 
   return (
@@ -228,7 +234,7 @@ export default function Header() {
               </DropdownMenu>
             ) : (
               <Button 
-                onClick={handleSignInWithExistingOrg}
+                onClick={handleSignIn}
                 className="bg-deep-blue text-white hover:bg-deep-blue-light font-paragraph font-semibold rounded-lg h-10 px-6 shadow-sm"
               >
                 Sign In
