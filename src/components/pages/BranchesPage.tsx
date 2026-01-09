@@ -341,13 +341,13 @@ export default function BranchesPage() {
             {branches.map((branch) => (
               <Card
                 key={branch._id}
-                className="bg-slate-900/50 border-slate-800 hover:border-secondary/50 transition-colors"
+                className="bg-slate-800 border-slate-700 hover:border-secondary/50 transition-colors"
               >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <CardTitle className="text-xl text-foreground">{branch.branchName}</CardTitle>
-                      <CardDescription className="text-secondary mt-1">
+                      <CardTitle className="text-xl text-white font-semibold">{branch.branchName}</CardTitle>
+                      <CardDescription className="text-blue-400 mt-1">
                         {branch.branchCode}
                       </CardDescription>
                     </div>
@@ -361,11 +361,11 @@ export default function BranchesPage() {
                   {/* Address */}
                   {branch.addressLine1 && (
                     <div className="flex gap-3">
-                      <MapPin className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
+                      <MapPin className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-sm text-primary-foreground">{branch.addressLine1}</p>
+                        <p className="text-sm text-white">{branch.addressLine1}</p>
                         {branch.city && (
-                          <p className="text-sm text-primary-foreground/70">
+                          <p className="text-sm text-slate-300">
                             {branch.city}
                             {branch.stateProvince && `, ${branch.stateProvince}`}
                             {branch.postalCode && ` ${branch.postalCode}`}
@@ -378,10 +378,10 @@ export default function BranchesPage() {
                   {/* Phone */}
                   {branch.phoneNumber && (
                     <div className="flex gap-3">
-                      <Phone className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
+                      <Phone className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
                       <a
                         href={`tel:${branch.phoneNumber}`}
-                        className="text-sm text-primary-foreground hover:text-secondary transition-colors"
+                        className="text-sm text-white hover:text-blue-400 transition-colors"
                       >
                         {branch.phoneNumber}
                       </a>
@@ -391,10 +391,10 @@ export default function BranchesPage() {
                   {/* Email */}
                   {branch.emailAddress && (
                     <div className="flex gap-3">
-                      <Mail className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
+                      <Mail className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
                       <a
                         href={`mailto:${branch.emailAddress}`}
-                        className="text-sm text-primary-foreground hover:text-secondary transition-colors"
+                        className="text-sm text-white hover:text-blue-400 transition-colors"
                       >
                         {branch.emailAddress}
                       </a>
@@ -404,19 +404,19 @@ export default function BranchesPage() {
                   {/* Manager */}
                   {branch.managerName && (
                     <div className="flex gap-3">
-                      <User className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
-                      <p className="text-sm text-primary-foreground">{branch.managerName}</p>
+                      <User className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-white">{branch.managerName}</p>
                     </div>
                   )}
 
                   {/* Action Buttons - Only for authenticated users */}
                   {isAuthenticated && (
-                    <div className="flex gap-2 pt-4 border-t border-slate-800">
+                    <div className="flex gap-2 pt-4 border-t border-slate-700">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleOpenDialog(branch)}
-                        className="flex-1 gap-2"
+                        className="flex-1 gap-2 border-slate-600 text-white hover:bg-slate-700"
                       >
                         <Edit2 className="w-4 h-4" />
                         Edit
@@ -428,7 +428,7 @@ export default function BranchesPage() {
                           setDeletingBranchId(branch._id);
                           setShowDeleteDialog(true);
                         }}
-                        className="flex-1 gap-2 text-destructive hover:text-destructive"
+                        className="flex-1 gap-2 border-slate-600 text-red-400 hover:bg-red-500/10 hover:text-red-300"
                       >
                         <Trash2 className="w-4 h-4" />
                         Delete
