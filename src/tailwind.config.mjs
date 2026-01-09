@@ -23,71 +23,56 @@ export default {
                 paragraph: ["barlow-extralight"]
             },
             colors: {
-                // Primary: Soft off-white background (less bright, more professional)
-                primary: "#F8F9FA",
-                "primary-foreground": "#2D3748",
+                primary: "#0F172A",
+                "primary-foreground": "#FFFFFF",
                 
-                // Secondary: Professional Blue (less saturated than before)
-                secondary: "#0B5394",
+                secondary: "#3567fd",
                 "secondary-foreground": "#FFFFFF",
                 
-                // Deep Blue - for high visibility text and buttons (muted)
-                "deep-blue": "#1A3A52",
-                "deep-blue-light": "#2D5A7B",
+                "deep-blue": "#1E293B",
+                "deep-blue-light": "#3567fd",
                 
-                // Very Deep Dark Blue - for panels and sidebars (softer)
-                "panel-dark": "#1F2937",
-                "panel-dark-light": "#374151",
-                "panel-text": "#F3F4F6",
-                "panel-text-secondary": "#D1D5DB",
+                "panel-dark": "#1E293B",
+                "panel-dark-light": "#3567fd",
+                "panel-text": "#f0f3ff",
+                "panel-text-secondary": "#94A3B8",
                 
-                // Background and Card colors (softer)
-                background: "#F8F9FA",
-                cardbackground: "#FFFFFF",
+                background: "#0F172A",
+                cardbackground: "#0F172A",
                 
-                // Text and Foreground colors (softer, less harsh)
-                foreground: "#2D3748",
-                textprimary: "#2D3748",
-                darktext: "#2D3748",
+                foreground: "#f0f3ff",
+                textprimary: "#f0f3ff",
+                darktext: "#f0f3ff",
                 
-                // Accent colors (muted)
-                brandaccent: "#0B5394",
-                buttonbackground: "#0B5394",
+                brandaccent: "#3567fd",
+                buttonbackground: "#1E293B",
                 buttonforeground: "#FFFFFF",
-                buttonoutline: "#0B5394",
-                buttonborder: "#0B5394",
+                buttonoutline: "#3567fd",
+                buttonborder: "#1E293B",
                 
-                // Input styling (softer)
-                inputbackground: "#FFFFFF",
-                inputborder: "#D1D5DB",
+                inputbackground: "#1E293B",
+                inputborder: "#94A3B8",
                 
-                // Content blocks and panels (subtle grey)
-                contentblockbackground: "#F3F4F6",
-                "contentblockbackground-custom": "#F3F4F6",
+                contentblockbackground: "#CBD5E1",
+                "contentblockbackground-custom": "#CBD5E1",
                 
-                // Icon and UI elements (neutral grey)
-                iconcolor: "#6B7280",
+                iconcolor: "#94A3B8",
                 
-                // Status colors
-                destructive: "#DC2626",
-                destructiveforeground: "#FFFFFF",
+                destructive: "#DF3131",
+                destructiveforeground: "#ffffff",
                 
-                // Success (green for success states)
-                success: "#059669",
+                success: "#3567fd",
                 "success-foreground": "#FFFFFF",
                 
-                // Warning (amber for demo mode)
-                warning: "#D97706",
+                warning: "#3567fd",
                 "warning-foreground": "#FFFFFF",
                 
-                // Info/Highlight (soft blue)
-                info: "#2563EB",
+                info: "#3567fd",
                 "info-foreground": "#FFFFFF",
                 
-                // Secondary foreground variants (light blue tints)
-                "secondary-foreground-new": "#EFF6FF",
-                "secondary-foreground-old": "#EFF6FF",
-                "secondary-foreground-token": "#EFF6FF"
+                "secondary-foreground-new": "#E0E7FF",
+                "secondary-foreground-old": "#E0E7FF",
+                "secondary-foreground-token": "#E0E7FF"
             },
         },
     },
