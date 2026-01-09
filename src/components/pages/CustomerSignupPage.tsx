@@ -237,7 +237,7 @@ export default function CustomerSignupPage() {
             <CardTitle className="text-2xl text-secondary">
               Complete Your Registration
             </CardTitle>
-            <p className="text-primary-foreground/70 text-sm mt-2">
+            <p className="text-primary-foreground text-sm mt-2 font-medium">
               Welcome, {customer.firstName}! Let's set up your account.
             </p>
           </CardHeader>
@@ -259,6 +259,9 @@ export default function CustomerSignupPage() {
 
             {/* Progress Steps */}
             <div className="space-y-3">
+              <p className="text-primary-foreground text-sm font-medium mb-3">
+                Follow these steps to complete your registration:
+              </p>
               {[
                 { step: 'verify-email', label: 'Email Verification', icon: Mail },
                 { step: 'verify-phone', label: 'Phone Verification', icon: Smartphone },
@@ -287,6 +290,13 @@ export default function CustomerSignupPage() {
             {/* Email Verification */}
             {currentStep === 'verify-email' && (
               <div className="space-y-4">
+                <div className="bg-secondary/10 border border-secondary/20 rounded-lg p-4">
+                  <p className="text-primary-foreground text-sm">
+                    <span className="font-medium">Step 1: Email Verification</span>
+                    <br />
+                    We'll send a one-time password (OTP) to your email address. Check your inbox and enter the code to verify your email.
+                  </p>
+                </div>
                 <div>
                   <Label className="text-primary-foreground">Email Address</Label>
                   <Input
@@ -332,6 +342,13 @@ export default function CustomerSignupPage() {
             {/* Phone Verification */}
             {currentStep === 'verify-phone' && (
               <div className="space-y-4">
+                <div className="bg-secondary/10 border border-secondary/20 rounded-lg p-4">
+                  <p className="text-primary-foreground text-sm">
+                    <span className="font-medium">Step 2: Phone Verification</span>
+                    <br />
+                    We'll send a one-time password (OTP) to your phone number. Check your SMS and enter the code to verify your phone.
+                  </p>
+                </div>
                 <div>
                   <Label className="text-primary-foreground">Phone Number</Label>
                   <Input
@@ -377,6 +394,13 @@ export default function CustomerSignupPage() {
             {/* Password Setup */}
             {currentStep === 'set-password' && (
               <div className="space-y-4">
+                <div className="bg-secondary/10 border border-secondary/20 rounded-lg p-4">
+                  <p className="text-primary-foreground text-sm">
+                    <span className="font-medium">Step 3: Set Your Password</span>
+                    <br />
+                    Create a strong password for your account. Your password must be at least 8 characters long and should include a mix of uppercase, lowercase, numbers, and special characters for security.
+                  </p>
+                </div>
                 <div>
                   <Label className="text-primary-foreground">Password</Label>
                   <Input
