@@ -4,6 +4,7 @@
 
 export { BaseCrudService } from './BaseCrudService';
 export { OrganisationService } from './OrganisationService';
+export { OrganisationMembershipService } from './OrganisationMembershipService';
 export { RoleService } from './RoleService';
 export { StaffService } from './StaffService';
 export { SubscriptionService } from './SubscriptionService';
@@ -68,6 +69,7 @@ export const CollectionIds = {
   LOANS: 'loans',
   LOAN_WORKFLOW_HISTORY: 'loanworkflowhistory',
   ORGANISATIONS: 'organisations',
+  ORGANISATION_MEMBERSHIPS: 'organisationmemberships',
   ORGANISATION_SETUP: 'organisationsetup',
   ORGANISATION_SETTINGS: 'organisationsettings',
   REPAYMENTS: 'repayments',

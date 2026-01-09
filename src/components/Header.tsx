@@ -11,7 +11,7 @@ import {
 import { User, LogOut, LayoutDashboard, Globe, Settings } from 'lucide-react';
 import RoleSelectionDialog from '@/components/RoleSelectionDialog';
 import { useCurrencyStore, CURRENCY_RATES, type Currency } from '@/store/currencyStore';
-import { AuthenticationService, type UserOrganisationContext } from '@/services/AuthenticationService';
+import { OrganisationMembershipService, type MembershipContext } from '@/services/OrganisationMembershipService';
 
 export default function Header() {
   const { member, isAuthenticated, isLoading, actions } = useMember();
@@ -20,7 +20,7 @@ export default function Header() {
   const [userRole, setUserRole] = useState<'admin' | 'customer' | null>(null);
   const { currency, setCurrency } = useCurrencyStore();
   const [hasRedirected, setHasRedirected] = useState(false);
-  const [authContext, setAuthContext] = useState<UserOrganisationContext | null>(null);
+  const [membershipContext, setMembershipContext] = useState<MembershipContext | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
 
   // Handle post-login authentication and routing
@@ -28,12 +28,12 @@ export default function Header() {
     console.log('[Header] Auth state changed:', { isAuthenticated, isLoading, hasRedirected, email: member?.loginEmail });
     
     if (isAuthenticated && !hasRedirected && !isLoading && member?.loginEmail) {
-      console.log('[Header] Triggering post-login authentication');
-      handlePostLoginAuthentication();
+      console.log('[Header] Triggering post-login membership check');
+      handlePostLoginMembershipCheck();
     }
   }, [isAuthenticated, isLoading, hasRedirected, member?.loginEmail]);
 
-  const handlePostLoginAuthentication = async () => {
+  const handlePostLoginMembershipCheck = async () => {
     if (!member?.loginEmail) {
       console.log('[Header] No login email available');
       return;
@@ -41,23 +41,20 @@ export default function Header() {
 
     try {
       setIsCheckingAuth(true);
-      console.log('[Header] Starting authentication check for:', member.loginEmail);
+      console.log('[Header] Starting membership check for:', member.loginEmail);
 
-      // Check user's organisation context
-      const context = await AuthenticationService.checkUserOrganisationContext(member.loginEmail);
-      console.log('[Header] Authentication context received:', {
+      // Check user's organisation membership from database
+      const context = await OrganisationMembershipService.checkUserMembership(member.loginEmail);
+      console.log('[Header] Membership context received:', {
         userType: context.userType,
         isOrganisationMember: context.isOrganisationMember,
         redirectPath: context.redirectPath,
         canCreateOrganisation: context.canCreateOrganisation,
       });
       
-      setAuthContext(context);
+      setMembershipContext(context);
 
-      // Store context for quick access
-      AuthenticationService.storeAuthContext(context);
-
-      // Handle routing based on user type
+      // Handle routing based on membership status
       if (context.isOrganisationMember && context.redirectPath) {
         // Existing organisation member - redirect directly
         console.log('[Header] Redirecting existing member to:', context.redirectPath);
@@ -75,7 +72,7 @@ export default function Header() {
         setHasRedirected(true);
       }
     } catch (error) {
-      console.error('[Header] Error during post-login authentication:', error);
+      console.error('[Header] Error during membership check:', error);
       // On error, show role selection as fallback
       setShowRoleDialog(true);
       setHasRedirected(true);
@@ -106,7 +103,6 @@ export default function Header() {
     // Clear stored authentication data on logout
     sessionStorage.removeItem('selectedRole');
     localStorage.removeItem('userRole');
-    AuthenticationService.clearAuthContext();
     await actions.logout();
     navigate('/');
   };
