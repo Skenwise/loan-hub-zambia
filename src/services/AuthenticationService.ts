@@ -30,12 +30,17 @@ export class AuthenticationService {
     userEmail: string
   ): Promise<UserOrganisationContext> {
     try {
+      console.log('[AuthenticationService] Checking context for email:', userEmail);
+      
       // Step 1: Check if user is an admin (has organisation with matching contact email)
       const adminOrganisations = await OrganisationService.getOrganisationsByEmail(userEmail);
+      console.log('[AuthenticationService] Admin organisations found:', adminOrganisations.length);
       
       if (adminOrganisations.length > 0) {
         // User is an admin of at least one organisation
         const organisation = adminOrganisations[0]; // Use first organisation if multiple
+        console.log('[AuthenticationService] User is admin of organisation:', organisation._id);
+        
         const staff = await this.getStaffByEmail(userEmail, organisation._id);
         const role = staff ? await RoleService.getRole(staff.roleId || '') : null;
 
@@ -52,9 +57,12 @@ export class AuthenticationService {
 
       // Step 2: Check if user is an invited staff member
       const staffMember = await this.getStaffByEmail(userEmail);
+      console.log('[AuthenticationService] Staff member found:', !!staffMember);
       
       if (staffMember && staffMember.organisationId) {
         // User is an invited staff member
+        console.log('[AuthenticationService] User is invited staff member of organisation:', staffMember.organisationId);
+        
         const organisation = await OrganisationService.getOrganisation(staffMember.organisationId);
         const role = await RoleService.getRole(staffMember.roleId || '');
 
@@ -78,6 +86,7 @@ export class AuthenticationService {
       }
 
       // Step 3: User is new (no organisation membership)
+      console.log('[AuthenticationService] User is new - no organisation membership');
       return {
         organisation: null,
         staff: null,

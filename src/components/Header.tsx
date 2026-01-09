@@ -25,19 +25,33 @@ export default function Header() {
 
   // Handle post-login authentication and routing
   useEffect(() => {
+    console.log('[Header] Auth state changed:', { isAuthenticated, isLoading, hasRedirected, email: member?.loginEmail });
+    
     if (isAuthenticated && !hasRedirected && !isLoading && member?.loginEmail) {
+      console.log('[Header] Triggering post-login authentication');
       handlePostLoginAuthentication();
     }
   }, [isAuthenticated, isLoading, hasRedirected, member?.loginEmail]);
 
   const handlePostLoginAuthentication = async () => {
-    if (!member?.loginEmail) return;
+    if (!member?.loginEmail) {
+      console.log('[Header] No login email available');
+      return;
+    }
 
     try {
       setIsCheckingAuth(true);
+      console.log('[Header] Starting authentication check for:', member.loginEmail);
 
       // Check user's organisation context
       const context = await AuthenticationService.checkUserOrganisationContext(member.loginEmail);
+      console.log('[Header] Authentication context received:', {
+        userType: context.userType,
+        isOrganisationMember: context.isOrganisationMember,
+        redirectPath: context.redirectPath,
+        canCreateOrganisation: context.canCreateOrganisation,
+      });
+      
       setAuthContext(context);
 
       // Store context for quick access
@@ -46,17 +60,22 @@ export default function Header() {
       // Handle routing based on user type
       if (context.isOrganisationMember && context.redirectPath) {
         // Existing organisation member - redirect directly
+        console.log('[Header] Redirecting existing member to:', context.redirectPath);
         sessionStorage.setItem('selectedRole', context.userType === 'admin' ? 'admin' : 'customer');
         localStorage.setItem('userRole', context.userType === 'admin' ? 'admin' : 'customer');
         navigate(context.redirectPath);
         setHasRedirected(true);
       } else if (context.canCreateOrganisation) {
         // New user - show role selection
+        console.log('[Header] New user - showing role selection dialog');
         setShowRoleDialog(true);
+        setHasRedirected(true);
+      } else {
+        console.log('[Header] Unexpected state - user is not member and cannot create org');
         setHasRedirected(true);
       }
     } catch (error) {
-      console.error('Error during post-login authentication:', error);
+      console.error('[Header] Error during post-login authentication:', error);
       // On error, show role selection as fallback
       setShowRoleDialog(true);
       setHasRedirected(true);
