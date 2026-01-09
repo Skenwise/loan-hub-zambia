@@ -202,7 +202,7 @@ export default function Header() {
             {/* Currency Selector */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2 text-deep-blue font-semibold hover:bg-contentblockbackground">
+                <Button variant="ghost" className="flex items-center gap-2 text-white font-semibold hover:text-secondary hover:bg-primary-foreground/10 transition-colors">
                   <Globe className="w-4 h-4" />
                   <span className="hidden md:inline font-paragraph text-sm">{currency}</span>
                 </Button>
@@ -212,7 +212,7 @@ export default function Header() {
                   <DropdownMenuItem 
                     key={code}
                     onClick={() => setCurrency(code as Currency)}
-                    className="cursor-pointer text-deep-blue font-medium"
+                    className="cursor-pointer text-deep-blue font-medium hover:bg-secondary/10"
                   >
                     {rate.symbol} {code} - {rate.name}
                   </DropdownMenuItem>
