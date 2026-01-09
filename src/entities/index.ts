@@ -495,35 +495,6 @@ export interface LoanWorkflowHistory {
 
 
 /**
- * Collection ID: organisationmemberships
- * Interface for OrganisationMemberships
- */
-export interface OrganisationMemberships {
-  _id: string;
-  _createdDate?: Date;
-  _updatedDate?: Date;
-  /** @wixFieldType text */
-  userEmail?: string;
-  /** @wixFieldType text */
-  userId?: string;
-  /** @wixFieldType text */
-  organisationId?: string;
-  /** @wixFieldType text */
-  membershipType?: string;
-  /** @wixFieldType text */
-  role?: string;
-  /** @wixFieldType text */
-  status?: string;
-  /** @wixFieldType datetime */
-  joinedDate?: Date | string;
-  /** @wixFieldType boolean */
-  isActive?: boolean;
-  /** @wixFieldType text */
-  invitedBy?: string;
-}
-
-
-/**
  * Collection ID: organisations
  * Interface for Organizations
  */
@@ -771,4 +742,33 @@ export interface VerificationRecords {
   expiresAt?: Date | string;
   /** @wixFieldType text */
   memberId?: string;
+}
+
+
+/**
+ * Collection ID: organisationmemberships
+ * Interface for OrganisationMemberships
+ */
+export interface OrganisationMemberships {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  userEmail?: string;
+  /** @wixFieldType text */
+  userId?: string;
+  /** @wixFieldType text */
+  organisationId?: string;
+  /** @wixFieldType text */
+  membershipType?: string;
+  /** @wixFieldType text */
+  role?: string;
+  /** @wixFieldType text */
+  status?: string;
+  /** @wixFieldType datetime */
+  joinedDate?: Date | string;
+  /** @wixFieldType text */
+  invitedBy?: string;
+  /** @wixFieldType boolean */
+  isActive?: boolean;
 }

@@ -159,7 +159,10 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
       }
     } catch (error) {
       console.error('Failed to load organisation data:', error);
-      navigate('/setup');
+      // CRITICAL FIX: Don't redirect on error - this causes redirect loops
+      // If organisation data fails to load, just set loading to false
+      // The user is already authenticated and should stay on their current page
+      console.log('[SubscriptionGuard] Error loading organisation data, but not redirecting to prevent loops');
     } finally {
       setIsLoading(false);
     }

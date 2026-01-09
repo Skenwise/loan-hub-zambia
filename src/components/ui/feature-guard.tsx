@@ -50,7 +50,7 @@ export function FeatureGuard({
         Required feature{features.length > 1 ? 's' : ''}: <strong>{features.join(', ')}</strong>
       </p>
       <Button
-        onClick={() => navigate('/setup')}
+        onClick={() => navigate('/pricing')}
         className="bg-secondary hover:bg-secondary/90 text-white"
       >
         Upgrade Plan
