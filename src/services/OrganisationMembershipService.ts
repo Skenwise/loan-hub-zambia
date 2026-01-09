@@ -12,11 +12,12 @@ import { CollectionIds } from './index';
 export interface MembershipContext {
   membership: OrganisationMemberships | null;
   organisation: Organizations | null;
-  userType: 'admin' | 'staff' | 'viewer' | 'new_user';
+  userType: 'super_admin' | 'admin' | 'staff' | 'viewer' | 'new_user';
   redirectPath: string | null;
   canCreateOrganisation: boolean;
   isOrganisationMember: boolean;
   role: string | null;
+  isSuperAdmin?: boolean;
 }
 
 export class OrganisationMembershipService {
@@ -73,20 +74,23 @@ export class OrganisationMembershipService {
 
       // Step 4: Determine redirect path based on membership type and role
       const redirectPath = this.determineRedirectPath(userMembership.membershipType, userMembership.role);
+      const isSuperAdmin = userMembership.membershipType === 'super_admin';
 
       console.log('[OrganisationMembershipService] User is organisation member:', {
         membershipType: userMembership.membershipType,
+        isSuperAdmin,
         redirectPath,
       });
 
       return {
         membership: userMembership,
         organisation,
-        userType: (userMembership.membershipType || 'viewer') as 'admin' | 'staff' | 'viewer',
+        userType: (userMembership.membershipType || 'viewer') as 'super_admin' | 'admin' | 'staff' | 'viewer',
         redirectPath,
         canCreateOrganisation: false, // Existing members cannot create organisations
         isOrganisationMember: true,
         role: userMembership.role || null,
+        isSuperAdmin,
       };
     } catch (error) {
       console.error('[OrganisationMembershipService] Error checking membership:', error);
@@ -99,6 +103,9 @@ export class OrganisationMembershipService {
    */
   private static determineRedirectPath(membershipType?: string, role?: string): string {
     switch (membershipType) {
+      case 'super_admin':
+        // Super Admin always redirects to admin dashboard with full access
+        return '/admin/dashboard';
       case 'admin':
         return '/admin/dashboard';
       case 'staff':

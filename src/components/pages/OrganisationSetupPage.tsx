@@ -10,7 +10,7 @@ import { useOrganisationStore } from '@/store/organisationStore';
 import { useCurrencyStore, CURRENCY_RATES } from '@/store/currencyStore';
 import { useNavigate } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { StaffService, RoleService, InitializationService, OrganisationService } from '@/services';
+import { StaffService, RoleService, InitializationService, OrganisationService, OrganisationMembershipService } from '@/services';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 
 type SetupStep = 'organisation-info' | 'subscription-plan' | 'confirmation';
@@ -174,6 +174,24 @@ export default function OrganisationSetupPage() {
           // Get and set permissions
           const rolePermissions = await RoleService.getRolePermissions(adminRole._id);
           setPermissions(rolePermissions);
+        }
+
+        // Create SUPER_ADMIN membership record for the organisation creator
+        // This grants full and unrestricted access to all system modules
+        console.log('[OrganisationSetupPage] Creating SUPER_ADMIN membership for organisation creator');
+        try {
+          await OrganisationMembershipService.createMembership(
+            member.loginEmail,
+            member.loginEmail, // Use email as userId for now
+            organisationId,
+            'admin', // Admin membership type (super_admin is stored in membershipType field as string)
+            'Super Admin' // Super Admin role
+          );
+          console.log('[OrganisationSetupPage] SUPER_ADMIN membership created successfully');
+        } catch (membershipError) {
+          console.error('[OrganisationSetupPage] Error creating SUPER_ADMIN membership:', membershipError);
+          // Don't fail the entire setup if membership creation fails
+          // The user can still proceed and the membership can be created later
         }
       }
 

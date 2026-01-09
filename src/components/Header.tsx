@@ -47,6 +47,7 @@ export default function Header() {
       const context = await OrganisationMembershipService.checkUserMembership(member.loginEmail);
       console.log('[Header] Membership context received:', {
         userType: context.userType,
+        isSuperAdmin: context.isSuperAdmin,
         isOrganisationMember: context.isOrganisationMember,
         redirectPath: context.redirectPath,
         canCreateOrganisation: context.canCreateOrganisation,
@@ -58,8 +59,20 @@ export default function Header() {
       if (context.isOrganisationMember && context.redirectPath) {
         // Existing organisation member - redirect directly to role-specific dashboard
         console.log('[Header] Existing member found - redirecting to:', context.redirectPath);
-        sessionStorage.setItem('selectedRole', context.userType === 'admin' ? 'admin' : 'customer');
-        localStorage.setItem('userRole', context.userType === 'admin' ? 'admin' : 'customer');
+        
+        // For SUPER_ADMIN, grant full access and set admin role
+        if (context.isSuperAdmin) {
+          console.log('[Header] SUPER_ADMIN detected - granting full system access');
+          sessionStorage.setItem('selectedRole', 'admin');
+          localStorage.setItem('userRole', 'admin');
+          sessionStorage.setItem('isSuperAdmin', 'true');
+          localStorage.setItem('isSuperAdmin', 'true');
+        } else {
+          // Regular admin or staff member
+          sessionStorage.setItem('selectedRole', context.userType === 'admin' || context.userType === 'staff' ? 'admin' : 'customer');
+          localStorage.setItem('userRole', context.userType === 'admin' || context.userType === 'staff' ? 'admin' : 'customer');
+        }
+        
         navigate(context.redirectPath);
         setHasRedirected(true);
       } else if (context.canCreateOrganisation) {
