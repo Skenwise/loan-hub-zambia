@@ -244,7 +244,7 @@ export default function HomePage() {
                 <span className="text-secondary font-medium tracking-wider uppercase text-sm">Next Gen Lending</span>
               </div>
               
-              <h1 className="font-heading text-7xl lg:text-9xl font-black leading-[0.92] tracking-tighter text-white drop-shadow-lg">
+              <h1 className="font-heading text-5xl lg:text-7xl font-black leading-[0.92] tracking-tighter text-white drop-shadow-lg">
                 Protecting Your <br />
                 <span className="text-secondary drop-shadow-[0_0_20px_rgba(53,103,253,0.5)]">Capital</span> and <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-secondary to-cyan-400 drop-shadow-lg">Compliance.</span>
@@ -556,7 +556,7 @@ export default function HomePage() {
 
         <div className="max-w-[120rem] mx-auto px-6 lg:px-12 relative z-10">
           <AnimatedReveal className="mb-20 text-center">
-            <h2 className="font-heading text-5xl lg:text-7xl font-bold mb-6">
+            <h2 className="font-heading text-4xl lg:text-5xl font-bold mb-6">
               Why <span className="text-secondary">Lunar</span> Wins
             </h2>
             <p className="text-xl text-primary-foreground/70 max-w-2xl mx-auto">
@@ -589,7 +589,7 @@ export default function HomePage() {
       <section className="w-full py-32 relative">
         <div className="max-w-[120rem] mx-auto px-6 lg:px-12">
           <AnimatedReveal className="mb-20 max-w-4xl">
-            <h2 className="font-heading text-5xl lg:text-7xl font-bold mb-6">
+            <h2 className="font-heading text-4xl lg:text-5xl font-bold mb-6">
               Engineered for <span className="text-secondary">Scale</span>
             </h2>
             <p className="text-xl text-primary-foreground max-w-2xl">
@@ -630,7 +630,7 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/50 to-transparent" />
         <div className="absolute bottom-0 left-0 w-full p-12 lg:p-24">
           <AnimatedReveal>
-            <h2 className="font-heading text-5xl lg:text-8xl font-bold text-white max-w-5xl leading-none">
+            <h2 className="font-heading text-4xl lg:text-6xl font-bold text-white max-w-5xl leading-none">
               Data-Driven <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary to-brandaccent">Decisions.</span>
             </h2>
@@ -651,7 +651,7 @@ export default function HomePage() {
                   <span className="text-sm font-semibold uppercase tracking-wider">Regulatory Standard</span>
                 </div>
                 
-                <h2 className="font-heading text-5xl lg:text-6xl font-bold mb-8 leading-tight">
+                <h2 className="font-heading text-4xl lg:text-5xl font-bold mb-8 leading-tight">
                   Compliance is not <br />
                   an afterthought. <br />
                   <span className="text-primary-foreground/30">It's the foundation.</span>
@@ -721,7 +721,7 @@ export default function HomePage() {
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-foreground/5 mb-8">
               <Globe className="w-8 h-8 text-secondary" />
             </div>
-            <h2 className="font-heading text-5xl lg:text-7xl font-bold mb-8">
+            <h2 className="font-heading text-4xl lg:text-5xl font-bold mb-8">
               Built for Global <span className="text-secondary">Lending</span>
             </h2>
             <p className="text-xl text-primary-foreground/60 max-w-3xl mx-auto mb-12">
@@ -758,7 +758,7 @@ export default function HomePage() {
 
         <div className="max-w-4xl mx-auto px-6 relative z-10 text-center">
           <AnimatedReveal>
-            <h2 className="font-heading text-6xl lg:text-8xl font-bold mb-8 leading-tight">
+            <h2 className="font-heading text-4xl lg:text-6xl font-bold mb-8 leading-tight">
               Start Your <br />
               <span className="text-secondary">Transformation.</span>
             </h2>

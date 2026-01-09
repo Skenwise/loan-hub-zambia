@@ -114,16 +114,16 @@ export default function Header() {
           <nav className="hidden md:flex items-center gap-8">
             {!isAuthenticated && (
               <>
-                <Link to="/" className="text-deep-blue font-semibold hover:text-deep-blue-light transition-colors font-paragraph text-sm">
+                <Link to="/" className="text-white font-semibold hover:text-secondary transition-colors font-paragraph text-sm">
                   Home
                 </Link>
-                <Link to="/features" className="text-deep-blue font-semibold hover:text-deep-blue-light transition-colors font-paragraph text-sm">
+                <Link to="/features" className="text-white font-semibold hover:text-secondary transition-colors font-paragraph text-sm">
                   Features
                 </Link>
-                <Link to="/pricing" className="text-deep-blue font-semibold hover:text-deep-blue-light transition-colors font-paragraph text-sm">
+                <Link to="/pricing" className="text-white font-semibold hover:text-secondary transition-colors font-paragraph text-sm">
                   Pricing
                 </Link>
-                <Link to="/compliance" className="text-deep-blue font-semibold hover:text-deep-blue-light transition-colors font-paragraph text-sm">
+                <Link to="/compliance" className="text-white font-semibold hover:text-secondary transition-colors font-paragraph text-sm">
                   Compliance
                 </Link>
               </>
