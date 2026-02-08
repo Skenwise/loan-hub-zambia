@@ -5,9 +5,24 @@
  */
 
 import { BaseCrudService } from '@/integrations';
-import { OrganisationMemberships, Organizations } from '@/entities';
+import { Organizations } from '@/entities';
 import { OrganisationService } from './OrganisationService';
 import { CollectionIds } from './index';
+
+export interface OrganisationMemberships {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  userEmail?: string;
+  userId?: string;
+  organisationId?: string;
+  membershipType?: string;
+  role?: string;
+  status?: string;
+  joinedDate?: Date;
+  invitedBy?: string;
+  isActive?: boolean;
+}
 
 export interface MembershipContext {
   membership: OrganisationMemberships | null;

@@ -25,8 +25,6 @@ export interface AuditTrail {
   resourceAffected?: string;
   /** @wixFieldType text */
   resourceId?: string;
-  /** @wixFieldType text */
-  organisationId?: string;
 }
 
 
@@ -101,10 +99,6 @@ export interface BranchHolidays {
   _createdDate?: Date;
   _updatedDate?: Date;
   /** @wixFieldType text */
-  branchId?: string;
-  /** @wixFieldType text */
-  organisationId?: string;
-  /** @wixFieldType text */
   holidayName?: string;
   /** @wixFieldType date */
   holidayDate?: Date | string;
@@ -168,7 +162,7 @@ export interface CustomerProfiles {
   kycVerificationStatus?: string;
   /** @wixFieldType number */
   creditScore?: number;
-  /** @wixFieldType image */
+  /** @wixFieldType image - Contains image URL, render with <Image> component, NOT as text */
   idDocumentImage?: string;
 }
 
@@ -561,7 +555,7 @@ export interface OrganisationSettings {
   provinceState?: string;
   /** @wixFieldType text */
   zipPostalCode?: string;
-  /** @wixFieldType image */
+  /** @wixFieldType image - Contains image URL, render with <Image> component, NOT as text */
   companyLogo?: string;
 }
 
@@ -742,33 +736,4 @@ export interface VerificationRecords {
   expiresAt?: Date | string;
   /** @wixFieldType text */
   memberId?: string;
-}
-
-
-/**
- * Collection ID: organisationmemberships
- * Interface for OrganisationMemberships
- */
-export interface OrganisationMemberships {
-  _id: string;
-  _createdDate?: Date;
-  _updatedDate?: Date;
-  /** @wixFieldType text */
-  userEmail?: string;
-  /** @wixFieldType text */
-  userId?: string;
-  /** @wixFieldType text */
-  organisationId?: string;
-  /** @wixFieldType text */
-  membershipType?: string;
-  /** @wixFieldType text */
-  role?: string;
-  /** @wixFieldType text */
-  status?: string;
-  /** @wixFieldType datetime */
-  joinedDate?: Date | string;
-  /** @wixFieldType text */
-  invitedBy?: string;
-  /** @wixFieldType boolean */
-  isActive?: boolean;
 }
